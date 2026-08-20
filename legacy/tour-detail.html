@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Salar de Uyuni 3-Day Adventure · Homeland Tours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/main.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/tour-detail.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">H</span>
+      <span class="brand__text"><strong>HOMELAND.TOURS</strong><small>Bolivian Tour Operator</small></span>
+    </a>
+    <nav class="nav" id="primaryNav">
+      <a href="tours.html" class="active">Explorar tours</a>
+      <a href="customize.html">Personalizar viaje</a>
+      <a href="business.html">Empresas</a>
+    </nav>
+    <div class="header-actions">
+      <a class="lang-pill" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg><span>ES</span></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="btn btn--gold btn--sm" href="confirmation.html">My Bookings</a>
+      <button class="menu-toggle" onclick="document.getElementById('primaryNav').classList.toggle('is-open')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- DETAIL HEADER (clean, no green bg) -->
+<section class="detail-header">
+  <div class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a>
+      <span class="sep">/</span>
+      <a href="tours.html">Tours & Packages</a>
+      <span class="sep">/</span>
+      <span>Salar de Uyuni 3-Day Adventure</span>
+    </nav>
+    <h1>Salar de Uyuni 3-Day Adventure</h1>
+    <div class="detail-meta">
+      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> La Paz, Bolivia</span>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY + DETAIL LAYOUT (Viator-style 2 columns) -->
+<section class="container">
+  <div class="detail-layout">
+    <!-- LEFT COLUMN: gallery + info + resumen + tabs -->
+    <div class="detail-main">
+      <div class="gallery">
+        <div class="gallery__thumbs" id="thumbs">
+          <div class="thumb is-active" data-img="assets/uyuni-salt.jpg" style="background-image:url('assets/uyuni-salt.jpg')"></div>
+          <div class="thumb" data-img="assets/uyuni-mirror.jpg" style="background-image:url('assets/uyuni-mirror.jpg')"></div>
+          <div class="thumb" data-img="assets/andes-mountains.jpg" style="background-image:url('assets/andes-mountains.jpg')"></div>
+          <div class="thumb" data-img="assets/amazon-jungle.jpg" style="background-image:url('assets/amazon-jungle.jpg')"></div>
+        </div>
+        <div class="gallery__main">
+          <img id="mainImg" src="assets/uyuni-salt.jpg" alt="Salar de Uyuni" />
+          <div class="gallery__overlay-actions">
+            <button class="gallery__action" aria-label="Compartir">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+              Compartir
+            </button>
+            <button class="gallery__action" aria-label="Añadir a lista de deseos">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              Guardar
+            </button>
+          </div>
+          <button class="gallery__nav gallery__nav--prev" aria-label="Anterior">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="gallery__nav gallery__nav--next" aria-label="Siguiente">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="info-strip">
+        <div class="info-strip__item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div><div class="info-strip__item-label">Destino</div><div class="info-strip__item-value">Salar de Uyuni, Bolivia</div></div>
+        </div>
+        <div class="info-strip__item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <div><div class="info-strip__item-label">Inicio / Fin</div><div class="info-strip__item-value">Uyuni</div></div>
+        </div>
+        <div class="info-strip__item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M4 7l8-5 8 5"/></svg>
+          <div><div class="info-strip__item-label">Mejor temporada</div><div class="info-strip__item-value">Abr — Nov</div></div>
+        </div>
+        <div class="info-strip__item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="6"/><path d="M9 14l-2 8 5-3 5 3-2-8"/></svg>
+          <div><div class="info-strip__item-label">Tipo de tour</div><div class="info-strip__item-value">Adventure & Nature</div></div>
+        </div>
+        <div class="info-strip__item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 20h20M5 20l3-10h8l3 10M9 10V4h6v6"/></svg>
+          <div><div class="info-strip__item-label">Actividad</div><div class="info-strip__item-value">Moderado</div></div>
+        </div>
+        <div class="info-strip__item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 20l3-10h14l3 10M5 20l5-15h4l5 15"/></svg>
+          <div><div class="info-strip__item-label">Altitud máx.</div><div class="info-strip__item-value">4,850 m</div></div>
+        </div>
+      </div>
+
+      <!-- Resumen directo (sin tabs) -->
+      <div class="tour-summary">
+        <h3>Resumen del viaje</h3>
+        <p>Descubrí el Salar de Uyuni, el desierto de sal más grande del mundo, en una aventura de 3 días y 2 noches. Atravesaremos paisajes surrealistas: géiseres activos, lagunas de colores, flamencos rosados, pueblos perdidos y cielos estrellados como nunca antes viste. Un viaje diseñado para que vivas Bolivia desde adentro, con guías locales que aman esta tierra.</p>
+        <p>Partimos desde Uyuni hacia el suroeste del salar, visitamos la Isla Incahuasi (con sus cactus gigantes), las lagunas altiplánicas, el Árbol de Piedra, los géiseres Sol de Mañana y las termas de Polques. Terminamos de vuelta en Uyuni al atardecer del día 3.</p>
+
+        <h3 style="margin-top: 32px;">Highlights</h3>
+        <ul class="highlights-list">
+          <li><span>✓</span> Atardecer en el Salar de Uyuni</li>
+          <li><span>✓</span> Cielo estrellado en la Isla Incahuasi</li>
+          <li><span>✓</span> Géiseres Sol de Mañana</li>
+          <li><span>✓</span> Laguna Colorada con flamencos</li>
+          <li><span>✓</span> Aguas termales de Polques</li>
+          <li><span>✓</span> Hospedaje en lodge familiar</li>
+        </ul>
+      </div>
+
+      <!-- Tabs (solo 4) -->
+      <div class="tabs" id="tabs">
+        <button class="tab is-active" data-tab="itinerary">Itinerario</button>
+        <button class="tab" data-tab="included">¿Qué incluye?</button>
+        <button class="tab" data-tab="bring">¿Qué llevar?</button>
+        <button class="tab" data-tab="info">Información importante</button>
+      </div>
+
+      <!-- Tab: Itinerary -->
+      <div class="tab-panel is-active" data-panel="itinerary">
+        <h3>Itinerario día a día</h3>
+        <p>Tres días de exploración profunda del altiplano boliviano.</p>
+        <ol class="itinerary">
+          <ol class="itinerary">
+            <li class="itinerary__item">
+              <details class="itinerary__details" open>
+                <summary class="itinerary__summary">
+                  <div class="itinerary__day">DÍA<strong>01</strong></div>
+                  <div class="itinerary__head-content">
+                    <h4>Uyuni → Train Cemetery → Colchani → Incahuasi → Sunset</h4>
+                    <div class="itinerary__meals">
+                      <span>🍽 Almuerzo</span>
+                      <span>🍽 Cena</span>
+                      <span>🏨 Hotel de Sal</span>
+                    </div>
+                  </div>
+                  <span class="itinerary__chevron">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </span>
+                </summary>
+                <div class="itinerary__body">
+                  <p>Comenzamos en el Cementerio de Trenes, visitamos los ojos de sal en Colchani, exploramos la gigante Isla Incahuasi y disfrutamos del atardecer en el salar.</p>
+                  <div class="itinerary__activities">
+                    <h5>Actividades del día</h5>
+                    <ul>
+                      <li>🚂 Recorrido por el Cementerio de Trenes (época dorada del ferrocarril)</li>
+                      <li>👀 Visita a los ojos de sal en Colchani (reservorio natural)</li>
+                      <li>🌵 Caminata por la Isla Incahuasi con sus cactus gigantes milenarios</li>
+                      <li>🌅 Atardecer mágico en el medio del salar con cocktail</li>
+                      <li>📸 Sesión de fotos con efectos de espejo (cuando hay agua)</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
+            </li>
+            <li class="itinerary__item">
+              <details class="itinerary__details">
+                <summary class="itinerary__summary">
+                  <div class="itinerary__day">DÍA<strong>02</strong></div>
+                  <div class="itinerary__head-content">
+                    <h4>Salar de Uyuni → Ojos de Agua → Eduardo Avaroa Reserve</h4>
+                    <div class="itinerary__meals">
+                      <span>🍽 Desayuno</span>
+                      <span>🍽 Almuerzo</span>
+                      <span>🍽 Cena</span>
+                      <span>🏨 Basic Lodge</span>
+                    </div>
+                  </div>
+                  <span class="itinerary__chevron">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </span>
+                </summary>
+                <div class="itinerary__body">
+                  <p>Atravesamos las infinitas planicies blancas hacia la reserva, visitamos lagunas y desiertos altos con vida silvestre única.</p>
+                  <div class="itinerary__activities">
+                    <h5>Actividades del día</h5>
+                    <ul>
+                      <li>🏜️ Cruce del salar de Uyuni hacia el sur</li>
+                      <li>🦩 Observación de flamencos en su hábitat natural</li>
+                      <li>🌋 Visita a géiseres Sol de Mañana (activos al amanecer)</li>
+                      <li>♨️ Baño termal en las aguas de Polques (35°C)</li>
+                      <li>🏔️ Trekking suave por la Reserva Eduardo Avaroa</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
+            </li>
+            <li class="itinerary__item">
+              <details class="itinerary__details">
+                <summary class="itinerary__summary">
+                  <div class="itinerary__day">DÍA<strong>03</strong></div>
+                  <div class="itinerary__head-content">
+                    <h4>Geysers → Laguna Colorada → Uyuni</h4>
+                    <div class="itinerary__meals">
+                      <span>🍽 Desayuno</span>
+                      <span>🍽 Almuerzo</span>
+                    </div>
+                  </div>
+                  <span class="itinerary__chevron">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </span>
+                </summary>
+                <div class="itinerary__body">
+                  <p>Temprano vamos a los géiseres Sol de Mañana, las termas de Polques, la Laguna Colorada con flamencos y volvemos a Uyuni al atardecer.</p>
+                  <div class="itinerary__activities">
+                    <h5>Actividades del día</h5>
+                    <ul>
+                      <li>🌅 Salida 5:00 AM para ver el amanecer en los géiseres</li>
+                      <li>♨️ Desayuno caliente en las termas de Polques</li>
+                      <li>🦩 Recorrido por la Laguna Colorada (roja por las algas)</li>
+                      <li>🌵 Vista del Árbol de Piedra (formación rocosa milenaria)</li>
+                      <li>🚌 Regreso a Uyuni por la tarde</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
+            </li>
+          </ol>
+      </div>
+
+      <!-- Tab: Included -->
+      <div class="tab-panel" data-panel="included">
+        <h3>¿Qué incluye y qué no?</h3>
+        <p>Todo lo que necesitás saber sobre qué está cubierto en el precio.</p>
+        <div class="included-grid">
+          <div>
+            <h4 style="color: var(--green-700); margin-bottom: 8px;">✓ Incluido</h4>
+            <ul class="included-list included-list--yes">
+              <li>Transporte privado 4x4</li>
+              <li>Guía bilingüe (inglés/español)</li>
+              <li>2 noches de alojamiento</li>
+              <li>Comidas (B, L, D) — opción vegetariana</li>
+              <li>Entradas a parques y reservas</li>
+              <li>Botiquín de primeros auxilios</li>
+              <li>Oxígeno y kit de altura</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style="color: var(--danger); margin-bottom: 8px;">✕ No incluido</h4>
+            <ul class="included-list included-list--no">
+              <li>Vuelos internacionales</li>
+              <li>Seguro de viaje</li>
+              <li>Bebidas y snacks extras</li>
+              <li>Propinas para guía y chofer</li>
+              <li>Gastos personales</li>
+              <li>Toallas y artículos de aseo</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Bring -->
+      <div class="tab-panel" data-panel="bring">
+        <h3>¿Qué llevar?</h3>
+        <p>Recomendaciones para disfrutar el salar con total comodidad. Uyuni tiene clima extremo: calor de día, frío intenso de noche.</p>
+        <div class="what-to-bring">
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">🧥</span>
+              <span class="bring-title">Ropa abrigada para la noche</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">Las temperaturas en Uyuni caen hasta -5°C por la noche entre mayo y septiembre. Recomendamos llevar gorro, guantes, bufanda y un abrigo tipo cortaviento. Las capas son clave: térmica + polar + cortaviento.</div>
+          </details>
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">🕶</span>
+              <span class="bring-title">Gafas de sol y protector solar</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">El reflejo del sol en el salar puede causar quemaduras graves. Usá lentes con protección UV400 y protector solar SPF 50+ en cara, cuello y orejas. Reaplicá cada 2 horas.</div>
+          </details>
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">👟</span>
+              <span class="bring-title">Calzado cómodo y cerrado</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">El salar tiene una superficie salada que irrita los pies descalzos. Llevá zapatillas o botas cómodas y cerradas. Para el trekking en la reserva, son ideales las botas de trekking bajo.</div>
+          </details>
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">💧</span>
+              <span class="bring-title">Botella de agua reutilizable</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">La altura (3,656 m) y el sol fuerte deshidratan rápido. Llevá al menos 1.5 litros por día. Podés rellenar en los lodges. Evitá bebidas con cafeína o alcohol el primer día.</div>
+          </details>
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">📷</span>
+              <span class="bring-title">Cámara y baterías extra</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">El salar y los géiseres son paraísos fotográficos. Llevá baterías extra (el frío las descarga rápido), tarjetas de memoria y un powerbank. El amanecer en Sol de Mañana es imperdible.</div>
+          </details>
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">🎒</span>
+              <span class="bring-title">Mochila pequeña para día</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">Para llevar lo esencial durante las excursiones: agua, protector solar, snack, cámara, capa de lluvia ligera y documentos. Las mochilas de 20-30L son ideales.</div>
+          </details>
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">🧣</span>
+              <span class="bring-title">Bufanda y gorro</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">Imprescindibles para la madrugada en los géiseres (5 AM) y para las noches en el lodge. La bufanda también protege del sol directo en el salar.</div>
+          </details>
+          <details class="bring-item">
+            <summary>
+              <span class="bring-emoji" aria-hidden="true">💵</span>
+              <span class="bring-title">Efectivo en BOB</span>
+              <span class="bring-chevron">+</span>
+            </summary>
+            <div class="bring-detail">En zonas remotas no todos los lugares aceptan tarjeta. Llevá efectivo en bolivianos para propinas, compras pequeñas y souvenirs. Tipo de cambio actual: ~6.9 BOB por USD.</div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Tab: Info -->
+      <div class="tab-panel" data-panel="info">
+        <h3>Información importante</h3>
+        <p>Antes de reservar, leé estos detalles para que tu experiencia sea perfecta.</p>
+        <h4 style="margin-top: 20px;">Política de cancelación</h4>
+        <p>Cancelación gratuita hasta 48 horas antes del inicio del tour. Después de ese momento, se cobra el 50%. No-show: sin reembolso.</p>
+        <h4 style="margin-top: 20px;">Altitud y salud</h4>
+        <p>El tour alcanza los 4,850 m. Recomendamos aclimatarte 1-2 días en La Paz antes. Llevamos oxígeno y kit de primeros auxilios. Consultá con tu médico si tenés condiciones cardíacas o respiratorias.</p>
+        <h4 style="margin-top: 20px;">Grupo y transporte</h4>
+        <p>Grupos de 2 a 10 personas en Jeep 4x4. Salidas diarias garantizadas desde 2 pasajeros. Para tours privados consultá precio.</p>
+        <h4 style="margin-top: 20px;">Punto de encuentro</h4>
+        <p>Homeland Tours Office, Calle Potosí N° 1231, Uyuni, Bolivia. 07:30 AM. Te esperamos con desayuno de bienvenida.</p>
+      </div>
+
+      <!-- You might also like -->
+      <div class="might-like">
+        <div class="flex-between" style="margin-bottom: 24px;">
+          <h3 style="margin: 0;">También te puede interesar</h3>
+          <a class="btn btn--ghost btn--sm" href="tours.html">Ver todos los tours →</a>
+        </div>
+        <div class="featured-grid">
+          <a class="tour-card card" href="tour-detail.html">
+            <div class="tour-card__media">
+              <img src="assets/lapaz-city.jpg" alt="La Paz" />
+            </div>
+            <div class="card__body">
+              <h3 class="card__title">La Paz City Tour & Valle de la Luna</h3>
+              <div class="card__meta"><span>1 Day</span><span>Easy</span></div>
+              <div class="card__price"><small>Desde</small><strong>US$ 89</strong></div>
+            </div>
+          </a>
+          <a class="tour-card card" href="tour-detail.html">
+            <div class="tour-card__media">
+              <img src="assets/tour-uyuni.jpg" alt="Laguna Colorada" />
+            </div>
+            <div class="card__body">
+              <h3 class="card__title">Laguna Colorada & Uyuni 4-Day</h3>
+              <div class="card__meta"><span>4 Days · 3 Nights</span><span>Moderate</span></div>
+              <div class="card__price"><small>Desde</small><strong>US$ 399</strong></div>
+            </div>
+          </a>
+          <a class="tour-card card" href="tour-detail.html">
+            <div class="tour-card__media">
+              <img src="assets/machu-picchu.jpg" alt="Potosí" />
+            </div>
+            <div class="card__body">
+              <h3 class="card__title">Potosí Colonial & Silver Route</h3>
+              <div class="card__meta"><span>2 Days · 1 Night</span><span>Easy</span></div>
+              <div class="card__price"><small>Desde</small><strong>US$ 159</strong></div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: sticky booking card (Viator style) -->
+    <aside class="detail-aside">
+      <div class="booking-card booking-card--v2">
+        <div class="booking-card__head">
+          <h3 class="booking-card__title">Reservá tu aventura</h3>
+          <div class="booking-card__guarantee">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>
+            <span>Best Price Guarantee</span>
+          </div>
+        </div>
+
+        <div class="booking-card__price-box">
+          <span class="booking-card__from">Desde</span>
+          <strong class="booking-card__price">US$ 299</strong>
+          <span class="booking-card__per">por persona</span>
+        </div>
+
+        <p class="booking-card__availability">
+          <span class="dot"></span> Disponibilidad limitada
+        </p>
+
+        <form onsubmit="event.preventDefault(); document.getElementById('availModal').classList.add('is-open'); return false;">
+          <div class="booking-card__field">
+            <label>Fecha</label>
+            <input type="date" required />
+          </div>
+
+          <button class="btn--v2-check" type="submit">
+            Ver disponibilidad
+          </button>
+        </form>
+
+        <div class="booking-card__divider"></div>
+
+        <ul class="booking-card__perks">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Cancelación gratis hasta 48h antes
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Confirmación instantánea
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Operador local 100% boliviano
+          </li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============== AVAILABILITY MODAL — Rediseño ============== -->
+<div class="am-modal" id="availModal" aria-hidden="true">
+  <div class="am-modal__overlay" onclick="document.getElementById('availModal').classList.remove('is-open')"></div>
+  <div class="am-modal__panel" role="dialog" aria-modal="true" aria-labelledby="availTitle">
+    <button class="am-modal__close" aria-label="Cerrar" onclick="document.getElementById('availModal').classList.remove('is-open')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+
+    <header class="am-head">
+      <p class="am-head__tour"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Salar de Uyuni 3-Day Adventure</p>
+      <h2 class="am-head__title" id="availTitle">Reservá tu aventura</h2>
+    </header>
+
+    <div class="am-body">
+      <div class="am-group">
+        <span class="am-group__label">Tipo de tour · por persona</span>
+        <div class="am-tours" role="radiogroup" aria-label="Tipo de tour">
+          <input type="radio" id="tour-group" name="amTour" value="299" checked onchange="updateAvailPrice()">
+          <label for="tour-group" class="am-tour">
+            <span class="am-tour__name">Grupal</span>
+            <span class="am-tour__price">US$ 299<small>/pp</small></span>
+          </label>
+          <input type="radio" id="tour-semi" name="amTour" value="399" onchange="updateAvailPrice()">
+          <label for="tour-semi" class="am-tour">
+            <span class="am-tour__name">Semi</span>
+            <span class="am-tour__price">US$ 399<small>/pp</small></span>
+          </label>
+          <input type="radio" id="tour-priv" name="amTour" value="499" onchange="updateAvailPrice()">
+          <label for="tour-priv" class="am-tour">
+            <span class="am-tour__name">Privado</span>
+            <span class="am-tour__price">US$ 499<small>/pp</small></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="am-group">
+        <span class="am-group__label">Extras · opcional</span>
+        <div class="am-extras">
+          <input type="checkbox" id="extra1" onchange="updateAvailPrice()">
+          <label for="extra1" class="am-extra">
+            <span class="am-extra__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+            </span>
+            <span class="am-extra__name">Traslado de inicio</span>
+            <span class="am-extra__sub">Aeropuerto o terminal de bus</span>
+            <span class="am-extra__price am-extra__price--free">Incluido gratis</span>
+          </label>
+          <input type="checkbox" id="extra2" onchange="updateAvailPrice()">
+          <label for="extra2" class="am-extra">
+            <span class="am-extra__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21V12h6v9"/><path d="M3 8h18"/><circle cx="7" cy="13" r="1.2" fill="currentColor"/></svg>
+            </span>
+            <span class="am-extra__name">Hotel fuera de Uyuni</span>
+            <span class="am-extra__sub">Recogida a más de 5 km</span>
+            <span class="am-extra__price">+US$ 65 total</span>
+          </label>
+          <input type="checkbox" id="extra3" onchange="updateAvailPrice()">
+          <label for="extra3" class="am-extra">
+            <span class="am-extra__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M16 6v6"/><path d="M2 12h19"/><path d="M19 18h2a2 2 0 0 0 2-2v-4H2v4a2 2 0 0 0 2 2h2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M22 4 17 9" /><path d="m17 4 5 5"/></svg>
+            </span>
+            <span class="am-extra__name">Traslado a Atacama</span>
+            <span class="am-extra__sub">San Pedro de Atacama · Chile</span>
+            <span class="am-extra__price am-extra__price--dopay">Pago en destino</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <footer class="am-foot">
+      <div class="am-pax">
+        <div class="am-pax__label">
+          <strong>Adultos</strong>
+          <small id="availPaxHint">2 pasajeros</small>
+        </div>
+        <div class="am-pax__ctrl">
+          <button type="button" onclick="changePax(-1)" aria-label="Restar pasajero">−</button>
+          <span id="availPaxCount">2</span>
+          <button type="button" onclick="changePax(1)" aria-label="Sumar pasajero">+</button>
+        </div>
+      </div>
+
+      <div class="am-total">
+        <div>
+          <span class="am-total__label">Total</span>
+          <small id="availTotalSub">2 × US$ 299</small>
+        </div>
+        <strong id="availTotal">US$ 598</strong>
+      </div>
+
+      <button class="am-cta" onclick="window.location.href='booking.html'">
+        Añadir al carrito
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+    </footer>
+  </div>
+</div>
+
+<script>
+  let availPax = 2;
+
+  function updateAvailPrice() {
+    const opt = document.querySelector('input[name="amTour"]:checked');
+    if (!opt) return;
+    const perPerson = parseFloat(opt.value);
+    const extras = document.getElementById('extra2').checked ? 65 : 0;
+    const subtotal = perPerson * availPax + extras;
+    document.getElementById('availTotal').textContent = 'US$ ' + subtotal;
+    document.getElementById('availPaxHint').textContent = availPax + (availPax === 1 ? ' pasajero' : ' pasajeros');
+    document.getElementById('availTotalSub').textContent = availPax + ' × US$ ' + perPerson + (extras ? ' + US$ 65' : '');
+  }
+
+  function changePax(delta) {
+    availPax = Math.max(1, Math.min(10, availPax + delta));
+    document.getElementById('availPaxCount').textContent = availPax;
+    updateAvailPrice();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.getElementById('availModal').classList.remove('is-open');
+  });
+</script>
+
+<!-- ============== FOOTER ============== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>NOSOTROS</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Phone:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+              <span class="schedule">Lun–Vie, 9am–12pm / 14:00–18:00</span>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Mobile:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>
+              <strong>Mail:</strong> <a href="mailto:info@homeland.tours">info@homeland.tours</a>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>INFORMACIÓN</h4>
+        <ul class="footer-links">
+          <li><a href="business.html">Sobre nosotros</a></li>
+          <li><a href="business.html">Nuestra diferencia</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>RECURSOS</h4>
+        <ul class="footer-links">
+          <li><a href="#">Condiciones de reserva</a></li>
+          <li><a href="#">Cancelaciones y reembolsos</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="customize.html">Formulario de reserva</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copyright">© 2026 HOMELAND TOURS. Todos los derechos reservados</span>
+      <div class="footer-payments" aria-label="Métodos de pago aceptados">
+        <span class="pay-badge pay-badge--visa" aria-label="Visa">VISA</span>
+        <span class="pay-badge pay-badge--mastercard" aria-label="Mastercard">MC</span>
+        <span class="pay-badge pay-badge--paypal" aria-label="PayPal">PayPal</span>
+        <span class="pay-badge pay-badge--zwap" aria-label="Zwap">Zwap</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- WHATSAPP -->
+<a class="fab-whatsapp" href="https://wa.me/59176012345" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+</a>
+
+<script src="js/main.js"></script>
+<script>
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('is-active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      document.querySelector(`[data-panel="${target}"]`).classList.add('is-active');
+    });
+  });
+
+  // Gallery
+  document.querySelectorAll('.thumb').forEach(thumb => {
+    thumb.addEventListener('click', () => {
+      document.querySelectorAll('.thumb').forEach(t => t.classList.remove('is-active'));
+      thumb.classList.add('is-active');
+      document.getElementById('mainImg').src = thumb.dataset.img;
+    });
+  });
+</script>
+</body>
+</html>

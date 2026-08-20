@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>¡Tu aventura está reservada! · Homeland Tours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/main.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/confirmation.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">H</span>
+      <span class="brand__text"><strong>HOMELAND.TOURS</strong><small>Bolivian Tour Operator</small></span>
+    </a>
+    <nav class="nav" id="primaryNav">
+      <a href="tours.html">Explorar tours</a>
+      <a href="customize.html">Personalizar viaje</a>
+      <a href="business.html">Empresas</a>
+    </nav>
+    <div class="header-actions">
+      <a class="lang-pill" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg><span>ES</span></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="btn btn--gold btn--sm" href="confirmation.html">My Bookings</a>
+      <button class="menu-toggle" onclick="document.getElementById('primaryNav').classList.toggle('is-open')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO DE CONFIRMACIÓN -->
+<section class="confirm-hero">
+  <div class="container">
+    <div class="confirm-hero__check">
+      <div class="confirm-check">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+    <h1>¡Tu aventura está <em>reservada!</em></h1>
+    <p>Gracias por elegir Homeland Tours. Te enviamos el voucher a <strong>juan.perez@email.com</strong>. ¡No vemos la hora de recibirte en Bolivia!</p>
+  </div>
+</section>
+
+<!-- MAIN -->
+<section class="container confirm-page">
+
+  <!-- VOUCHER GIGANTE ESTILO BOARDING PASS -->
+  <div class="voucher-ticket">
+
+    <!-- Lado izquierdo: Marca + Tour -->
+    <div class="voucher-ticket__left">
+      <div class="voucher-ticket__brand">
+        <div class="voucher-ticket__brand-mark">H</div>
+        <div>
+          <strong>HOMELAND.TOURS</strong>
+          <small>BOLIVIAN TOUR OPERATOR</small>
+        </div>
+      </div>
+
+      <div class="voucher-ticket__label">TRAVEL VOUCHER</div>
+      <h2 class="voucher-ticket__title">Salar de Uyuni<br/>3-Day Adventure</h2>
+
+      <div class="voucher-ticket__tour-img" style="background-image:url('assets/uyuni-salt.jpg')"></div>
+    </div>
+
+    <!-- Perforación (línea punteada vertical) -->
+    <div class="voucher-ticket__perf"></div>
+
+    <!-- Lado derecho: Detalles -->
+    <div class="voucher-ticket__right">
+
+      <div class="voucher-ticket__top">
+        <div>
+          <small>Reserva</small>
+          <strong>HT-25A7X9</strong>
+        </div>
+        <div>
+          <small>Fecha emisión</small>
+          <strong>21 May 2025</strong>
+        </div>
+        <div>
+          <small>Estado</small>
+          <strong class="voucher-ticket__status">
+            <span class="dot"></span> Confirmado
+          </strong>
+        </div>
+      </div>
+
+      <div class="voucher-ticket__details">
+        <div class="voucher-ticket__detail">
+          <small>PASAJERO</small>
+          <strong>Juan Pérez</strong>
+        </div>
+        <div class="voucher-ticket__detail">
+          <small>PARTIDA</small>
+          <strong>24 May 2025</strong>
+          <span>07:30 AM · Uyuni</span>
+        </div>
+        <div class="voucher-ticket__detail voucher-ticket__detail--arrow">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+        <div class="voucher-ticket__detail">
+          <small>REGRESO</small>
+          <strong>26 May 2025</strong>
+          <span>18:00 · Uyuni</span>
+        </div>
+      </div>
+
+      <div class="voucher-ticket__divider"></div>
+
+      <div class="voucher-ticket__bottom">
+        <div class="voucher-ticket__qr-block">
+          <div class="voucher-ticket__qr">
+            <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg">
+              <rect width="33" height="33" fill="white"/>
+              <g fill="#0c0f0d">
+                <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="white"/><rect x="2" y="2" width="3" height="3"/>
+                <rect x="26" y="0" width="7" height="7"/><rect x="27" y="1" width="5" height="5" fill="white"/><rect x="28" y="2" width="3" height="3"/>
+                <rect x="0" y="26" width="7" height="7"/><rect x="1" y="27" width="5" height="5" fill="white"/><rect x="2" y="28" width="3" height="3"/>
+                <rect x="9" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="13" y="0" width="2" height="1"/><rect x="16" y="0" width="1" height="1"/><rect x="19" y="0" width="1" height="1"/><rect x="22" y="0" width="1" height="1"/><rect x="24" y="0" width="1" height="1"/>
+                <rect x="0" y="9" width="1" height="1"/><rect x="2" y="9" width="2" height="1"/><rect x="5" y="9" width="1" height="2"/><rect x="7" y="9" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="2"/><rect x="16" y="9" width="2" height="1"/><rect x="20" y="9" width="1" height="1"/><rect x="22" y="9" width="1" height="2"/><rect x="25" y="9" width="1" height="1"/>
+                <rect x="0" y="11" width="2" height="1"/><rect x="3" y="11" width="1" height="2"/><rect x="6" y="11" width="1" height="1"/><rect x="9" y="11" width="1" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="15" y="11" width="1" height="2"/><rect x="18" y="11" width="1" height="1"/><rect x="21" y="11" width="1" height="1"/><rect x="24" y="11" width="1" height="1"/><rect x="27" y="11" width="1" height="1"/>
+                <rect x="0" y="14" width="1" height="2"/><rect x="3" y="14" width="1" height="1"/><rect x="6" y="14" width="1" height="2"/><rect x="9" y="14" width="2" height="1"/><rect x="13" y="14" width="1" height="1"/><rect x="16" y="14" width="1" height="1"/><rect x="19" y="14" width="1" height="2"/><rect x="22" y="14" width="1" height="1"/><rect x="25" y="14" width="1" height="1"/>
+                <rect x="0" y="17" width="2" height="1"/><rect x="4" y="17" width="1" height="1"/><rect x="7" y="17" width="1" height="2"/><rect x="10" y="17" width="1" height="1"/><rect x="13" y="17" width="1" height="1"/><rect x="16" y="17" width="1" height="2"/><rect x="19" y="17" width="1" height="1"/><rect x="22" y="17" width="1" height="1"/><rect x="25" y="17" width="1" height="2"/>
+                <rect x="0" y="20" width="1" height="1"/><rect x="3" y="20" width="2" height="1"/><rect x="6" y="20" width="1" height="1"/><rect x="9" y="20" width="1" height="1"/><rect x="12" y="20" width="1" height="2"/><rect x="15" y="20" width="1" height="1"/><rect x="18" y="20" width="1" height="1"/><rect x="21" y="20" width="1" height="1"/><rect x="24" y="20" width="1" height="1"/>
+                <rect x="9" y="22" width="1" height="1"/><rect x="11" y="22" width="2" height="1"/><rect x="14" y="22" width="1" height="1"/><rect x="17" y="22" width="1" height="1"/><rect x="20" y="22" width="2" height="1"/><rect x="24" y="22" width="1" height="1"/>
+              </g>
+            </svg>
+          </div>
+          <small>Escaneá para<br/>verificar</small>
+        </div>
+
+        <div class="voucher-ticket__info-block">
+          <div class="voucher-ticket__info-row">
+            <small>Pasajeros</small>
+            <strong>2 Adultos</strong>
+          </div>
+          <div class="voucher-ticket__info-row">
+            <small>Duración</small>
+            <strong>3 días · 2 noches</strong>
+          </div>
+          <div class="voucher-ticket__info-row">
+            <small>Total pagado</small>
+            <strong class="voucher-ticket__price">BOB 1,350</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="voucher-ticket__barcode">
+        <div class="voucher-ticket__barcode-lines"></div>
+        <small>HT-25A7X9 · BOLETA ELECTRÓNICA · NO VÁLIDO COMO FACTURA</small>
+      </div>
+    </div>
+
+    <!-- Muescas circulares (efecto ticket) -->
+    <div class="voucher-ticket__notch voucher-ticket__notch--top"></div>
+    <div class="voucher-ticket__notch voucher-ticket__notch--bottom"></div>
+  </div>
+
+  <!-- ACCIONES -->
+  <div class="voucher-actions">
+    <button class="btn btn--primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Descargar voucher PDF
+    </button>
+    <button class="btn btn--ghost">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Reenviar por email
+    </button>
+    <a href="index.html" class="btn btn--ghost">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M9 21V12h6v9"/></svg>
+      Volver al inicio
+    </a>
+  </div>
+
+  <!-- 3 columnas debajo: Resumen, Pago, Siguiente -->
+  <div class="confirm-grid">
+
+    <!-- Resumen -->
+    <div class="confirm-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Resumen de reserva
+      </h3>
+      <div class="confirm-list">
+        <div class="confirm-list__row">
+          <small>Tour</small>
+          <strong>Salar de Uyuni 3-Day</strong>
+        </div>
+        <div class="confirm-list__row">
+          <small>Fechas</small>
+          <strong>24 May – 26 May 2025</strong>
+        </div>
+        <div class="confirm-list__row">
+          <small>Pasajeros</small>
+          <strong>2 Adultos</strong>
+        </div>
+        <div class="confirm-list__row">
+          <small>Punto de encuentro</small>
+          <strong>Homeland Tours Office · Uyuni</strong>
+        </div>
+        <div class="confirm-list__row">
+          <small>Hora de inicio</small>
+          <strong>07:30 AM</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pago -->
+    <div class="confirm-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Transacción de pago
+      </h3>
+      <div class="confirm-list">
+        <div class="confirm-list__row">
+          <small>Pasarela</small>
+          <strong style="color: var(--green-700);">Zwap</strong>
+        </div>
+        <div class="confirm-list__row">
+          <small>ID Transacción</small>
+          <strong>ZW-8F7G-H4K2-9P1Z</strong>
+        </div>
+        <div class="confirm-list__row">
+          <small>Pagado el</small>
+          <strong>21 May, 2025 — 10:42 AM</strong>
+        </div>
+        <div class="confirm-list__row">
+          <small>Total</small>
+          <strong style="color: var(--green-700);">BOB 1,350 (US$ 195)</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- ¿Qué sigue? -->
+    <div class="confirm-card">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        ¿Qué sigue?
+      </h3>
+      <ul class="next-list">
+        <li class="next-item">
+          <span class="next-item__num">1</span>
+          <div>
+            <strong>Email enviado</strong>
+            <p>Voucher enviado a tu correo con todos los detalles.</p>
+          </div>
+        </li>
+        <li class="next-item">
+          <span class="next-item__num">2</span>
+          <div>
+            <strong>Guía asignado</strong>
+            <p>Nuestro equipo prepara tu aventura con un guía local.</p>
+          </div>
+        </li>
+        <li class="next-item">
+          <span class="next-item__num">3</span>
+          <div>
+            <strong>Recordatorio 24h</strong>
+            <p>Vas a recibir un recordatorio 24 horas antes del tour.</p>
+          </div>
+        </li>
+        <li class="next-item">
+          <span class="next-item__num">4</span>
+          <div>
+            <strong>Check-in</strong>
+            <p>Mostrá tu voucher en el punto de encuentro.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Trust strip -->
+  <div class="trust-strip">
+    <div class="trust-strip__item">
+      <svg class="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4"/><path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z"/></svg>
+      <div><h4>Operador local & confiable</h4><p>100% boliviano, owned & operated.</p></div>
+    </div>
+    <div class="trust-strip__item">
+      <svg class="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <div><h4>Pago 100% seguro</h4><p>Procesado vía Zwap con encriptación 256-bit.</p></div>
+    </div>
+    <div class="trust-strip__item">
+      <svg class="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <div><h4>Best Price Guarantee</h4><p>Sin cargos ocultos, siempre.</p></div>
+    </div>
+    <div class="trust-strip__item">
+      <svg class="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <div><h4>¿Necesitas ayuda?</h4><p>24/7 · <strong>+591 760 12345</strong></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>NOSOTROS</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Phone:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+              <span class="schedule">Lun–Vie, 9am–12pm / 14:00–18:00</span>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Mobile:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>
+              <strong>Mail:</strong> <a href="mailto:info@homeland.tours">info@homeland.tours</a>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>INFORMACIÓN</h4>
+        <ul class="footer-links">
+          <li><a href="business.html">Sobre nosotros</a></li>
+          <li><a href="business.html">Nuestra diferencia</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>RECURSOS</h4>
+        <ul class="footer-links">
+          <li><a href="#">Condiciones de reserva</a></li>
+          <li><a href="#">Cancelaciones y reembolsos</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="customize.html">Formulario de reserva</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copyright">© 2026 HOMELAND TOURS. Todos los derechos reservados</span>
+      <div class="footer-payments" aria-label="Métodos de pago aceptados">
+        <span class="pay-badge pay-badge--visa" aria-label="Visa">VISA</span>
+        <span class="pay-badge pay-badge--mastercard" aria-label="Mastercard">MC</span>
+        <span class="pay-badge pay-badge--paypal" aria-label="PayPal">PayPal</span>
+        <span class="pay-badge pay-badge--zwap" aria-label="Zwap">Zwap</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- WHATSAPP -->
+<a class="fab-whatsapp" href="https://wa.me/59176012345" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+</a>
+</body>
+</html>

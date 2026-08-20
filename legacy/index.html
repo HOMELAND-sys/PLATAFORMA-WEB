@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Homeland Tours · Authentic Bolivian Journeys</title>
+<meta name="description" content="Operador turístico local en Bolivia. Descubre el Salar de Uyuni, La Paz, Amazonía y la Cordillera con experiencias auténticas y operadores locales." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/main.css" />
+<link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+
+<!-- ============== HEADER ============== -->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="index.html" aria-label="Ir al inicio — Homeland Tours">
+      <span class="brand__mark">H</span>
+      <span class="brand__text">
+        <strong>HOMELAND.TOURS</strong>
+        <small>Bolivian Tour Operator</small>
+      </span>
+    </a>
+    <nav class="nav" id="primaryNav">
+      <div class="nav-item has-dropdown">
+        <a href="tours.html" class="active">Explorar tours <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></a>
+        <div class="nav-dropdown">
+          <a href="tours.html"><span class="nav-dropdown__icon">🏔️</span> La Paz city tours</a>
+          <a href="tours.html"><span class="nav-dropdown__icon">⭐</span> La Paz top tours</a>
+          <a href="tours.html"><span class="nav-dropdown__icon">🧂</span> Salar de Uyuni</a>
+          <a href="tours.html"><span class="nav-dropdown__icon">🌿</span> Amazonía</a>
+          <a href="tours.html"><span class="nav-dropdown__icon">⛰️</span> Trekking Cordillera</a>
+          <a href="tours.html"><span class="nav-dropdown__icon">🏛️</span> Bolivia top tours</a>
+          <a href="tours.html"><span class="nav-dropdown__icon">🦙</span> Tours en Perú</a>
+        </div>
+      </div>
+      <a href="customize.html">Personalizar viaje</a>
+      <a href="business.html">Empresas</a>
+    </nav>
+    <div class="header-actions">
+      <a class="lang-pill" href="#" aria-label="Cambiar idioma">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+        <span>ES</span>
+      </a>
+      <a class="icon-btn" href="#" aria-label="Favoritos">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </a>
+      <a class="icon-btn" href="#" aria-label="Mi cuenta">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </a>
+      <a class="btn btn--gold btn--sm" href="confirmation.html">My Bookings</a>
+      <button class="menu-toggle" aria-label="Abrir menú" onclick="document.getElementById('primaryNav').classList.toggle('is-open')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============== HERO ============== -->
+<section class="hero">
+  <div class="hero__media">
+    <img src="assets/uyuni-mirror.jpg" alt="Paisaje andino" />
+    <div class="hero__veil"></div>
+  </div>
+  <div class="container hero__inner">
+    <p class="hero__eyebrow">Authentic journeys. Local hearts.</p>
+    <h1 class="hero__title">
+      Descubre la magia<br/>
+      de los <em>Andes Bolivianos</em>
+    </h1>
+    <p class="hero__lead">Paisajes inolvidables, culturas vibrantes y experiencias auténticas — <span class="accent">reservables 100% online</span> con operadores locales.</p>
+
+    <form class="search" onsubmit="event.preventDefault(); window.location.href='tours.html'">
+      <div class="search__field search__field--main">
+        <span class="search__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <div class="search__field-text">
+          <label>Destino</label>
+          <input type="text" placeholder="¿A dónde quieres ir?" list="dest-list" />
+          <datalist id="dest-list">
+            <option value="Salar de Uyuni">
+            <option value="La Paz">
+            <option value="Laguna Colorada">
+            <option value="Amazonía Madidi">
+            <option value="Trekking Cordillera">
+            <option value="Valle de la Luna">
+            <option value="Titicaca">
+            <option value="Potosí">
+          </datalist>
+        </div>
+      </div>
+      <button class="search__submit" type="submit">
+        <span>Buscar tours</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+  </div>
+</section>
+
+<!-- ============== TRUST BAR ============== -->
+<div class="trust-bar">
+  <div class="container trust-bar__inner">
+    <div class="trust-bar__item">
+      <div class="avatar-group">
+        <span class="avatar" style="background-image:url('https://i.pravatar.cc/60?img=12')"></span>
+        <span class="avatar" style="background-image:url('https://i.pravatar.cc/60?img=32')"></span>
+        <span class="avatar" style="background-image:url('https://i.pravatar.cc/60?img=45')"></span>
+        <span class="avatar" style="background-image:url('https://i.pravatar.cc/60?img=8')"></span>
+      </div>
+      <span>Confianza de <strong>12.000+</strong> viajeros</span>
+    </div>
+    <div class="trust-bar__item rating">
+      <span class="stars">★ ★ ★ ★ ★</span>
+      <span><strong>4.9/5</strong> Excelente</span>
+    </div>
+    <div class="trust-bar__item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>
+      Operador local verificado
+    </div>
+    <div class="trust-bar__item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z"/></svg>
+      Pago seguro · Zwap
+    </div>
+  </div>
+</div>
+
+<!-- ============== WHY ============== -->
+<section class="section why">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">¿Por qué reservar con Homeland Tours?</p>
+      <h2>De viajeros para viajeros, con corazón local</h2>
+      <p>No somos una plataforma global. Somos un operador 100% boliviano, con gente de aquí diseñando las experiencias que nos gustaría vivir a nosotros.</p>
+    </div>
+
+    <div class="why__grid">
+      <article class="why-card">
+        <div class="why-card__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </div>
+        <h3>De viajeros para viajeros</h3>
+        <p>Conocemos cada rincón de Bolivia porque vivimos aquí. Te llevamos a los lugares que recomendaríamos a un amigo.</p>
+      </article>
+
+      <article class="why-card">
+        <div class="why-card__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4"/><path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z"/></svg>
+        </div>
+        <h3>Reserva sin preocupaciones</h3>
+        <p>Políticas de cancelación flexibles y confirmación inmediata. Tu inversión está protegida mientras planificas.</p>
+      </article>
+
+      <article class="why-card">
+        <div class="why-card__icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="6"/><path d="M9 14l-2 8 5-3 5 3-2-8"/></svg>
+        </div>
+        <h3>Experiencias auténticas</h3>
+        <p>Los mejores tours con operadores locales seleccionados. Comida real, hospedaje familiar y guías que hablan tu idioma.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CATEGORIES ============== -->
+<section class="section section-alt categories">
+  <div class="container">
+    <div class="flex-between" style="margin-bottom: 32px;">
+      <div>
+        <p class="eyebrow">Categorías de viaje</p>
+        <h2>Encuentra tu próxima aventura</h2>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="tours.html">Ver todos los destinos
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="cat-grid">
+      <a class="cat-card" href="tours.html">
+        <div class="cat-card__media">
+          <img src="assets/lapaz-city.jpg" alt="La Paz city tours" />
+        </div>
+        <div class="cat-card__body">
+          <h3>La Paz city tours</h3>
+          <span>Explorar categoría →</span>
+        </div>
+      </a>
+
+      <a class="cat-card cat-card--featured" href="tours.html">
+        <div class="cat-card__media">
+          <img src="assets/uyuni-mirror.jpg" alt="La Paz top tours" />
+          <div class="cat-card__overlay">
+            <span class="cat-card__label">La Paz top tours</span>
+          </div>
+        </div>
+        <div class="cat-card__body">
+          <h3>La Paz top tours</h3>
+          <span>Explorar categoría →</span>
+        </div>
+      </a>
+
+      <a class="cat-card" href="tours.html">
+        <div class="cat-card__media">
+          <img src="assets/uyuni-salt.jpg" alt="Salar de Uyuni" />
+        </div>
+        <div class="cat-card__body">
+          <h3>Salar de Uyuni</h3>
+          <span>Explorar categoría →</span>
+        </div>
+      </a>
+
+      <a class="cat-card" href="tours.html">
+        <div class="cat-card__media">
+          <img src="assets/titicaca-lake.jpg" alt="Amazonía" />
+        </div>
+        <div class="cat-card__body">
+          <h3>Amazonía</h3>
+          <span>Explorar categoría →</span>
+        </div>
+      </a>
+
+      <a class="cat-card" href="tours.html">
+        <div class="cat-card__media">
+          <img src="assets/andes-mountains.jpg" alt="Trekking Cordillera" />
+        </div>
+        <div class="cat-card__body">
+          <h3>Trekking Cordillera</h3>
+          <span>Explorar categoría →</span>
+        </div>
+      </a>
+
+      <a class="cat-card" href="tours.html">
+        <div class="cat-card__media">
+          <img src="assets/uyuni-salt.jpg" alt="Bolivia top tours" />
+        </div>
+        <div class="cat-card__body">
+          <h3>Bolivia top tours</h3>
+          <span>Explorar categoría →</span>
+        </div>
+      </a>
+
+      <a class="cat-card" href="tours.html">
+        <div class="cat-card__media">
+          <img src="assets/machu-picchu.jpg" alt="Tours en Perú" />
+        </div>
+        <div class="cat-card__body">
+          <h3>Tours en Perú</h3>
+          <span>Explorar categoría →</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FEATURED TOURS ============== -->
+<section class="section">
+  <div class="container">
+    <div class="flex-between" style="margin-bottom: 32px;">
+      <div>
+        <p class="eyebrow">Handpicked adventures</p>
+        <h2>Tours destacados</h2>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="tours.html">Ver todos los tours
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="featured-grid">
+      <a class="tour-card card" href="tour-detail.html">
+        <div class="tour-card__media">
+          <img src="assets/uyuni-salt.jpg" alt="Salar de Uyuni 3-Day Adventure" />
+          <span class="tour-card__badge">Bestseller</span>
+          <span class="tour-card__heart" aria-label="Favorito">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Salar de Uyuni 3-Day Adventure</h3>
+          <div class="card__meta">
+            <span>⏱ 3 Days · 2 Nights</span>
+            <span>⛰ Easy</span>
+          </div>
+          <div class="card__price">
+            <small>Desde</small>
+            <strong>US$ 299</strong>
+          </div>
+          <span class="card__cta">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html">
+        <div class="tour-card__media">
+          <img src="assets/lapaz-city.jpg" alt="La Paz City Tour & Valle de la Luna" />
+          <span class="tour-card__heart" aria-label="Favorito">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">La Paz City Tour & Valle de la Luna</h3>
+          <div class="card__meta">
+            <span>⏱ 1 Day</span>
+            <span>⛰ Easy</span>
+          </div>
+          <div class="card__price">
+            <small>Desde</small>
+            <strong>US$ 89</strong>
+          </div>
+          <span class="card__cta">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html">
+        <div class="tour-card__media">
+          <img src="assets/machu-picchu.jpg" alt="Rainbow Mountain Day Hike" />
+          <span class="tour-card__badge tour-card__badge--popular">Popular</span>
+          <span class="tour-card__heart" aria-label="Favorito">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Rainbow Mountain Day Hike</h3>
+          <div class="card__meta">
+            <span>⏱ 1 Day</span>
+            <span>⛰ Moderate</span>
+          </div>
+          <div class="card__price">
+            <small>Desde</small>
+            <strong>US$ 129</strong>
+          </div>
+          <span class="card__cta">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html">
+        <div class="tour-card__media">
+          <img src="assets/uyuni-salt.jpg" alt="Laguna Colorada & Uyuni 4-Day Tour" />
+          <span class="tour-card__heart" aria-label="Favorito">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Laguna Colorada & Uyuni 4-Day Tour</h3>
+          <div class="card__meta">
+            <span>⏱ 4 Days · 3 Nights</span>
+            <span>⛰ Moderate</span>
+          </div>
+          <div class="card__price">
+            <small>Desde</small>
+            <strong>US$ 399</strong>
+          </div>
+          <span class="card__cta">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DIFFERENTIATORS ============== -->
+<section class="section section-dark diff">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow center" style="color: var(--gold-400);">Lo que nos hace diferentes</p>
+      <h2>¿Por qué viajar con Homeland Tours?</h2>
+    </div>
+
+    <div class="diff__grid">
+      <article class="diff-card">
+        <div class="diff-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>Cero estrés, 100% aventura</h3>
+        <p>Toda la logística resuelta. Vos solo preocupate por disfrutar.</p>
+      </article>
+
+      <article class="diff-card">
+        <div class="diff-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="6"/><path d="M9 14l-2 8 5-3 5 3-2-8"/></svg>
+        </div>
+        <h3>Guías locales certificados</h3>
+        <p>Nacidos en la región, hablan inglés y español, conocen cada leyenda.</p>
+      </article>
+
+      <article class="diff-card">
+        <div class="diff-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <h3>Grupos pequeños, impacto grande</h3>
+        <p>Máximo 12 personas por salida. Más conexión con el lugar y sus habitantes.</p>
+      </article>
+
+      <article class="diff-card">
+        <div class="diff-card__icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z"/></svg>
+        </div>
+        <h3>Turismo responsable</h3>
+        <p>Apoyamos comunidades locales y minimizamos nuestra huella ambiental.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============== REVIEWS ============== -->
+<section class="ta-reviews">
+  <div class="ta-reviews__bg">
+    <img src="assets/uyuni-salt.jpg" alt="" />
+    <div class="ta-reviews__bg-tint"></div>
+  </div>
+
+  <button class="ta-reviews__nav ta-reviews__nav--prev" id="reviewsPrev" aria-label="Anterior">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  <button class="ta-reviews__nav ta-reviews__nav--next" id="reviewsNext" aria-label="Siguiente">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
+
+  <div class="ta-reviews__head">
+    <p class="ta-reviews__pretitle">Lo que dicen</p>
+    <h2 class="ta-reviews__title">nuestros viajeros</h2>
+    <p class="ta-reviews__sub">Ellos dan testimonio de nuestros servicios</p>
+  </div>
+
+  <div class="ta-reviews__grid" id="reviewsGrid"></div>
+
+  <div class="ta-reviews__dots" id="reviewsDots"></div>
+</section>
+
+<!-- Reviews data -->
+<script>
+const allReviews = [
+  { stars: 5, title: "Quisiera Volver Otra Vez", text: "Gracias a Fabiola, Jhomayra, Wilmer y Eloy para la experiencia más increíble de ese viaje en Bolivia. Fue todo perfecto.", name: "Giulia M", date: "4 de septiembre de 2024", avatar: "https://i.pravatar.cc/120?img=23" },
+  { stars: 5, title: "Excelencia y Amabilidad", text: "Excelente el servicio, coordinación, puntualidad, organización. Carlos, el chófer, un conocedor profesional que inspira confianza total, Sonia excelente cocinera, Mariana con una atención que va más allá...", name: "Cecilia D", date: "5 de agosto de 2024", avatar: "https://i.pravatar.cc/120?img=45" },
+  { stars: 5, title: "Increíble Viaje al Salar de Uyuni y sus Islas", text: "Viajamos con Rubén y Sonia tres días seguidos y recorrimos todo el salar de Uyuni y sus islas. Sonia nos cocinaba comida casera inolvidable y Rubén nos hizo de guía...", name: "Silvia R", date: "19 de septiembre de 2024", avatar: "https://i.pravatar.cc/120?img=44" },
+  { stars: 5, title: "La Mejor Experiencia en Bolivia", text: "Pasamos 7 días recorriendo el país con Homeland y todo fue perfecto. Desde la organización del itinerario hasta los pequeños detalles. Volveré a viajar con ellos seguro.", name: "Andrés C", date: "22 de julio de 2024", avatar: "https://i.pravatar.cc/120?img=12" },
+  { stars: 5, title: "Increíble atención y profesionalismo", text: "El equipo de Homeland nos trató como reyes durante todo el viaje. Los guías súper preparados y los hoteles increíbles. Sin duda la mejor agencia que contraté en mi vida.", name: "Mariana P", date: "11 de octubre de 2024", avatar: "https://i.pravatar.cc/120?img=49" },
+  { stars: 5, title: "Paisajes que Dejan Sin Aliento", text: "Hicimos el tour del Salar de Uyuni y fue mágico. El atardecer con el espejo de agua fue lo más bonito que he visto en mi vida. Gracias Homeland por hacerlo posible.", name: "Roberto F", date: "3 de marzo de 2024", avatar: "https://i.pravatar.cc/120?img=8" },
+  { stars: 5, title: "Viaje Inolvidable a la Amazonía", text: "Tres días en la selva con guías locales expertos. Aprendimos sobre plantas medicinales, vimos delfines rosados y monos. Una experiencia única que recordaremos siempre.", name: "Patricia L", date: "15 de noviembre de 2024", avatar: "https://i.pravatar.cc/120?img=20" },
+  { stars: 5, title: "Todo Perfecto de Principio a Fin", text: "Desde la primera llamada por WhatsApp hasta el último día, todo fue excelente. Los precios justos, los guías simpáticos, los lugares soñados. Homeland es de confianza total.", name: "Diego M", date: "8 de junio de 2024", avatar: "https://i.pravatar.cc/120?img=15" },
+  { stars: 5, title: "Cumplieron Cada Expectativa", text: "Teníamos muchas expectativas del viaje a Bolivia y Homeland las superó todas. La Paz, Uyuni, Copacabana, todo increíble. El guía Jhonathan un crack.", name: "Carolina V", date: "27 de diciembre de 2024", avatar: "https://i.pravatar.cc/120?img=47" }
+];
+
+let reviewStart = 0;
+const VISIBLE = 3;
+const ROTATE_MS = 5000;
+const grid = document.getElementById('reviewsGrid');
+const dotsContainer = document.getElementById('reviewsDots');
+
+function renderReviews() {
+  const items = [];
+  for (let i = 0; i < VISIBLE; i++) {
+    const r = allReviews[(reviewStart + i) % allReviews.length];
+    items.push(`
+      <div class="ta-review">
+        <div class="ta-review__bubble">
+          <span class="ta-review__quote">"</span>
+          <div class="ta-review__head">
+            <div class="ta-review__stars">${Array(5).fill(0).map(() => '<span class="ta-review__star"></span>').join('')}</div>
+            <span class="ta-review__title">${r.title}</span>
+            <span class="ta-review__dash">-</span>
+            <span class="ta-review__text">${r.text} <a href="#" class="ta-review__more">Leer más</a></span>
+          </div>
+          <div class="ta-review__verified" aria-label="Reseña verificada">
+            <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="11" fill="#00aa6c"/><circle cx="12" cy="12" r="4" fill="#fff"/><circle cx="9" cy="9" r="1.4" fill="#00aa6c"/><circle cx="15" cy="9" r="1.4" fill="#00aa6c"/></svg>
+          </div>
+          <div class="ta-review__tail"></div>
+        </div>
+        <div class="ta-review__meta">
+          <div class="ta-review__avatar" style="background-image:url('${r.avatar}')"></div>
+          <div class="ta-review__info">
+            <strong>${r.name}</strong>
+            <small>${r.date}</small>
+          </div>
+        </div>
+      </div>
+    `);
+  }
+  grid.innerHTML = items.join('');
+}
+
+function renderDots() {
+  const totalDots = Math.ceil(allReviews.length / VISIBLE);
+  let html = '';
+  for (let i = 0; i < totalDots; i++) {
+    const active = (reviewStart / VISIBLE) % totalDots === i ? 'is-active' : '';
+    html += `<button class="ta-reviews__dot ${active}" data-i="${i}" aria-label="Página ${i+1}"></button>`;
+  }
+  dotsContainer.innerHTML = html;
+  dotsContainer.querySelectorAll('.ta-reviews__dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      reviewStart = parseInt(dot.dataset.i) * VISIBLE;
+      animateChange();
+    });
+  });
+}
+
+function animateChange() {
+  grid.style.opacity = '0';
+  grid.style.transform = 'translateY(15px)';
+  setTimeout(() => {
+    renderReviews();
+    renderDots();
+    grid.style.opacity = '1';
+    grid.style.transform = 'translateY(0)';
+  }, 350);
+}
+
+function rotate() {
+  reviewStart = (reviewStart + VISIBLE) % allReviews.length;
+  animateChange();
+}
+
+document.getElementById('reviewsPrev').addEventListener('click', () => {
+  reviewStart = (reviewStart - VISIBLE + allReviews.length) % allReviews.length;
+  animateChange();
+});
+document.getElementById('reviewsNext').addEventListener('click', () => {
+  rotate();
+});
+
+grid.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+renderReviews();
+renderDots();
+setInterval(rotate, ROTATE_MS);
+</script>
+
+<!-- ============== FOOTER ============== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>NOSOTROS</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Phone:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+              <span class="schedule">Lun–Vie, 9am–12pm / 14:00–18:00</span>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Mobile:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>
+              <strong>Mail:</strong> <a href="mailto:info@homeland.tours">info@homeland.tours</a>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>INFORMACIÓN</h4>
+        <ul class="footer-links">
+          <li><a href="business.html">Sobre nosotros</a></li>
+          <li><a href="business.html">Nuestra diferencia</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>RECURSOS</h4>
+        <ul class="footer-links">
+          <li><a href="#">Condiciones de reserva</a></li>
+          <li><a href="#">Cancelaciones y reembolsos</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="customize.html">Formulario de reserva</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copyright">© 2026 HOMELAND TOURS. Todos los derechos reservados</span>
+      <div class="footer-payments" aria-label="Métodos de pago aceptados">
+        <span class="pay-badge pay-badge--visa" aria-label="Visa">VISA</span>
+        <span class="pay-badge pay-badge--mastercard" aria-label="Mastercard">MC</span>
+        <span class="pay-badge pay-badge--paypal" aria-label="PayPal">PayPal</span>
+        <span class="pay-badge pay-badge--zwap" aria-label="Zwap">Zwap</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============== WHATSAPP ============== -->
+<a class="fab-whatsapp" href="https://wa.me/59176012345" target="_blank" rel="noopener" aria-label="Chatea con nosotros por WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.5 0-3-.4-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3C4 14.7 3.5 13.4 3.5 12c0-4.7 3.8-8.5 8.5-8.5s8.5 3.8 8.5 8.5-3.8 8.5-8.5 8.5z"/></svg>
+</a>
+
+<script src="js/main.js"></script>
+</body>
+</html>

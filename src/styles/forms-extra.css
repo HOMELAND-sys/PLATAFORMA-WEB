@@ -1,0 +1,193 @@
+/* ============================================
+   HOMELAND TOURS — Form pages (business / customize)
+   Estilos que estaban inline en el HTML original
+   ============================================ */
+
+/* Wrapper con fondo fijo (customize) */
+.form-page-wrap {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+}
+.form-page-wrap__bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+.form-page-wrap__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.form-page-wrap__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 31, 18, 0.3) 0%,
+    rgba(14, 31, 18, 0.3) 50%,
+    rgba(14, 31, 18, 0.32) 100%
+  );
+}
+
+/* Wrapper con fondo fijo (business) */
+.biz-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+}
+.biz-page__bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+.biz-page__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.biz-page__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 31, 18, 0.32) 0%,
+    rgba(14, 31, 18, 0.25) 50%,
+    rgba(14, 31, 18, 0.32) 100%
+  );
+}
+
+/* Calendario de reuniones */
+.biz-calendar {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 360px;
+}
+.biz-cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.biz-cal__title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--ink-900);
+}
+.biz-cal__nav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--ink-700);
+  border-radius: 6px;
+}
+.biz-cal__nav:hover {
+  background: var(--ink-50);
+}
+.biz-cal__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--ink-500);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.biz-cal__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.biz-cal__day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--ink-800);
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+.biz-cal__day:hover:not(:disabled) {
+  background: var(--ink-50);
+}
+.biz-cal__day:disabled {
+  color: var(--ink-300);
+  cursor: not-allowed;
+}
+.biz-cal__day.is-today {
+  background: var(--gold-100);
+  font-weight: 600;
+}
+.biz-cal__day.is-selected {
+  background: var(--ink-900);
+  color: var(--white);
+  font-weight: 600;
+}
+.biz-cal__day.is-other-month {
+  color: var(--ink-300);
+}
+
+.biz-times {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.biz-time {
+  padding: 10px 6px;
+  border: 1.5px solid var(--ink-200);
+  border-radius: 8px;
+  background: var(--white);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-800);
+  text-align: center;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+.biz-time:hover {
+  border-color: var(--green-700);
+}
+.biz-time.is-disabled {
+  color: var(--ink-300);
+  border-color: var(--ink-100);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.biz-time.is-selected {
+  background: var(--ink-900);
+  color: var(--white);
+  border-color: var(--ink-900);
+}
+
+/* El fondo fixed con z-index negativo vive dentro de un contenedor aislado.
+   El Footer global queda fuera de ese contexto, así que su fondo se pinta
+   detrás de la imagen. Le damos su propio contexto de apilamiento solo
+   en las páginas con fondo fijo para que vuelva a taparla. */
+body:has(.biz-page) .site-footer,
+body:has(.form-page-wrap) .site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .biz-times {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

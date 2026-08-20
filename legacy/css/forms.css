@@ -1,0 +1,177 @@
+/* ============================================
+   Form pages (customize, business)
+   ============================================ */
+
+.form-hero {
+  padding: 80px 0 60px;
+  background: var(--surface-alt);
+  position: relative;
+  overflow: hidden;
+}
+.form-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url('../assets/andes-mountains.jpg') center/cover;
+  opacity: 0.15;
+}
+.form-hero > * { position: relative; z-index: 1; }
+.form-hero h1 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 12px; }
+.form-hero h1 em { color: var(--gold-600); font-style: italic; font-weight: 400; }
+.form-hero p { color: var(--ink-600); font-size: 1.05rem; max-width: 640px; }
+
+.form-page {
+  padding: 60px 0 80px;
+}
+.form-page__layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  align-items: start;
+}
+@media (max-width: 1024px) { .form-page__layout { grid-template-columns: 1fr; } }
+
+.form-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  box-shadow: var(--shadow-sm);
+}
+@media (max-width: 640px) { .form-card { padding: 24px; } }
+
+.form-card > h2 {
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+.form-card > p { color: var(--ink-500); margin-bottom: 32px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-row--3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 640px) { .form-row, .form-row--3 { grid-template-columns: 1fr; } }
+
+.form-section-title {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-500);
+  margin: 24px 0 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ink-100);
+}
+.form-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.aside-card {
+  background: var(--green-900);
+  color: var(--ink-200);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  position: sticky;
+  top: 88px;
+}
+.aside-card h3 { color: var(--white); margin-bottom: 8px; font-size: 1.3rem; }
+.aside-card > p { color: var(--ink-300); font-size: 0.92rem; margin-bottom: 24px; }
+.aside-item { display: flex; gap: 10px; align-items: start; padding: 8px 0; font-size: 0.88rem; }
+.aside-item svg { color: var(--gold-400); flex-shrink: 0; margin-top: 2px; }
+.aside-item strong { color: var(--white); display: block; }
+.aside-divider { height: 1px; background: var(--ink-700); margin: 20px 0; }
+.aside-contact a { color: var(--gold-300); font-weight: 500; }
+.aside-contact a:hover { color: var(--gold-400); }
+.aside-link { color: var(--gold-300); font-weight: 500; word-break: break-all; }
+.aside-link:hover { color: var(--gold-400); }
+
+/* Business page (calendar variant) */
+.calendar-pick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 640px) { .calendar-pick { grid-template-columns: 1fr; } }
+
+.calendar {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+.calendar__head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.calendar__month { font-weight: 600; color: var(--ink-900); }
+.calendar__nav { display: flex; gap: 4px; }
+.calendar__nav button {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--ink-50);
+  display: grid; place-items: center;
+}
+.calendar__nav button:hover { background: var(--green-100); }
+.calendar__weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-500);
+  text-align: center;
+  margin-bottom: 6px;
+}
+.calendar__grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.calendar__day {
+  aspect-ratio: 1;
+  display: grid; place-items: center;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--ink-700);
+  transition: all var(--t-fast);
+}
+.calendar__day:hover { background: var(--green-50); }
+.calendar__day.is-today { background: var(--gold-100); color: var(--gold-700); font-weight: 600; }
+.calendar__day.is-selected { background: var(--green-900); color: var(--white); font-weight: 600; }
+.calendar__day.is-empty { visibility: hidden; }
+
+.time-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.time-slot {
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+.time-slot:hover { border-color: var(--green-500); }
+.time-slot.is-selected { background: var(--green-100); border-color: var(--green-500); color: var(--green-800); }
+.time-slot.is-disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+
+@media (max-width: 480px) { .time-slots { grid-template-columns: repeat(3, 1fr); } }
+
+/* Form success state */
+.success-banner {
+  background: var(--green-100);
+  border: 1px solid var(--green-300);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex; gap: 12px; align-items: start;
+  margin-bottom: 24px;
+}
+.success-banner svg { color: var(--green-700); flex-shrink: 0; margin-top: 2px; }
+.success-banner strong { color: var(--green-900); display: block; margin-bottom: 2px; }
+.success-banner p { color: var(--green-800); font-size: 0.88rem; margin: 0; }

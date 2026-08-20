@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tours & Packages · Homeland Tours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/main.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/tours.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">H</span>
+      <span class="brand__text"><strong>HOMELAND.TOURS</strong><small>Bolivian Tour Operator</small></span>
+    </a>
+    <nav class="nav" id="primaryNav">
+      <a href="tours.html" class="active">Explorar tours</a>
+      <a href="customize.html">Personalizar viaje</a>
+      <a href="business.html">Empresas</a>
+    </nav>
+    <div class="header-actions">
+      <a class="lang-pill" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg><span>ES</span></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="btn btn--gold btn--sm" href="confirmation.html">My Bookings</a>
+      <button class="menu-toggle" onclick="document.getElementById('primaryNav').classList.toggle('is-open')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE HEADER -->
+<section class="page-header">
+  <div class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a>
+      <span class="sep">/</span>
+      <span>Tours & Packages</span>
+    </nav>
+    <h1>Tours & <em>Packages</em></h1>
+    <p>Journeys handpicked across Bolivia's most extraordinary landscapes and cultures. 200+ curated tours, all with local operators and best-price guarantee.</p>
+  </div>
+</section>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="container toolbar__inner">
+    <div class="cat-pills">
+      <button class="cat-pill is-active" data-cat="all">All tours</button>
+      <button class="cat-pill" data-cat="lapaz-city">La Paz city tours</button>
+      <button class="cat-pill" data-cat="lapaz-top">La Paz top tours</button>
+      <button class="cat-pill" data-cat="uyuni">Salar de Uyuni</button>
+      <button class="cat-pill" data-cat="amazon">Amazonía</button>
+      <button class="cat-pill" data-cat="trekking">Trekking Cordillera</button>
+      <button class="cat-pill" data-cat="bolivia-top">Bolivia top tours</button>
+      <button class="cat-pill" data-cat="peru">Tours en Perú</button>
+    </div>
+    <div class="toolbar__side">
+      <span class="divider-v"></span>
+      <button class="filter-toggle" onclick="document.getElementById('filterPanel').classList.add('is-open'); document.getElementById('filterScrim').classList.add('is-open')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+        Filtros
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<section class="section-tight">
+  <div class="container">
+    <div class="results-head">
+      <span>Mostrando <strong>12 tours</strong> · Tour compartido / privado</span>
+    </div>
+
+    <div class="tour-grid">
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="uyuni">
+        <div class="tour-card__media">
+          <img src="assets/uyuni-salt.jpg" alt="Salar de Uyuni" />
+          <span class="tour-card__badge">Bestseller</span>
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Salar de Uyuni 3-Day Adventure</h3>
+          <div class="card__meta">
+            <span>⏱ 3 Days · 2 Nights</span>
+            <span>⛰ Easy</span>
+            <span>👥 Adventure</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 299</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="lapaz-top lapaz-city">
+        <div class="tour-card__media">
+          <img src="assets/lapaz-city.jpg" alt="La Paz City Tour" />
+          <span class="tour-card__badge tour-card__badge--popular">Popular</span>
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">La Paz City Tour & Valle de la Luna</h3>
+          <div class="card__meta">
+            <span>⏱ 1 Day</span>
+            <span>⛰ Easy</span>
+            <span>🏛 Cultural</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 89</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="uyuni bolivia-top">
+        <div class="tour-card__media">
+          <img src="assets/uyuni-salt.jpg" alt="Laguna Colorada" />
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Laguna Colorada & Uyuni 4-Day Tour</h3>
+          <div class="card__meta">
+            <span>⏱ 4 Days · 3 Nights</span>
+            <span>⛰ Moderate</span>
+            <span>🌋 Adventure</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 399</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="lapaz-top">
+        <div class="tour-card__media">
+          <img src="assets/machu-picchu.jpg" alt="Valle de la Luna Half Day" />
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Valle de la Luna Half Day</h3>
+          <div class="card__meta">
+            <span>⏱ Half Day</span>
+            <span>⛰ Easy</span>
+            <span>🏜 Nature</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 45</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="bolivia-top">
+        <div class="tour-card__media">
+          <img src="assets/titicaca-lake.jpg" alt="Copacabana & Isla del Sol" />
+          <span class="tour-card__badge tour-card__badge--cultural">Cultural</span>
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Copacabana & Isla del Sol</h3>
+          <div class="card__meta">
+            <span>⏱ 2 Days · 1 Night</span>
+            <span>⛰ Easy</span>
+            <span>🏛 Cultural</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 159</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="lapaz-city bolivia-top">
+        <div class="tour-card__media">
+          <img src="assets/andean-village.jpg" alt="Sucre Colonial City" />
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Sucre Colonial City Tour</h3>
+          <div class="card__meta">
+            <span>⏱ 1 Day</span>
+            <span>⛰ Easy</span>
+            <span>🏛 Cultural Heritage</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 75</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="amazon">
+        <div class="tour-card__media">
+          <img src="assets/amazon-jungle.jpg" alt="Madidi Amazon" />
+          <span class="tour-card__badge tour-card__badge--adventure">Adventure</span>
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Madidi Amazon Expedition</h3>
+          <div class="card__meta">
+            <span>⏱ 5 Days · 4 Nights</span>
+            <span>⛰ Challenging</span>
+            <span>🦜 Wildlife</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 699</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="lapaz-top bolivia-top">
+        <div class="tour-card__media">
+          <img src="assets/andes-mountains.jpg" alt="Andean Traditions" />
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Andean Traditions & Communities</h3>
+          <div class="card__meta">
+            <span>⏱ 3 Days · 2 Nights</span>
+            <span>⛰ Moderate</span>
+            <span>🏡 Community</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 219</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="peru">
+        <div class="tour-card__media">
+          <img src="assets/machu-picchu.jpg" alt="Potosí & Silver Route" />
+          <span class="tour-card__badge tour-card__badge--cultural">Cultural</span>
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Potosí Colonial & Silver Route</h3>
+          <div class="card__meta">
+            <span>⏱ 2 Days · 1 Night</span>
+            <span>⛰ Easy</span>
+            <span>🏛 Cultural</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 159</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="trekking">
+        <div class="tour-card__media">
+          <img src="assets/andes-mountains.jpg" alt="Salkantay Trek" />
+          <span class="tour-card__badge tour-card__badge--adventure">Adventure</span>
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Salkantay Trek to Machu Picchu</h3>
+          <div class="card__meta">
+            <span>⏱ 5 Days</span>
+            <span>⛰ Challenging</span>
+            <span>🏔 Trekking</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 549</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="uyuni">
+        <div class="tour-card__media">
+          <img src="assets/uyuni-salt.jpg" alt="Salt Flats Day Tour" />
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Uyuni Salt Flats Day Tour</h3>
+          <div class="card__meta">
+            <span>⏱ 1 Day</span>
+            <span>⛰ Easy</span>
+            <span>🌅 Photography</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 119</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+
+      <a class="tour-card card" href="tour-detail.html" data-cat="amazon bolivia-top">
+        <div class="tour-card__media">
+          <img src="assets/amazon-jungle.jpg" alt="Rurrenabaque Jungle" />
+          <span class="tour-card__heart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Rurrenabaque Pampas & Jungle 3-Day</h3>
+          <div class="card__meta">
+            <span>⏱ 3 Days · 2 Nights</span>
+            <span>⛰ Moderate</span>
+            <span>🦜 Wildlife</span>
+          </div>
+          <div class="card__price"><small>Desde</small><strong>US$ 329</strong></div>
+          <span class="card__cta"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <span class="stat-item__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <div><div class="stat-item__num">2,000+</div><div class="stat-item__label">Happy travelers</div></div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-item__icon" style="color: var(--gold-600);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </span>
+        <div><div class="stat-item__num">4.9/5</div><div class="stat-item__label">Average rating</div></div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-item__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a9 9 0 11-9-9"/><path d="M21 3v6h-6"/></svg>
+        </span>
+        <div><div class="stat-item__num">98%</div><div class="stat-item__label">Would travel again</div></div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-item__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </span>
+        <div><div class="stat-item__num">24/7</div><div class="stat-item__label">Local support</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED EXPERIENCES (new card style) -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="flex-between" style="margin-bottom: 32px;">
+      <div>
+        <p class="eyebrow">Aventura premium</p>
+        <h2>Experiencias destacadas</h2>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="tours.html">Ver todas
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="premium-grid">
+      <a class="premium-card" href="tour-detail.html">
+        <div class="premium-card__media">
+          <img src="assets/andes-mountains.jpg" alt="Salkantay Trek" />
+          <span class="premium-card__badge">⭐ Top Rated</span>
+        </div>
+        <div class="premium-card__body">
+          <h3>Salkantay Trek</h3>
+          <div class="premium-card__meta">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 5 Días</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l3-10h14l3 10"/></svg> Moderado</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg> Aventura</span>
+          </div>
+          <div class="premium-card__price-row">
+            <div>
+              <small>Desde</small>
+              <strong>US$ 549</strong>
+            </div>
+            <span class="premium-card__cta">VER MÁS
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <a class="premium-card" href="tour-detail.html">
+        <div class="premium-card__media">
+          <img src="assets/uyuni-mirror.jpg" alt="Camino Inca" />
+        </div>
+        <div class="premium-card__body">
+          <h3>Camino Inca Clásico</h3>
+          <div class="premium-card__meta">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 4 Días</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l3-10h14l3 10"/></svg> Desafiante</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg> Trekking</span>
+          </div>
+          <div class="premium-card__price-row">
+            <div>
+              <small>Desde</small>
+              <strong>US$ 695</strong>
+            </div>
+            <span class="premium-card__cta">VER MÁS
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <a class="premium-card" href="tour-detail.html">
+        <div class="premium-card__media">
+          <img src="assets/amazon-jungle.jpg" alt="Rurrenabaque Pampas" />
+        </div>
+        <div class="premium-card__body">
+          <h3>Rurrenabaque Pampas & Selva</h3>
+          <div class="premium-card__meta">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 4 Días</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l3-10h14l3 10"/></svg> Moderado</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg> Wildlife</span>
+          </div>
+          <div class="premium-card__price-row">
+            <div>
+              <small>Desde</small>
+              <strong>US$ 459</strong>
+            </div>
+            <span class="premium-card__cta">VER MÁS
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <a class="premium-card" href="tour-detail.html">
+        <div class="premium-card__media">
+          <img src="assets/valle-de-la-luna.jpg" alt="Valle de la Luna" />
+        </div>
+        <div class="premium-card__body">
+          <h3>Valle de la Luna Star Tour</h3>
+          <div class="premium-card__meta">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 1 Día</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20l3-10h14l3 10"/></svg> Fácil</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg> Naturaleza</span>
+          </div>
+          <div class="premium-card__price-row">
+            <div>
+              <small>Desde</small>
+              <strong>US$ 78</strong>
+            </div>
+            <span class="premium-card__cta">VER MÁS
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER PANEL -->
+<div class="scrim" id="filterScrim" onclick="document.getElementById('filterPanel').classList.remove('is-open'); this.classList.remove('is-open')"></div>
+<aside class="filter-panel" id="filterPanel">
+  <button class="filter-panel__close" onclick="document.getElementById('filterPanel').classList.remove('is-open'); document.getElementById('filterScrim').classList.remove('is-open')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <h3>Filtros</h3>
+
+  <div class="filter-group">
+    <h4>Modalidad</h4>
+    <label class="radio-pills" style="display: flex;">
+      <span class="radio-pill"><input type="radio" name="mode" value="shared" checked> Tour compartido</span>
+      <span class="radio-pill"><input type="radio" name="mode" value="private"> Tour privado</span>
+    </label>
+  </div>
+
+  <div class="filter-group">
+    <h4>Duración</h4>
+    <select class="select"><option>Cualquier duración</option><option>Medio día</option><option>1 día</option><option>2-3 días</option><option>4+ días</option></select>
+  </div>
+
+  <div class="filter-group">
+    <h4>Dificultad</h4>
+    <label class="filter-check"><input type="checkbox" checked> Fácil</label>
+    <label class="filter-check"><input type="checkbox"> Moderado</label>
+    <label class="filter-check"><input type="checkbox"> Desafiante</label>
+  </div>
+
+  <div class="filter-group">
+    <h4>Presupuesto (USD)</h4>
+    <input type="range" min="50" max="1000" value="500" class="range-slider" />
+    <div class="flex-between" style="font-size: 0.85rem; color: var(--ink-500);"><span>$58</span><span>Hasta $500</span></div>
+  </div>
+
+  <button class="btn btn--primary btn--block">Aplicar filtros</button>
+</aside>
+
+<!-- ============== FOOTER ============== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>NOSOTROS</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Phone:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+              <span class="schedule">Lun–Vie, 9am–12pm / 14:00–18:00</span>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Mobile:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>
+              <strong>Mail:</strong> <a href="mailto:info@homeland.tours">info@homeland.tours</a>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>INFORMACIÓN</h4>
+        <ul class="footer-links">
+          <li><a href="business.html">Sobre nosotros</a></li>
+          <li><a href="business.html">Nuestra diferencia</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>RECURSOS</h4>
+        <ul class="footer-links">
+          <li><a href="#">Condiciones de reserva</a></li>
+          <li><a href="#">Cancelaciones y reembolsos</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="customize.html">Formulario de reserva</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copyright">© 2026 HOMELAND TOURS. Todos los derechos reservados</span>
+      <div class="footer-payments" aria-label="Métodos de pago aceptados">
+        <span class="pay-badge pay-badge--visa" aria-label="Visa">VISA</span>
+        <span class="pay-badge pay-badge--mastercard" aria-label="Mastercard">MC</span>
+        <span class="pay-badge pay-badge--paypal" aria-label="PayPal">PayPal</span>
+        <span class="pay-badge pay-badge--zwap" aria-label="Zwap">Zwap</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- WHATSAPP -->
+<a class="fab-whatsapp" href="https://wa.me/59176012345" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+</a>
+
+<script src="js/main.js"></script>
+<script>
+  // Category filtering
+  document.querySelectorAll('.cat-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('is-active'));
+      pill.classList.add('is-active');
+      const cat = pill.dataset.cat;
+      document.querySelectorAll('.tour-grid .tour-card').forEach(card => {
+        if (cat === 'all' || card.dataset.cat.split(' ').includes(cat)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

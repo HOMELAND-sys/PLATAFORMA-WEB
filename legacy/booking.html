@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Completar reserva · Homeland Tours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/main.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/booking.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">H</span>
+      <span class="brand__text"><strong>HOMELAND.TOURS</strong><small>Bolivian Tour Operator</small></span>
+    </a>
+    <nav class="nav" id="primaryNav">
+      <a href="tours.html" class="active">Explorar tours</a>
+      <a href="customize.html">Personalizar viaje</a>
+      <a href="business.html">Empresas</a>
+    </nav>
+    <div class="header-actions">
+      <a class="lang-pill" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg><span>ES</span></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="btn btn--gold btn--sm" href="confirmation.html">My Bookings</a>
+      <button class="menu-toggle" onclick="document.getElementById('primaryNav').classList.toggle('is-open')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="booking-hero">
+  <div class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a>
+      <span class="sep">/</span>
+      <span>Booking & Checkout</span>
+    </nav>
+    <h1>Completá tu <em>Reserva</em></h1>
+    <p>¡Casi listo! Por favor, completá tus datos y realizá el pago seguro para confirmar tu aventura.</p>
+  </div>
+</section>
+
+<!-- MAIN -->
+<section class="container">
+  <!-- Stepper -->
+  <div class="stepper" style="margin-top: 32px;">
+    <div class="step is-done">
+      <div class="step__num">✓</div>
+      <div class="step__text"><span class="step__title">Fechas & Pasajeros</span><span class="step__sub">24-28 May 2025</span></div>
+    </div>
+    <div class="step__line"></div>
+    <div class="step is-active">
+      <div class="step__num">2</div>
+      <div class="step__text"><span class="step__title">Datos del Reservante</span><span class="step__sub">Tu información</span></div>
+    </div>
+    <div class="step__line"></div>
+    <div class="step">
+      <div class="step__num">3</div>
+      <div class="step__text"><span class="step__title">Pago</span><span class="step__sub">Seguro & local</span></div>
+    </div>
+    <div class="step__line"></div>
+    <div class="step">
+      <div class="step__num">4</div>
+      <div class="step__text"><span class="step__title">Confirmación</span><span class="step__sub">¡Estás listo!</span></div>
+    </div>
+  </div>
+
+  <div class="booking-layout">
+    <!-- LEFT: forms -->
+    <form onsubmit="event.preventDefault(); window.location.href='confirmation.html'">
+
+      <!-- ============== 1. Datos del Reservante ============== -->
+      <div class="form-section">
+        <h2><span class="num">1</span> Datos del Reservante</h2>
+        <p>Información de la persona que realiza la reserva y el pago.</p>
+
+        <div class="form-grid">
+          <div class="field field--full">
+            <label class="field__label">Nombre completo (como figura en ID o pasaporte) <span class="req">*</span></label>
+            <input class="input" type="text" placeholder="Ej. María Fernanda López" required />
+          </div>
+          <div class="field">
+            <label class="field__label">Correo electrónico <span class="req">*</span></label>
+            <input class="input" type="email" placeholder="maria.lopez@email.com" required />
+          </div>
+          <div class="field">
+            <label class="field__label">WhatsApp / Teléfono <span class="req">*</span></label>
+            <div style="display: flex; gap: 8px;">
+              <select class="select" style="width: 100px;">
+                <option>+591</option>
+                <option>+54</option>
+                <option>+34</option>
+                <option>+1</option>
+                <option>+52</option>
+              </select>
+              <input class="input" type="tel" placeholder="712 34567" required />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label">Nacionalidad <span class="req">*</span></label>
+            <select class="select" required>
+              <option>Bolivia</option>
+              <option>Argentina</option>
+              <option>Brasil</option>
+              <option>Chile</option>
+              <option>Colombia</option>
+              <option>España</option>
+              <option>Estados Unidos</option>
+              <option>México</option>
+              <option>Perú</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label">Cantidad de pasajeros <span class="req">*</span></label>
+            <select class="select" id="paxSelect" onchange="updatePassengers()">
+              <option>1 Pasajero</option>
+              <option>2 Pasajeros</option>
+              <option selected>3 Pasajeros</option>
+              <option>4 Pasajeros</option>
+              <option>5 Pasajeros</option>
+              <option>6 Pasajeros</option>
+            </select>
+          </div>
+          <div class="field field--full">
+            <label class="field__label">Requerimientos especiales (opcional)</label>
+            <textarea class="textarea" placeholder="Necesidades dietarias, accesibilidad, celebraciones, alergias, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="discount-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          <span><strong>¡Descuento por grupo aplicado!</strong> Viajas con 3 pasajeros y obtenés 5% OFF automáticamente. <span style="float: right;">Descuento: <strong>-US$ 14</strong></span></span>
+        </div>
+      </div>
+
+      <!-- ============== 2. Información de Pasajeros ============== -->
+      <div class="form-section">
+        <h2><span class="num">2</span> Información de los Pasajeros</h2>
+        <p>Detalles de cada persona que participa del tour. Necesarios para permisos y registro.</p>
+
+        <div id="passengersContainer">
+          <div class="passenger">
+            <div class="passenger__head">
+              <h4>👤 Pasajero 1 (Reservante)</h4>
+            </div>
+            <div class="form-grid form-grid--pax">
+              <div class="field"><label class="field__label">Nombre completo <span class="req">*</span></label><input class="input" type="text" placeholder="Nombre completo" required /></div>
+              <div class="field"><label class="field__label">Doc / Pasaporte <span class="req">*</span></label><input class="input" type="text" placeholder="ID / Pasaporte" required /></div>
+              <div class="field field--country"><label class="field__label">País <span class="req">*</span></label><input class="input" type="text" placeholder="País" required /></div>
+              <div class="field field--meal"><label class="field__label">Alimentación <span class="req">*</span></label>
+                <select class="select" required>
+                  <option>Vegetariana</option>
+                  <option>Normal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="passenger">
+            <div class="passenger__head">
+              <h4>👤 Pasajero 2</h4>
+              <span class="passenger__remove">Quitar</span>
+            </div>
+            <div class="form-grid form-grid--pax">
+              <div class="field"><label class="field__label">Nombre completo <span class="req">*</span></label><input class="input" type="text" placeholder="Nombre completo" required /></div>
+              <div class="field"><label class="field__label">Doc / Pasaporte <span class="req">*</span></label><input class="input" type="text" placeholder="ID / Pasaporte" required /></div>
+              <div class="field field--country"><label class="field__label">País <span class="req">*</span></label><input class="input" type="text" placeholder="País" required /></div>
+              <div class="field field--meal"><label class="field__label">Alimentación <span class="req">*</span></label>
+                <select class="select" required>
+                  <option>Vegetariana</option>
+                  <option>Normal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="passenger">
+            <div class="passenger__head">
+              <h4>👤 Pasajero 3</h4>
+              <span class="passenger__remove">Quitar</span>
+            </div>
+            <div class="form-grid form-grid--pax">
+              <div class="field"><label class="field__label">Nombre completo <span class="req">*</span></label><input class="input" type="text" placeholder="Nombre completo" required /></div>
+              <div class="field"><label class="field__label">Doc / Pasaporte <span class="req">*</span></label><input class="input" type="text" placeholder="ID / Pasaporte" required /></div>
+              <div class="field field--country"><label class="field__label">País <span class="req">*</span></label><input class="input" type="text" placeholder="País" required /></div>
+              <div class="field field--meal"><label class="field__label">Alimentación <span class="req">*</span></label>
+                <select class="select" required>
+                  <option>Vegetariana</option>
+                  <option>Normal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-or">o agregá un nuevo pasajero</div>
+        <button type="button" class="btn btn--ghost btn--sm" onclick="addPassenger()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar otro pasajero
+        </button>
+      </div>
+
+      <!-- ============== 3. Método de Pago ============== -->
+      <div class="form-section">
+        <h2><span class="num">3</span> Método de Pago</h2>
+        <p style="display: flex; align-items: center; gap: 12px;">
+          <span>Todos los pagos son procesados de forma segura a través de</span>
+          <strong style="color: var(--green-700); font-family: var(--font-display); font-size: 1.2rem;">+ Zwap</strong>
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px;">
+          <label class="radio-pill" style="justify-content: center; padding: 14px;"><input type="radio" name="pay" checked> 💳 Tarjeta de crédito / débito</label>
+        </div>
+
+        <p style="margin-top: 20px; padding: 14px; background: var(--green-50); border: 1px solid var(--green-300); border-radius: var(--radius-md); font-size: 0.88rem; color: var(--green-800); display: flex; gap: 10px; align-items: start;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Al continuar serás redirigido a la plataforma segura de Zwap para completar el pago de tu reserva.
+        </p>
+      </div>
+
+      <!-- Checkbox de términos al final -->
+      <div class="form-section">
+        <label class="checkbox">
+          <input type="checkbox" required />
+          <span style="font-size: 0.88rem;">He leído y acepto los <a href="#" style="color: var(--green-700); text-decoration: underline;">Términos de Servicio</a> y <a href="#" style="color: var(--green-700); text-decoration: underline;">Condiciones</a> de Homeland Tours. <span class="req">*</span></span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--lg btn--block" style="margin-top: 16px;">
+        Continuar con el pago
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+
+    </form>
+
+    <!-- RIGHT: summary -->
+    <aside>
+      <div class="summary-card">
+        <h3>Resumen de tu aventura</h3>
+
+        <div class="summary-tour">
+          <div class="summary-tour__img" style="background-image:url('assets/uyuni-salt.jpg')"></div>
+          <div>
+            <div class="summary-tour__name">Salar de Uyuni 3-Day Adventure</div>
+            <div class="summary-tour__meta">3 Days · 2 Nights · Adventure</div>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <span>📅 Fechas</span>
+          <span style="text-align: right;">24 May – 26 May 2025<br/><small class="text-muted">3 días · 2 noches</small></span>
+        </div>
+        <div class="summary-row">
+          <span>👥 Pasajeros</span>
+          <span>3 Adultos</span>
+        </div>
+
+        <div class="divider" style="margin: 16px 0;"></div>
+
+        <div class="summary-coupon">
+          <label class="summary-coupon__label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            ¿Tenés un cupón?
+          </label>
+          <div class="summary-coupon__form">
+            <input type="text" id="couponInput" class="summary-coupon__input" placeholder="Código de cupón" />
+            <button type="button" class="summary-coupon__btn" onclick="applyCoupon()">Aplicar</button>
+          </div>
+          <p id="couponMsg" class="summary-coupon__msg" style="display: none;"></p>
+        </div>
+
+        <div class="summary-row">
+          <span>3 Adultos @ US$ 89</span>
+          <span>US$ 267</span>
+        </div>
+        <div class="summary-row summary-row--sub" id="couponLine" style="display: none;">
+          <span>Cupón (<span id="couponCode">—</span>)</span>
+          <span style="color: var(--green-700);" id="couponDiscount">-US$ 0</span>
+        </div>
+        <div class="summary-row summary-row--sub">
+          <span>Descuento grupo (5%)</span>
+          <span style="color: var(--green-700);">-US$ 14</span>
+        </div>
+        <div class="summary-row summary-row--sub">
+          <span>Impuestos & fees</span>
+          <span>US$ 18</span>
+        </div>
+
+        <div class="summary-row summary-row--total">
+          <span>Total</span>
+          <span>US$ 271</span>
+        </div>
+        <p class="text-small" style="text-align: right; color: var(--ink-500); margin: 4px 0 0;">≈ BOB 1,896</p>
+
+        <div class="summary-cta">
+          <p class="text-small" style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z"/></svg>
+            Pago seguro y encriptado
+          </p>
+          <p class="text-small" style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Confirmación instantánea
+          </p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>NOSOTROS</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Phone:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+              <span class="schedule">Lun–Vie, 9am–12pm / 14:00–18:00</span>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Mobile:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>
+              <strong>Mail:</strong> <a href="mailto:info@homeland.tours">info@homeland.tours</a>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>INFORMACIÓN</h4>
+        <ul class="footer-links">
+          <li><a href="business.html">Sobre nosotros</a></li>
+          <li><a href="business.html">Nuestra diferencia</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>RECURSOS</h4>
+        <ul class="footer-links">
+          <li><a href="#">Condiciones de reserva</a></li>
+          <li><a href="#">Cancelaciones y reembolsos</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="customize.html">Formulario de reserva</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copyright">© 2026 HOMELAND TOURS. Todos los derechos reservados</span>
+      <div class="footer-payments" aria-label="Métodos de pago aceptados">
+        <span class="pay-badge pay-badge--visa" aria-label="Visa">VISA</span>
+        <span class="pay-badge pay-badge--mastercard" aria-label="Mastercard">MC</span>
+        <span class="pay-badge pay-badge--paypal" aria-label="PayPal">PayPal</span>
+        <span class="pay-badge pay-badge--zwap" aria-label="Zwap">Zwap</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- WHATSAPP -->
+<a class="fab-whatsapp" href="https://wa.me/59176012345" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+</a>
+
+<script>
+function applyCoupon() {
+  const input = document.getElementById('couponInput');
+  const msg = document.getElementById('couponMsg');
+  const code = input.value.trim().toUpperCase();
+  if (!code) { msg.style.display='block'; msg.style.color='var(--danger)'; msg.textContent='Ingresá un código de cupón.'; return; }
+  // Demo coupons
+  const coupons = {
+    'WELCOME10': 10,
+    'BOLIVIA15': 15,
+    'SUMMER20': 20
+  };
+  if (coupons[code] !== undefined) {
+    const discount = coupons[code];
+    const totalBase = 267;
+    const calculatedDiscount = Math.round(totalBase * discount / 100);
+    document.getElementById('couponCode').textContent = code;
+    document.getElementById('couponDiscount').textContent = '-US$ ' + calculatedDiscount;
+    document.getElementById('couponLine').style.display = 'flex';
+    msg.style.display = 'block';
+    msg.style.color = 'var(--green-700)';
+    msg.textContent = '✓ Cupón "' + code + '" aplicado — ' + discount + '% de descuento.';
+    input.disabled = true;
+  } else {
+    msg.style.display = 'block';
+    msg.style.color = 'var(--danger)';
+    msg.textContent = '✕ Cupón no válido. Probá WELCOME10, BOLIVIA15 o SUMMER20.';
+  }
+}
+function addPassenger() {
+  const c = document.getElementById('passengersContainer');
+  const num = c.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 'passenger';
+  div.innerHTML = `
+    <div class="passenger__head">
+      <h4>👤 Pasajero ${num}</h4>
+      <span class="passenger__remove" onclick="this.closest('.passenger').remove()">Quitar</span>
+    </div>
+    <div class="form-grid form-grid--pax">
+      <div class="field"><label class="field__label">Nombre completo *</label><input class="input" type="text" placeholder="Nombre completo" required /></div>
+      <div class="field"><label class="field__label">Doc / Pasaporte *</label><input class="input" type="text" placeholder="ID / Pasaporte" required /></div>
+      <div class="field field--country"><label class="field__label">País *</label><input class="input" type="text" placeholder="País" required /></div>
+      <div class="field field--meal"><label class="field__label">Alimentación *</label>
+        <select class="select" required>
+          <option>Vegetariana</option>
+          <option>Normal</option>
+        </select>
+      </div>
+    </div>`;
+  c.appendChild(div);
+}
+</script>
+</body>
+</html>

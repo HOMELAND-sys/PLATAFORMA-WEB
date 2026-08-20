@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Empresas · Homeland Tours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/main.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/forms.css" />
+<style>
+  .biz-page {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .biz-page__bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+  }
+  .biz-page__bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  .biz-page__bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg,
+        rgba(14, 31, 18, 0.32) 0%,
+        rgba(14, 31, 18, 0.25) 50%,
+        rgba(14, 31, 18, 0.32) 100%);
+  }
+
+  /* Estilos del calendario */
+  .biz-calendar {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .biz-cal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .biz-cal__title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--ink-900);
+  }
+  .biz-cal__nav {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--ink-700);
+    border-radius: 6px;
+  }
+  .biz-cal__nav:hover { background: var(--ink-50); }
+  .biz-cal__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--ink-500);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .biz-cal__days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .biz-cal__day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--ink-800);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .biz-cal__day:hover:not(:disabled) { background: var(--ink-50); }
+  .biz-cal__day:disabled { color: var(--ink-300); cursor: not-allowed; }
+  .biz-cal__day.is-today { background: var(--gold-100); font-weight: 600; }
+  .biz-cal__day.is-selected { background: var(--ink-900); color: var(--white); font-weight: 600; }
+  .biz-cal__day.is-other-month { color: var(--ink-300); }
+
+  .biz-times {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .biz-time {
+    padding: 10px 6px;
+    border: 1.5px solid var(--ink-200);
+    border-radius: 8px;
+    background: var(--white);
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--ink-800);
+    text-align: center;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+  .biz-time:hover { border-color: var(--green-700); }
+  .biz-time.is-disabled { color: var(--ink-300); border-color: var(--ink-100); cursor: not-allowed; text-decoration: line-through; }
+  .biz-time.is-selected { background: var(--ink-900); color: var(--white); border-color: var(--ink-900); }
+</style>
+</head>
+<body>
+
+<div class="biz-page">
+  <div class="biz-page__bg">
+    <img src="assets/lapaz-city.jpg" alt="" />
+  </div>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__mark">H</span>
+      <span class="brand__text"><strong>HOMELAND.TOURS</strong><small>Bolivian Tour Operator</small></span>
+    </a>
+    <nav class="nav" id="primaryNav">
+      <a href="tours.html">Explorar tours</a>
+      <a href="customize.html">Personalizar viaje</a>
+      <a href="business.html" class="active">Empresas</a>
+    </nav>
+    <div class="header-actions">
+      <a class="lang-pill" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg><span>ES</span></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></a>
+      <a class="icon-btn" href="#"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+      <a class="btn btn--gold btn--sm" href="confirmation.html">My Bookings</a>
+      <button class="menu-toggle" onclick="document.getElementById('primaryNav').classList.toggle('is-open')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="form-hero">
+  <div class="container">
+    <nav class="crumbs">
+      <a href="index.html" style="color: var(--ink-500);">Home</a>
+      <span class="sep" style="color: var(--ink-400);">/</span>
+      <span style="color: var(--ink-700);">Empresas</span>
+    </nav>
+    <h1>Formulario de <em>aliado comercial</em></h1>
+    <p>Por favor, ingresá un número de teléfono válido. Te contactaremos en menos de 24 horas hábiles.</p>
+  </div>
+</section>
+
+<!-- PAGE -->
+<section class="form-page">
+  <div class="container form-page__layout">
+
+    <!-- FORM -->
+    <form class="form-card" onsubmit="event.preventDefault(); alert('¡Reunión agendada! Te enviaremos un email de confirmación.');">
+      <h2>Formulario de aliado comercial</h2>
+      <p>Por favor, ingresá un número de teléfono válido. Te contactaremos en menos de 24 horas hábiles.</p>
+
+      <h4 class="form-section-title">Tu información</h4>
+      <div class="form-row">
+        <div class="field">
+          <label class="field__label">Nombre <span class="req">*</span></label>
+          <input class="input" type="text" placeholder="Nombre" required />
+        </div>
+        <div class="field">
+          <label class="field__label">Apellido <span class="req">*</span></label>
+          <input class="input" type="text" placeholder="Apellido" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label class="field__label">Número de contacto <span class="req">*</span></label>
+          <div style="display: flex; gap: 8px;">
+            <select class="select" style="width: 100px;">
+              <option>+591</option>
+              <option>+54</option>
+              <option>+34</option>
+              <option>+1</option>
+              <option>+52</option>
+              <option>+56</option>
+              <option>+51</option>
+            </select>
+            <input class="input" type="tel" placeholder="712 34567" required />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label">Dirección de correo electrónico <span class="req">*</span></label>
+          <input class="input" type="email" placeholder="ejemplo@empresa.com" required />
+        </div>
+      </div>
+
+      <h4 class="form-section-title">Información de la empresa</h4>
+      <div class="field" style="margin-bottom: 16px;">
+        <label class="field__label">Empresa <span class="req">*</span></label>
+        <input class="input" type="text" placeholder="Nombre de empresa" required />
+      </div>
+      <div class="field" style="margin-bottom: 16px;">
+        <label class="field__label">Dirección <span class="req">*</span></label>
+        <input class="input" type="text" placeholder="Av. Principal #123, Edificio Torre, Piso 4" required />
+      </div>
+      <div class="form-row form-row--3">
+        <div class="field">
+          <label class="field__label">Ciudad <span class="req">*</span></label>
+          <input class="input" type="text" placeholder="Ciudad" required />
+        </div>
+        <div class="field">
+          <label class="field__label">Estado / Provincia</label>
+          <select class="select">
+            <option>Seleccioná</option>
+            <option>La Paz</option>
+            <option>Cochabamba</option>
+            <option>Santa Cruz</option>
+            <option>Oruro</option>
+            <option>Potosí</option>
+            <option>Chuquisaca</option>
+            <option>Tarija</option>
+            <option>Beni</option>
+            <option>Pando</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label">Código postal</label>
+          <input class="input" type="text" placeholder="0000" />
+        </div>
+      </div>
+      <div class="field" style="margin-bottom: 16px;">
+        <label class="field__label">País <span class="req">*</span></label>
+        <input class="input" type="text" value="Bolivia" required />
+      </div>
+
+      <h4 class="form-section-title">Agendemos una reunión de negocios</h4>
+      <div style="display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: start; margin-top: 12px;">
+        <!-- Calendario -->
+        <div class="biz-calendar">
+          <div class="biz-cal__head">
+            <button type="button" class="biz-cal__nav" id="calPrev" aria-label="Mes anterior">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <span class="biz-cal__title" id="calTitle">Julio 2026</span>
+            <button type="button" class="biz-cal__nav" id="calNext" aria-label="Mes siguiente">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="biz-cal__weekdays">
+            <div>DOM</div><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div>
+          </div>
+          <div class="biz-cal__days" id="calDays"></div>
+        </div>
+
+        <!-- Horarios -->
+        <div>
+          <p style="font-size: 0.92rem; color: var(--ink-700); margin: 0 0 12px;">
+            Horarios disponibles · <span id="selDayLabel" style="font-weight: 600; color: var(--ink-900);">Seleccioná un día</span>
+          </p>
+          <div class="biz-times" id="timeSlots">
+            <button type="button" class="biz-time" data-time="9:00" disabled>9:00</button>
+            <button type="button" class="biz-time" data-time="10:00" disabled>10:00</button>
+            <button type="button" class="biz-time" data-time="11:00" disabled>11:00</button>
+            <button type="button" class="biz-time" data-time="12:00" disabled>12:00</button>
+            <button type="button" class="biz-time" data-time="14:00" disabled>14:00</button>
+            <button type="button" class="biz-time" data-time="15:00" disabled>15:00</button>
+            <button type="button" class="biz-time" data-time="16:00" disabled>16:00</button>
+            <button type="button" class="biz-time" data-time="17:00" disabled>17:00</button>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--ink-500); margin: 14px 0 0; display: flex; align-items: center; gap: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Las reuniones duran aprox. 45 min. Confirmaremos por email.
+          </p>
+          <p style="font-size: 0.8rem; color: var(--ink-500); margin: 6px 0 0; display: flex; align-items: center; gap: 4px;">
+            🕒 America/La Paz (UTC-4)
+          </p>
+        </div>
+      </div>
+
+      <h4 class="form-section-title">¿Qué servicios te interesan u ofrecer?</h4>
+      <div class="field" style="margin-bottom: 16px;">
+        <label class="field__label">Contanos brevemente</label>
+        <textarea class="textarea" rows="5" placeholder="Ej. Somos una agencia de viajes en Buenos Aires interesada en ofrecer tours a Bolivia a nuestros clientes. Buscamos tarifas especiales para grupos de 10+..."></textarea>
+      </div>
+
+      <label class="checkbox" style="margin-bottom: 20px;">
+        <input type="checkbox" required />
+        <span style="font-size: 0.88rem;">Acepto los <a href="#" style="color: var(--green-700); text-decoration: underline;">términos y condiciones</a> y la <a href="#" style="color: var(--green-700); text-decoration: underline;">política de privacidad</a>.</span>
+      </label>
+
+      <button type="submit" class="btn btn--primary btn--lg btn--block">
+        Agendar reunión
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </button>
+    </form>
+
+    <!-- ASIDE -->
+    <aside>
+      <div class="aside-card">
+        <h3>Alianzas comerciales</h3>
+        <p>¿Tenés una agencia, operador turístico o empresa interesada en ofrecer Bolivia a tus clientes? Agendemos una reunión para evaluar la alianza.</p>
+
+        <div class="aside-contact">
+          <p style="font-size: 0.9rem; line-height: 1.7;">
+            <a href="mailto:partners@homeland.tours" class="aside-link">partners@homeland.tours</a><br/>
+            <a href="mailto:aliados@homeland.tours" class="aside-link">aliados@homeland.tours</a>
+          </p>
+
+          <h4 style="color: var(--white); font-size: 0.85rem; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.06em;">Equipo de alianzas</h4>
+          <p style="font-size: 0.92rem; color: var(--white); font-weight: 500; margin: 0 0 16px;">Lunes a viernes, 9:00 a 18:00.</p>
+
+          <h4 style="color: var(--white); font-size: 0.85rem; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.06em;">WhatsApp B2B</h4>
+          <p style="font-size: 1.3rem; color: var(--gold-400); font-weight: 600; margin: 0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+            +591 760-12346
+          </p>
+        </div>
+
+        <div class="aside-divider"></div>
+
+        <h4 style="color: var(--white); font-size: 0.95rem; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.06em;">¿Qué tipo de alianza buscás?</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.88rem; color: var(--ink-200); line-height: 1.8;">
+          <li>✓ Agencias de viaje (B2B)</li>
+          <li>✓ Operadores turísticos</li>
+          <li>✓ Hoteles y lodges</li>
+          <li>✓ Guías independientes</li>
+          <li>✓ Transporte turístico</li>
+          <li>✓ Empresas de aventura</li>
+        </ul>
+
+        <div class="aside-divider"></div>
+
+        <p style="font-size: 0.85rem; color: var(--ink-300); text-align: center; margin: 0;">
+          💳 <strong style="color: var(--white);">Pagos con Zwap</strong>
+        </p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>NOSOTROS</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Phone:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+              <span class="schedule">Lun–Vie, 9am–12pm / 14:00–18:00</span>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>
+              <a href="tel:+59176012345"><strong>Mobile:</strong> (+591) 760 12345</a>
+              <small>(WhatsApp)</small>
+            </span>
+          </li>
+          <li>
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>
+              <strong>Mail:</strong> <a href="mailto:info@homeland.tours">info@homeland.tours</a>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>INFORMACIÓN</h4>
+        <ul class="footer-links">
+          <li><a href="business.html">Sobre nosotros</a></li>
+          <li><a href="business.html">Nuestra diferencia</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>RECURSOS</h4>
+        <ul class="footer-links">
+          <li><a href="#">Condiciones de reserva</a></li>
+          <li><a href="#">Cancelaciones y reembolsos</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="customize.html">Formulario de reserva</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copyright">© 2026 HOMELAND TOURS. Todos los derechos reservados</span>
+      <div class="footer-payments" aria-label="Métodos de pago aceptados">
+        <span class="pay-badge pay-badge--visa" aria-label="Visa">VISA</span>
+        <span class="pay-badge pay-badge--mastercard" aria-label="Mastercard">MC</span>
+        <span class="pay-badge pay-badge--paypal" aria-label="PayPal">PayPal</span>
+        <span class="pay-badge pay-badge--zwap" aria-label="Zwap">Zwap</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- WHATSAPP -->
+<a class="fab-whatsapp" href="https://wa.me/59176012345" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+</a>
+
+</div><!-- /.biz-page -->
+
+<script>
+  // Calendario
+  const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const WEEKDAYS = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+  let currentMonth = new Date().getMonth();
+  let currentYear = new Date().getFullYear();
+  let selectedDay = null;
+  let selectedTime = null;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const calTitle = document.getElementById('calTitle');
+  const calDays = document.getElementById('calDays');
+  const selDayLabel = document.getElementById('selDayLabel');
+  const timeSlots = document.querySelectorAll('.biz-time');
+
+  function renderCalendar() {
+    calTitle.textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+    calDays.innerHTML = '';
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const prevDays = new Date(currentYear, currentMonth, 0).getDate();
+
+    // Días del mes anterior
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'biz-cal__day is-other-month';
+      btn.textContent = prevDays - i;
+      btn.disabled = true;
+      calDays.appendChild(btn);
+    }
+    // Días del mes actual
+    for (let d = 1; d <= daysInMonth; d++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'biz-cal__day';
+      btn.textContent = d;
+      const date = new Date(currentYear, currentMonth, d);
+      if (date < today) { btn.disabled = true; }
+      if (date.toDateString() === today.toDateString()) { btn.classList.add('is-today'); }
+      if (selectedDay && date.toDateString() === selectedDay.toDateString()) { btn.classList.add('is-selected'); }
+      btn.addEventListener('click', () => selectDay(date));
+      calDays.appendChild(btn);
+    }
+    // Días del mes siguiente
+    const total = calDays.children.length;
+    const remaining = (7 - (total % 7)) % 7;
+    for (let i = 1; i <= remaining; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'biz-cal__day is-other-month';
+      btn.textContent = i;
+      btn.disabled = true;
+      calDays.appendChild(btn);
+    }
+  }
+
+  function selectDay(date) {
+    selectedDay = date;
+    selectedTime = null;
+    const dayName = WEEKDAYS[date.getDay()];
+    selDayLabel.textContent = `${dayName.charAt(0) + dayName.slice(1).toLowerCase()} ${date.getDate()} ${MONTHS[date.getMonth()].slice(0,3)}`;
+    timeSlots.forEach(t => {
+      t.disabled = false;
+      t.classList.remove('is-selected');
+    });
+    renderCalendar();
+  }
+
+  timeSlots.forEach(slot => {
+    slot.addEventListener('click', () => {
+      if (slot.disabled) return;
+      timeSlots.forEach(s => s.classList.remove('is-selected'));
+      slot.classList.add('is-selected');
+      selectedTime = slot.dataset.time;
+    });
+  });
+
+  document.getElementById('calPrev').addEventListener('click', () => {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderCalendar();
+  });
+  document.getElementById('calNext').addEventListener('click', () => {
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+  });
+
+  renderCalendar();
+</script>
+
+</body>
+</html>
