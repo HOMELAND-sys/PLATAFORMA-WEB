@@ -1,17 +1,7 @@
 import Link from 'next/link';
-import { categoryImages } from '@/data/categories';
+import type { CategoryRow } from '@/lib/api';
 
-const HOME_CATEGORIES: { id: string; label: string; image: string; featured?: boolean }[] = [
-  { id: 'lapaz-city', label: 'La Paz city tours', image: '/assets/lapaz-city.jpg' },
-  { id: 'lapaz-top', label: 'La Paz top tours', image: '/assets/uyuni-mirror.jpg', featured: true },
-  { id: 'uyuni', label: 'Salar de Uyuni', image: '/assets/uyuni-salt.jpg' },
-  { id: 'amazon', label: 'Amazonía', image: '/assets/titicaca-lake.jpg' },
-  { id: 'trekking', label: 'Trekking Cordillera', image: '/assets/andes-mountains.jpg' },
-  { id: 'bolivia-top', label: 'Bolivia top tours', image: '/assets/uyuni-salt.jpg' },
-  { id: 'peru', label: 'Tours en Perú', image: '/assets/machu-picchu.jpg' },
-];
-
-export default function CategoriesSection() {
+export default function CategoriesSection({ categories }: { categories: CategoryRow[] }) {
   return (
     <section className="section section-alt categories">
       <div className="container">
@@ -29,15 +19,15 @@ export default function CategoriesSection() {
         </div>
 
         <div className="cat-grid">
-          {HOME_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
-              key={cat.id}
-              className={`cat-card${cat.featured ? ' cat-card--featured' : ''}`}
-              href={`/tours?cat=${cat.id}`}
+              key={cat.slug}
+              className={`cat-card${cat.slug === 'lapaz-top' ? ' cat-card--featured' : ''}`}
+              href={`/tours?cat=${cat.slug}`}
             >
               <div className="cat-card__media">
-                <img src={cat.image} alt={cat.label} />
-                {cat.featured && (
+                {cat.image && <img src={cat.image} alt={cat.label} />}
+                {cat.slug === 'lapaz-top' && (
                   <div className="cat-card__overlay">
                     <span className="cat-card__label">{cat.label}</span>
                   </div>

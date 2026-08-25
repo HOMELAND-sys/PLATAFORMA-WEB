@@ -17,7 +17,7 @@
 }
 .detail-hero > * { position: relative; z-index: 1; }
 .detail-hero h1 { color: var(--white); font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 12px; }
-.detail-hero h1 em { color: var(--gold-300); font-style: italic; font-weight: 400; }
+.detail-hero h1 em { color: var(--accent-300); font-style: italic; font-weight: 400; }
 .detail-hero p.lead { color: rgba(255, 255, 255, 0.85); font-size: 1.05rem; max-width: 680px; }
 
 .chip-row {
@@ -29,7 +29,7 @@
   color: var(--white);
   backdrop-filter: blur(8px);
 }
-.chip-row .chip strong { color: var(--gold-300); margin-right: 4px; }
+.chip-row .chip strong { color: var(--accent-300); margin-right: 4px; }
 
 .gallery {
   display: grid;
@@ -59,7 +59,7 @@
   flex-shrink: 0;
 }
 .thumb:hover { border-color: var(--green-500); }
-.thumb.is-active { border-color: var(--green-700); box-shadow: 0 4px 12px rgba(14, 31, 18, 0.2); }
+.thumb.is-active { border-color: var(--green-700); box-shadow: 0 4px 12px rgba(35, 45, 19, 0.2); }
 .gallery__main {
   position: relative;
   aspect-ratio: 4/3;
@@ -71,7 +71,7 @@
 .gallery__main img { width: 100%; height: 100%; object-fit: cover; }
 .gallery__main-badge {
   position: absolute; top: 16px; right: 16px;
-  background: rgba(14, 31, 18, 0.75);
+  background: rgba(35, 45, 19, 0.75);
   backdrop-filter: blur(8px);
   color: var(--white);
   padding: 6px 14px;
@@ -473,12 +473,12 @@
   margin-bottom: 24px;
 }
 .review-summary__num { font-family: var(--font-display); font-size: 3.6rem; color: var(--green-900); line-height: 1; }
-.review-summary__stars { color: var(--gold-500); font-size: 1.1rem; letter-spacing: 3px; margin: 8px 0; }
+.review-summary__stars { color: var(--accent-500); font-size: 1.1rem; letter-spacing: 3px; margin: 8px 0; }
 .review-summary__breakdown { display: flex; flex-direction: column; gap: 8px; }
 .review-bar { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
 .review-bar__label { width: 30px; }
 .review-bar__track { flex: 1; height: 6px; background: var(--ink-100); border-radius: 3px; overflow: hidden; }
-.review-bar__fill { height: 100%; background: var(--gold-500); }
+.review-bar__fill { height: 100%; background: var(--accent-500); }
 @media (max-width: 640px) { .review-summary { grid-template-columns: 1fr; } }
 /* ============================================
    Tour detail page
@@ -511,7 +511,7 @@
   align-items: center !important;
   gap: 6px !important;
 }
-.rating-inline .stars { color: var(--gold-500); letter-spacing: 2px; font-size: 0.95rem; }
+.rating-inline .stars { color: var(--accent-500); letter-spacing: 2px; font-size: 0.95rem; }
 .rating-inline strong { color: var(--ink-900); }
 .badge-soft {
   display: inline-flex !important;
@@ -587,7 +587,7 @@
   z-index: 2;
 }
 .gallery__main-badge {
-  background: rgba(14, 31, 18, 0.7);
+  background: rgba(35, 45, 19, 0.7);
   backdrop-filter: blur(8px);
   color: var(--white);
   padding: 6px 14px;
@@ -966,7 +966,7 @@
 .booking-card__field select:focus {
   outline: none;
   border-color: var(--green-500);
-  box-shadow: 0 0 0 3px rgba(60, 122, 78, 0.12);
+  box-shadow: 0 0 0 3px rgba(85, 112, 44, 0.12);
 }
 .booking-card__field { margin-bottom: 12px; }
 .booking-card__field select {
@@ -979,8 +979,8 @@
 }
 .btn--v2-check {
   width: 100%;
-  background: var(--green-700);
-  color: var(--white);
+  background: var(--green-bg);
+  color: var(--ink-900);
   border: none;
   padding: 14px 20px;
   border-radius: var(--radius-md);
@@ -990,7 +990,7 @@
   margin-top: 8px;
   transition: all var(--t-fast);
 }
-.btn--v2-check:hover { background: var(--green-800); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn--v2-check:hover { background: var(--green-bg-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 
 .booking-card__benefits {
   list-style: none;
@@ -1050,7 +1050,7 @@
 .am-modal__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(14, 31, 18, 0.72);
+  background: rgba(35, 45, 19, 0.72);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   cursor: pointer;
@@ -1169,7 +1169,7 @@
 .am-tour:hover { background: rgba(255, 255, 255, 0.6); }
 .am-tours input[type="radio"]:checked + .am-tour {
   background: var(--white);
-  box-shadow: 0 2px 10px rgba(14, 31, 18, 0.08), 0 0 0 1.5px var(--green-700);
+  box-shadow: 0 2px 10px rgba(35, 45, 19, 0.08), 0 0 0 1.5px var(--green-700);
 }
 .am-tour__name {
   font-size: 0.74rem;
@@ -1273,15 +1273,15 @@
   padding-top: 6px;
 }
 .am-extra__price--free { color: var(--green-700); }
-.am-extra__price--dopay { color: var(--gold-700); }
+.am-extra__price--dopay { color: var(--accent-700); }
 .am-extras__legend {
   display: none;
 }
 
 /* === FOOTER (dark ticket-style) === */
 .am-foot {
-  background: linear-gradient(180deg, var(--green-800), var(--green-900));
-  color: var(--white);
+  background: linear-gradient(180deg, var(--green-bg), var(--green-bg-hover));
+  color: var(--ink-900);
   padding: 18px 28px 22px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -1315,22 +1315,22 @@
 }
 .am-pax__label strong {
   font-size: 0.95rem;
-  color: var(--white);
+  color: var(--ink-900);
   font-weight: 600;
 }
 .am-pax__label small {
   font-size: 0.74rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--ink-900);
   font-variant-numeric: tabular-nums;
 }
 .am-pax__ctrl {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 26, 14, 0.08);
   padding: 5px 14px;
   border-radius: 100px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(20, 26, 14, 0.15);
 }
 .am-pax__ctrl button {
   width: 28px;
@@ -1347,7 +1347,7 @@
   transition: transform var(--t-fast), background-color var(--t-fast);
 }
 .am-pax__ctrl button:hover {
-  background: var(--gold-500);
+  background: var(--accent-500);
 }
 .am-pax__ctrl button:active {
   transform: scale(0.85);
@@ -1355,7 +1355,7 @@
 .am-pax__ctrl span {
   font-family: var(--font-display);
   font-size: 1.05rem;
-  color: var(--white);
+  color: var(--ink-900);
   font-weight: 700;
   min-width: 14px;
   text-align: center;
@@ -1367,7 +1367,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 14px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  border-top: 1px dashed rgba(20, 26, 14, 0.25);
 }
 .am-total > div {
   display: flex;
@@ -1376,27 +1376,27 @@
 }
 .am-total__label {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--ink-900);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 700;
 }
 .am-total small {
   font-size: 0.74rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--ink-900);
   font-variant-numeric: tabular-nums;
 }
 .am-total strong {
   font-family: var(--font-display);
   font-size: 1.75rem;
-  color: var(--gold-500);
+  color: var(--ink-900);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 
 .am-cta {
-  background: var(--gold-500);
+  background: var(--accent-500);
   color: var(--green-900);
   border: none;
   padding: 14px 20px;
@@ -1411,12 +1411,12 @@
   justify-content: center;
   gap: 8px;
   transition: background-color var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
-  box-shadow: 0 4px 12px rgba(217, 156, 52, 0.25);
+  box-shadow: 0 4px 12px rgba(127, 160, 70, 0.25);
 }
 .am-cta:hover {
-  background: var(--gold-400);
+  background: var(--accent-400);
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(217, 156, 52, 0.4);
+  box-shadow: 0 10px 24px rgba(127, 160, 70, 0.4);
 }
 .am-cta:active {
   transform: translateY(0);
@@ -1427,16 +1427,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(217, 156, 52, 0.18);
-  color: var(--gold-300);
+  background: rgba(127, 160, 70, 0.18);
+  color: var(--accent-300);
   padding: 8px 12px;
   border-radius: 10px;
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.3;
-  border: 1px solid rgba(217, 156, 52, 0.35);
+  border: 1px solid rgba(127, 160, 70, 0.35);
 }
-.am-promo svg { flex-shrink: 0; color: var(--gold-300); }
+.am-promo svg { flex-shrink: 0; color: var(--accent-300); }
 
 @media (max-width: 560px) {
   .am-head { padding: 22px 18px 14px; }

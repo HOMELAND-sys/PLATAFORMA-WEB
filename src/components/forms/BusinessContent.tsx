@@ -192,7 +192,7 @@ export default function BusinessContent() {
                 <h4 style={{ color: 'var(--white)', fontSize: '0.85rem', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   WhatsApp B2B
                 </h4>
-                <p style={{ fontSize: '1.3rem', color: 'var(--gold-400)', fontWeight: 600, margin: 0 }}>
+                <p style={{ fontSize: '1.3rem', color: 'var(--accent-400)', fontWeight: 600, margin: 0 }}>
                   <svg
                     width="18"
                     height="18"

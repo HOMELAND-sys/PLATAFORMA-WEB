@@ -6,9 +6,11 @@ import Link from 'next/link';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import TourCard from '@/components/ui/TourCard';
 import AvailabilityModal from '@/components/tour-detail/AvailabilityModal';
-import { tours } from '@/data/tours';
 import { calcAvailabilityTotal, GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
 import { useBooking } from '@/context/BookingContext';
+import { fetchTourAvailability } from '@/lib/api';
+import type { TourDateFree } from '@/lib/api';
+import { getSupabase } from '@/lib/supabase';
 import type { Tour, TourType } from '@/lib/types';
 
 const TABS = [
@@ -20,7 +22,7 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id'];
 
-export default function TourDetailContent({ tour }: { tour: Tour }) {
+export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mightLike: Tour[] }) {
   const router = useRouter();
   const { setSelection } = useBooking();
   const [activeImg, setActiveImg] = useState(0);
@@ -30,6 +32,7 @@ export default function TourDetailContent({ tour }: { tour: Tour }) {
   const [tourType, setTourType] = useState<TourType>('group');
   const [pax, setPax] = useState(2);
   const [extraIds, setExtraIds] = useState<string[]>([]);
+  const [availability, setAvailability] = useState<TourDateFree[] | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -45,19 +48,27 @@ export default function TourDetailContent({ tour }: { tour: Tour }) {
     setActiveTab('itinerary');
   }, [tour.slug]);
 
+  // Disponibilidad real (RF-05): fechas abiertas con cupo libre.
+  useEffect(() => {
+    if (!tour.id) return;
+    let active = true;
+    setAvailability(null);
+    fetchTourAvailability(getSupabase(), tour.id)
+      .then((dates) => {
+        if (active) setAvailability(dates);
+      })
+      .catch(() => {
+        if (active) setAvailability([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [tour.id]);
+
   const total = useMemo(
     () => calcAvailabilityTotal(tour, tourType, pax, extraIds),
     [tour, tourType, pax, extraIds],
   );
-
-  const mightLike = tours
-    .filter((t) => t.slug !== tour.slug)
-    .sort((a, b) => {
-      const aShares = a.categories.filter((c) => tour.categories.includes(c)).length;
-      const bShares = b.categories.filter((c) => tour.categories.includes(c)).length;
-      return bShares - aShares;
-    })
-    .slice(0, 3);
 
   const handleAddToCart = () => {
     setSelection({
@@ -395,10 +406,46 @@ export default function TourDetailContent({ tour }: { tour: Tour }) {
               >
                 <div className="booking-card__field">
                   <label>Fecha</label>
-                  <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
+                  {availability === null ? (
+                    <input type="date" disabled value={date} onChange={(e) => setDate(e.target.value)} />
+                  ) : availability.length === 0 ? (
+                    <input type="date" disabled value={date} onChange={(e) => setDate(e.target.value)} />
+                  ) : (
+                    <select
+                      className="select"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>
+                        Elegí una fecha…
+                      </option>
+                      {availability.map((d) => (
+                        <option key={d.id} value={d.free > 0 ? d.date : ''} disabled={d.free <= 0}>
+                          {new Date(`${d.date}T12:00:00`).toLocaleDateString('es-ES', {
+                            weekday: 'short',
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                          {d.free > 0 ? ` · ${d.free} cupo${d.free > 1 ? 's' : ''} libre${d.free > 1 ? 's' : ''}` : ' · Agotado'}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
-                <button className="btn--v2-check" type="submit">
+                {availability !== null && availability.length === 0 && (
+                  <p style={{ fontSize: '0.82rem', color: 'var(--ink-500)', margin: '8px 0 12px' }}>
+                    No hay fechas abiertas por el momento. Consultanos por WhatsApp.
+                  </p>
+                )}
+
+                <button
+                  className="btn--v2-check"
+                  type="submit"
+                  disabled={availability !== null && availability.length === 0}
+                >
                   Ver disponibilidad
                 </button>
               </form>

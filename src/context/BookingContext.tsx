@@ -2,9 +2,18 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { BookingResult, BookingSelection } from '@/lib/types';
+import type { BookingSelection } from '@/lib/types';
 
 const STORAGE_KEY = 'homeland-booking';
+
+// Resultado de una reserva real: el código único es la clave para leer
+// la reserva (y su voucher) en la base. Después de la creación, la base es
+// la única fuente de verdad (sección 10).
+export interface BookingResult {
+  code: string;
+  reservationId: string;
+  createdAt: string;
+}
 
 interface BookingContextValue {
   selection: BookingSelection | null;

@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { tours } from '@/data/tours';
-import { categories } from '@/data/categories';
+import { fetchActiveTours, fetchCategories, type CategoryRow } from '@/lib/api';
+import { getSupabase } from '@/lib/supabase';
 import type { Tour } from '@/lib/types';
 
 const PLACEHOLDERS = [
@@ -16,7 +16,7 @@ const PLACEHOLDERS = [
   'Potosí',
 ];
 
-function tourMatchesQuery(tour: Tour, q: string): boolean {
+function tourMatchesQuery(tour: Tour, q: string, categories: CategoryRow[]): boolean {
   if (!q) return true;
   const haystack = [
     tour.title,
@@ -25,7 +25,7 @@ function tourMatchesQuery(tour: Tour, q: string): boolean {
     tour.highlights.join(' '),
     tour.typeLabel,
     tour.activityLabel,
-    ...categories.filter((c) => tour.categories.includes(c.id as never)).map((c) => c.label),
+    ...categories.filter((c) => tour.categories.includes(c.slug as never)).map((c) => c.label),
   ]
     .join(' ')
     .toLowerCase();
@@ -37,9 +37,27 @@ export default function Hero() {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([fetchActiveTours(getSupabase()), fetchCategories(getSupabase())])
+      .then(([t, c]) => {
+        if (!active) return;
+        setTours(t);
+        setCategories(c);
+      })
+      .catch(() => {
+        // sin catálogo no hay sugerencias
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,8 +85,8 @@ export default function Hero() {
   const results = useMemo(() => {
     const q = search.trim();
     if (!q) return tours.slice(0, 6);
-    return tours.filter((t) => tourMatchesQuery(t, q)).slice(0, 8);
-  }, [search]);
+    return tours.filter((t) => tourMatchesQuery(t, q, categories)).slice(0, 8);
+  }, [search, tours, categories]);
 
   useEffect(() => {
     setActiveIdx(0);

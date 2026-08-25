@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { findCoupon } from '@/data/coupons';
+import { checkCoupon } from '@/lib/api';
 import { formatUsd, usdToBob } from '@/lib/pricing';
+import { getSupabase } from '@/lib/supabase';
 import type { BookingSelection, Tour } from '@/lib/types';
 
 interface SummaryCardProps {
@@ -29,18 +30,27 @@ export default function SummaryCard({
   const [input, setInput] = useState('');
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
-  const applyCoupon = () => {
+  const [checking, setChecking] = useState(false);
+
+  const applyCoupon = async () => {
     const code = input.trim().toUpperCase();
     if (!code) {
       setMessage({ text: 'Ingresá un código de cupón.', ok: false });
       return;
     }
-    const coupon = findCoupon(code);
-    if (coupon) {
-      onApplyCoupon(coupon.code, coupon.discount);
-      setMessage({ text: `✓ Cupón "${coupon.code}" aplicado — ${coupon.discount}% de descuento.`, ok: true });
-    } else {
-      setMessage({ text: '✕ Cupón no válido. Probá WELCOME10, BOLIVIA15 o SUMMER20.', ok: false });
+    setChecking(true);
+    try {
+      const coupon = await checkCoupon(getSupabase(), code);
+      if (coupon.valid) {
+        onApplyCoupon(coupon.code, coupon.discount_pct);
+        setMessage({ text: `✓ Cupón "${coupon.code}" aplicado — ${coupon.discount_pct}% de descuento.`, ok: true });
+      } else {
+        setMessage({ text: '✕ El cupón no existe, no está activo o venció.', ok: false });
+      }
+    } catch {
+      setMessage({ text: '✕ No pudimos validar el cupón. Volvé a intentarlo.', ok: false });
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -104,10 +114,10 @@ export default function SummaryCard({
           <button
             type="button"
             className="summary-coupon__btn"
-            onClick={applyCoupon}
-            disabled={Boolean(couponCode)}
+            onClick={() => void applyCoupon()}
+            disabled={Boolean(couponCode) || checking}
           >
-            Aplicar
+            {checking ? '…' : 'Aplicar'}
           </button>
         </div>
         {message && (

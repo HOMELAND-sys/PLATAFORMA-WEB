@@ -3,8 +3,8 @@
    ============================================ */
 
 .page-header {
-  background: var(--green-900);
-  color: var(--white);
+  background: var(--green-bg);
+  color: var(--ink-900);
   padding: 96px 0 60px;
   position: relative;
   overflow: hidden;
@@ -13,21 +13,21 @@
   content: '';
   position: absolute; inset: 0;
   background: url('/assets/uyuni-mirror.jpg') center/cover;
-  opacity: 0.35;
+  opacity: 0.16;
 }
 .page-header > * { position: relative; z-index: 1; }
 .page-header h1 { color: var(--white); margin-bottom: 12px; }
-.page-header h1 em { color: var(--gold-300); font-style: italic; font-weight: 400; }
-.page-header p { color: rgba(255, 255, 255, 0.85); font-size: 1.05rem; max-width: 640px; }
+.page-header h1 em { color: var(--ink-900); font-style: italic; font-weight: 400; }
+.page-header p { color: var(--ink-900); font-size: 1.05rem; max-width: 640px; }
 
 .crumbs {
   display: flex; gap: 8px; align-items: center;
-  font-size: 0.85rem; color: var(--ink-400);
+  font-size: 0.85rem; color: var(--ink-900);
   margin-bottom: 20px;
 }
-.crumbs a { color: rgba(255, 255, 255, 0.7); }
-.crumbs a:hover { color: var(--white); }
-.crumbs .sep { color: var(--ink-500); }
+.crumbs a { color: var(--ink-900); }
+.crumbs a:hover { color: var(--ink-900); text-decoration: underline; }
+.crumbs .sep { color: var(--ink-900); opacity: 0.5; }
 
 /* Toolbar (chips + filter) */
 .toolbar {
@@ -132,7 +132,7 @@
 .range-slider { width: 100%; }
 .scrim {
   position: fixed; inset: 0;
-  background: rgba(14, 31, 18, 0.4);
+  background: rgba(35, 45, 19, 0.4);
   z-index: 199;
   opacity: 0; pointer-events: none;
   transition: opacity var(--t-base);
@@ -160,25 +160,25 @@
   gap: 12px;
   margin-top: 18px;
   padding: 8px 14px 8px 16px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(20, 26, 14, 0.08);
+  border: 1px solid rgba(20, 26, 14, 0.18);
   border-radius: var(--radius-pill);
-  color: var(--white);
+  color: var(--ink-900);
   font-size: 0.9rem;
   backdrop-filter: blur(6px);
 }
-.tours-search-summary strong { color: var(--gold-300); }
+.tours-search-summary strong { color: var(--ink-900); }
 .tours-search-clear {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: var(--white);
+  border: 1px solid rgba(20, 26, 14, 0.3);
+  color: var(--ink-900);
   padding: 4px 10px;
   font-size: 0.8rem;
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: all var(--t-fast);
 }
-.tours-search-clear:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--white); }
+.tours-search-clear:hover { background: rgba(20, 26, 14, 0.12); border-color: var(--ink-900); }
 
 /* Why travel sidebar card (compact) */
 .sidebar-why {
@@ -229,7 +229,7 @@
   color: var(--ink-800);
   display: flex; flex-direction: column;
 }
-.premium-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold-500); }
+.premium-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--accent-500); }
 .premium-card__media {
   position: relative;
   aspect-ratio: 16/10;
@@ -240,7 +240,7 @@
 .premium-card__badge {
   position: absolute; top: 12px; left: 12px;
   padding: 5px 12px;
-  background: var(--gold-500);
+  background: var(--accent-500);
   color: var(--green-900);
   border-radius: var(--radius-pill);
   font-size: 0.72rem;
@@ -269,7 +269,7 @@
 .premium-card__cta {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 10px 18px;
-  background: var(--gold-500);
+  background: var(--accent-500);
   color: var(--green-900);
   border-radius: var(--radius-pill);
   font-size: 0.78rem;
@@ -277,4 +277,84 @@
   letter-spacing: 0.06em;
   transition: all var(--t-fast);
 }
-.premium-card:hover .premium-card__cta { background: var(--gold-600); transform: translateX(2px); }
+.premium-card:hover .premium-card__cta { background: var(--accent-600); transform: translateX(2px); }
+
+/* --- Mis reservas (RF-17) --- */
+.bookings-section { padding-bottom: 64px; }
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.booking-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  flex-wrap: wrap;
+}
+
+.booking-row__img {
+  width: 96px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex: none;
+}
+
+.booking-row__body {
+  flex: 1;
+  min-width: 200px;
+}
+
+.booking-row__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.booking-row__head h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-family: var(--font-display);
+}
+
+.booking-row__meta {
+  margin: 6px 0 0;
+  color: var(--ink-500);
+  font-size: 0.85rem;
+}
+
+.booking-row__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bk-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.bk-status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.bk-status--amber { background: #fbf0d8; color: #8a5a12; }
+.bk-status--green { background: #e6efe3; color: #3c6b34; }
+.bk-status--red { background: #fde8e6; color: #b3261e; }

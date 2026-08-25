@@ -11,6 +11,8 @@ export type Difficulty = 'Easy' | 'Moderate' | 'Challenging';
 
 export type TourType = 'group' | 'semi' | 'private';
 
+export type MealOption = 'Normal' | 'Vegetariano' | 'Vegano' | 'Sin gluten';
+
 export interface TourExtra {
   id: string;
   name: string;
@@ -36,6 +38,8 @@ export interface TourInfo {
 }
 
 export interface Tour {
+  id?: string;
+  featured?: boolean;
   slug: string;
   title: string;
   image: string;

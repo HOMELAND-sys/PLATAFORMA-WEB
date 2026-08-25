@@ -1,23 +1,159 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { jsPDF } from 'jspdf';
+import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import { useBooking } from '@/context/BookingContext';
-import { getTourBySlug } from '@/data/tours';
-import { formatBob, formatUsd, usdToBob } from '@/lib/pricing';
+import { useAuth } from '@/context/AuthContext';
+import { fetchBookingByCode, fetchPaymentSettings, type MyBooking, type PaymentSettings } from '@/lib/api';
+import { getSupabase } from '@/lib/supabase';
+import { formatUsd, usdToBob } from '@/lib/pricing';
+
+const WHATSAPP_NUMBER = '59176012345';
+
+const STATUS_META: Record<string, { label: string; cls: string }> = {
+  pendiente_pago: { label: 'Pendiente de pago', cls: 'status--amber' },
+  confirmada: { label: 'Confirmada', cls: 'status--green' },
+  completada: { label: 'Completada', cls: 'status--green' },
+  cancelada: { label: 'Cancelada', cls: 'status--red' },
+};
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(`${dateStr}T12:00:00`);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function durationDays(duration: string): number {
+  const m = duration.match(/(\d+)/);
+  return m ? Math.max(1, parseInt(m[1], 10)) : 1;
+}
+
+const fmtDate = (d: string) =>
+  new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 
 export default function ConfirmationContent() {
   const { result } = useBooking();
-  const tour = result ? getTourBySlug(result.selection.tourSlug) : getTourBySlug('salar-de-uyuni-3-day-adventure');
-  const fallback = !result || !tour;
+  const searchParams = useSearchParams();
+  const { session, loading: authLoading } = useAuth();
+  const code = (searchParams.get('code') ?? result?.code ?? '').toUpperCase();
 
-  const bookingId = result?.id ?? 'HT-25A7X9';
-  const passengerName = result?.passenger.name || 'Juan Pérez';
-  const date = result?.selection.date
-    ? new Date(`${result.selection.date}T12:00:00`)
-    : new Date('2025-05-24T12:00:00');
-  const dateStr = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  const pax = result?.selection.pax ?? 2;
-  const totalUsd = result?.total ?? 195;
+  const [booking, setBooking] = useState<MyBooking | null>(null);
+  const [settings, setSettings] = useState<PaymentSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!code) {
+      setLoading(false);
+      setNotFound(true);
+      return;
+    }
+    let active = true;
+    (async () => {
+      const b = await fetchBookingByCode(getSupabase(), code).catch(() => null);
+      if (!active) return;
+      if (!b) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      setBooking(b);
+      setSettings(await fetchPaymentSettings(getSupabase()).catch(() => null));
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [code]);
+
+  const whatsAppUrl = (b: MyBooking) =>
+    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+      `Hola! Tengo la reserva ${b.code} de "${b.tour_title}" para el ${fmtDate(b.tour_date)} con ${b.pax} pasajero(s). Quiero coordinar el pago.`,
+    )}`;
+
+  const downloadPdf = (b: MyBooking) => {
+    const doc = new jsPDF();
+    const meta = STATUS_META[b.status] ?? STATUS_META.pendiente_pago;
+    let y = 20;
+    const line = (label: string, value: string, size = 10) => {
+      doc.setFontSize(size);
+      doc.text(label, 16, y);
+      doc.text(value, 120, y);
+      y += 7;
+    };
+    doc.setFontSize(16);
+    doc.text('HOMELAND.TOURS', 16, y);
+    y += 6;
+    doc.setFontSize(9);
+    doc.text('BOLIVIAN TOUR OPERATOR — TRAVEL VOUCHER', 16, y);
+    y += 10;
+    doc.setFontSize(12);
+    doc.text(b.tour_title, 16, y, { maxWidth: 180 });
+    y += 10;
+    line('Reserva', b.code);
+    line('Fecha emisión', fmtDate(b.created_at.slice(0, 10)));
+    line('Estado', meta.label);
+    line('Fecha del tour', fmtDate(b.tour_date));
+    line('Duración', b.tour_duration);
+    line('Pasajeros', b.passengers.map((p) => p.name).join(', '));
+    line('Total', `${formatUsd(b.total)} (≈ BOB ${usdToBob(b.total).toLocaleString('es-BO')})`);
+    if (settings?.link) line('Enlace de pago', settings.link, 8);
+    if (settings?.instructions) {
+      y += 2;
+      doc.setFontSize(9);
+      doc.text(doc.splitTextToSize(`Instrucciones: ${settings.instructions}`, 180), 16, y);
+    }
+    doc.setFontSize(8);
+    doc.text(`${b.code} · BOLETA ELECTRÓNICA · NO VÁLIDO COMO FACTURA`, 16, 285);
+    doc.save(`voucher-${b.code}.pdf`);
+  };
+
+  if (loading) {
+    return (
+      <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
+        <p style={{ color: 'var(--ink-500)' }}>Cargando tu voucher…</p>
+      </div>
+    );
+  }
+
+  if (notFound || !booking) {
+    return (
+      <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '1.8rem', marginBottom: 8 }}>No encontramos esa reserva</h1>
+        <p style={{ color: 'var(--ink-500)', marginBottom: 24 }}>
+          {authLoading
+            ? 'Un momento…'
+            : !session
+              ? 'Iniciá sesión para ver tu voucher.'
+              : 'Verificá el código de la reserva o volvé al catálogo.'}
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          {!session ? (
+            <Link className="btn btn--primary" href="/login?next=/confirmation">
+              Iniciar sesión
+            </Link>
+          ) : (
+            <Link className="btn btn--primary" href="/bookings">
+              Ver mis reservas
+            </Link>
+          )}
+          <Link className="btn btn--ghost" href="/tours">
+            Explorar tours
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const meta = STATUS_META[booking.status] ?? STATUS_META.pendiente_pago;
+  const paid = booking.status === 'confirmada' || booking.status === 'completada';
+  const lead = booking.passengers.find((p) => p.is_lead) ?? booking.passengers[0];
+  const otherPax = booking.pax - booking.passengers.length;
+  const endDate = addDays(booking.tour_date, durationDays(booking.tour_duration) - 1);
+  const hasPayment = Boolean(settings?.link || settings?.qrUrl);
 
   return (
     <>
@@ -31,25 +167,24 @@ export default function ConfirmationContent() {
             </div>
           </div>
           <h1>
-            ¡Tu aventura está <em>reservada!</em>
+            {booking.status === 'cancelada' ? (
+              <>
+                Tu reserva fue <em>cancelada</em>
+              </>
+            ) : (
+              <>
+                ¡Tu aventura está <em>reservada!</em>
+              </>
+            )}
           </h1>
           <p>
-            Gracias por elegir Homeland Tours. Te enviamos el voucher a <strong>{result?.passenger.name ? 'tu email' : 'juan.perez@email.com'}</strong>.
-            ¡No vemos la hora de recibirte en Bolivia!
+            Gracias por elegir Homeland Tours. Tu voucher <strong>{booking.code}</strong> está asociado a tu
+            cuenta — podés verlo cuando quieras desde “Mis reservas”.
           </p>
         </div>
       </section>
 
       <section className="container confirm-page">
-        {fallback && (
-          <p style={{ textAlign: 'center', color: 'var(--ink-500)', marginBottom: 24 }}>
-            No se encontró una reserva activa: se muestra un voucher de ejemplo.{' '}
-            <Link href="/tours" style={{ textDecoration: 'underline', color: 'var(--green-700)' }}>
-              Explorar tours
-            </Link>
-          </p>
-        )}
-
         <div className="voucher-ticket">
           <div className="voucher-ticket__left">
             <div className="voucher-ticket__brand">
@@ -61,11 +196,11 @@ export default function ConfirmationContent() {
             </div>
 
             <div className="voucher-ticket__label">TRAVEL VOUCHER</div>
-            <h2 className="voucher-ticket__title">{tour?.title ?? 'Salar de Uyuni 3-Day Adventure'}</h2>
+            <h2 className="voucher-ticket__title">{booking.tour_title}</h2>
 
             <div
               className="voucher-ticket__tour-img"
-              style={{ backgroundImage: `url('${tour?.image ?? '/assets/uyuni-salt.jpg'}')` }}
+              style={{ backgroundImage: `url('${booking.tour_image}')` }}
             ></div>
           </div>
 
@@ -75,16 +210,16 @@ export default function ConfirmationContent() {
             <div className="voucher-ticket__top">
               <div>
                 <small>Reserva</small>
-                <strong>{bookingId}</strong>
+                <strong>{booking.code}</strong>
               </div>
               <div>
                 <small>Fecha emisión</small>
-                <strong>{dateStr}</strong>
+                <strong>{fmtDate(booking.created_at.slice(0, 10))}</strong>
               </div>
               <div>
                 <small>Estado</small>
-                <strong className="voucher-ticket__status">
-                  <span className="dot"></span> Confirmado
+                <strong className={`voucher-ticket__status ${meta.cls}`}>
+                  <span className="dot"></span> {meta.label}
                 </strong>
               </div>
             </div>
@@ -92,12 +227,14 @@ export default function ConfirmationContent() {
             <div className="voucher-ticket__details">
               <div className="voucher-ticket__detail">
                 <small>PASAJERO</small>
-                <strong>{passengerName}</strong>
+                <strong>{lead?.name ?? '—'}</strong>
+                {booking.passengers.length > 1 && <span>+ {booking.passengers.length - 1} más</span>}
+                {otherPax > 0 && <span>{otherPax} adulto(s) sin datos</span>}
               </div>
               <div className="voucher-ticket__detail">
                 <small>PARTIDA</small>
-                <strong>{dateStr}</strong>
-                <span>07:30 AM · {tour?.startEnd ?? 'Uyuni'}</span>
+                <strong>{fmtDate(booking.tour_date)}</strong>
+                <span>{booking.tour_start_end || 'Punto de encuentro a confirmar'}</span>
               </div>
               <div className="voucher-ticket__detail voucher-ticket__detail--arrow">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -107,119 +244,50 @@ export default function ConfirmationContent() {
               </div>
               <div className="voucher-ticket__detail">
                 <small>REGRESO</small>
-                <strong>{dateStr}</strong>
-                <span>18:00 · {tour?.startEnd ?? 'Uyuni'}</span>
+                <strong>{fmtDate(endDate)}</strong>
+                <span>{booking.tour_duration}</span>
               </div>
             </div>
 
             <div className="voucher-ticket__divider"></div>
 
             <div className="voucher-ticket__bottom">
-              <div className="voucher-ticket__qr-block">
-                <div className="voucher-ticket__qr">
-                  <svg viewBox="0 0 33 33" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="33" height="33" fill="white" />
-                    <g fill="#0c0f0d">
-                      <rect x="0" y="0" width="7" height="7" />
-                      <rect x="1" y="1" width="5" height="5" fill="white" />
-                      <rect x="2" y="2" width="3" height="3" />
-                      <rect x="26" y="0" width="7" height="7" />
-                      <rect x="27" y="1" width="5" height="5" fill="white" />
-                      <rect x="28" y="2" width="3" height="3" />
-                      <rect x="0" y="26" width="7" height="7" />
-                      <rect x="1" y="27" width="5" height="5" fill="white" />
-                      <rect x="2" y="28" width="3" height="3" />
-                      <rect x="9" y="0" width="1" height="1" />
-                      <rect x="11" y="0" width="1" height="1" />
-                      <rect x="13" y="0" width="2" height="1" />
-                      <rect x="16" y="0" width="1" height="1" />
-                      <rect x="19" y="0" width="1" height="1" />
-                      <rect x="22" y="0" width="1" height="1" />
-                      <rect x="24" y="0" width="1" height="1" />
-                      <rect x="0" y="9" width="1" height="1" />
-                      <rect x="2" y="9" width="2" height="1" />
-                      <rect x="5" y="9" width="1" height="2" />
-                      <rect x="7" y="9" width="1" height="1" />
-                      <rect x="10" y="9" width="1" height="1" />
-                      <rect x="13" y="9" width="1" height="2" />
-                      <rect x="16" y="9" width="2" height="1" />
-                      <rect x="20" y="9" width="1" height="1" />
-                      <rect x="22" y="9" width="1" height="2" />
-                      <rect x="25" y="9" width="1" height="1" />
-                      <rect x="0" y="11" width="2" height="1" />
-                      <rect x="3" y="11" width="1" height="2" />
-                      <rect x="6" y="11" width="1" height="1" />
-                      <rect x="9" y="11" width="1" height="1" />
-                      <rect x="12" y="11" width="1" height="1" />
-                      <rect x="15" y="11" width="1" height="2" />
-                      <rect x="18" y="11" width="1" height="1" />
-                      <rect x="21" y="11" width="1" height="1" />
-                      <rect x="24" y="11" width="1" height="1" />
-                      <rect x="27" y="11" width="1" height="1" />
-                      <rect x="0" y="14" width="1" height="2" />
-                      <rect x="3" y="14" width="1" height="1" />
-                      <rect x="6" y="14" width="1" height="2" />
-                      <rect x="9" y="14" width="2" height="1" />
-                      <rect x="13" y="14" width="1" height="1" />
-                      <rect x="16" y="14" width="1" height="1" />
-                      <rect x="19" y="14" width="1" height="2" />
-                      <rect x="22" y="14" width="1" height="1" />
-                      <rect x="25" y="14" width="1" height="1" />
-                      <rect x="0" y="17" width="2" height="1" />
-                      <rect x="4" y="17" width="1" height="1" />
-                      <rect x="7" y="17" width="1" height="2" />
-                      <rect x="10" y="17" width="1" height="1" />
-                      <rect x="13" y="17" width="1" height="1" />
-                      <rect x="16" y="17" width="1" height="2" />
-                      <rect x="19" y="17" width="1" height="1" />
-                      <rect x="22" y="17" width="1" height="1" />
-                      <rect x="25" y="17" width="1" height="2" />
-                      <rect x="0" y="20" width="1" height="1" />
-                      <rect x="3" y="20" width="2" height="1" />
-                      <rect x="6" y="20" width="1" height="1" />
-                      <rect x="9" y="20" width="1" height="1" />
-                      <rect x="12" y="20" width="1" height="2" />
-                      <rect x="15" y="20" width="1" height="1" />
-                      <rect x="18" y="20" width="1" height="1" />
-                      <rect x="21" y="20" width="1" height="1" />
-                      <rect x="24" y="20" width="1" height="1" />
-                      <rect x="9" y="22" width="1" height="1" />
-                      <rect x="11" y="22" width="2" height="1" />
-                      <rect x="14" y="22" width="1" height="1" />
-                      <rect x="17" y="22" width="1" height="1" />
-                      <rect x="20" y="22" width="2" height="1" />
-                      <rect x="24" y="22" width="1" height="1" />
-                    </g>
-                  </svg>
+              {settings?.qrUrl && (
+                <div className="voucher-ticket__qr-block">
+                  <div className="voucher-ticket__qr">
+                    <img src={settings.qrUrl} alt="QR de pago" />
+                  </div>
+                  <small>
+                    Escaneá para
+                    <br />
+                    pagar
+                  </small>
                 </div>
-                <small>
-                  Escaneá para
-                  <br />
-                  verificar
-                </small>
-              </div>
+              )}
 
               <div className="voucher-ticket__info-block">
                 <div className="voucher-ticket__info-row">
                   <small>Pasajeros</small>
                   <strong>
-                    {pax} Adulto{pax > 1 ? 's' : ''}
+                    {booking.pax} Adulto{booking.pax > 1 ? 's' : ''}
                   </strong>
                 </div>
                 <div className="voucher-ticket__info-row">
                   <small>Duración</small>
-                  <strong>{tour?.duration ?? '3 días · 2 noches'}</strong>
+                  <strong>{booking.tour_duration}</strong>
                 </div>
                 <div className="voucher-ticket__info-row">
-                  <small>Total pagado</small>
-                  <strong className="voucher-ticket__price">{formatBob(usdToBob(totalUsd))}</strong>
+                  <small>{paid ? 'Total pagado' : 'Total a pagar'}</small>
+                  <strong className="voucher-ticket__price">
+                    {formatUsd(booking.total)} <span className="text-muted">(≈ BOB {usdToBob(booking.total).toLocaleString('es-BO')})</span>
+                  </strong>
                 </div>
               </div>
             </div>
 
             <div className="voucher-ticket__barcode">
               <div className="voucher-ticket__barcode-lines"></div>
-              <small>{bookingId} · BOLETA ELECTRÓNICA · NO VÁLIDO COMO FACTURA</small>
+              <small>{booking.code} · BOLETA ELECTRÓNICA · NO VÁLIDO COMO FACTURA</small>
             </div>
           </div>
 
@@ -228,7 +296,12 @@ export default function ConfirmationContent() {
         </div>
 
         <div className="voucher-actions">
-          <button className="btn btn--primary">
+          {settings?.link && booking.status !== 'cancelada' && (
+            <a className="btn btn--primary" href={settings.link} target="_blank" rel="noopener noreferrer">
+              💳 Pagar con enlace
+            </a>
+          )}
+          <button className="btn btn--primary" onClick={() => downloadPdf(booking)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
@@ -236,14 +309,13 @@ export default function ConfirmationContent() {
             </svg>
             Descargar voucher PDF
           </button>
-          <button className="btn btn--ghost">
+          <a className="btn btn--ghost" href={whatsAppUrl(booking)} target="_blank" rel="noopener noreferrer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
             </svg>
-            Reenviar por email
-          </button>
-          <Link href="/" className="btn btn--ghost">
+            WhatsApp
+          </a>
+          <Link href="/tours" className="btn btn--ghost">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12l9-9 9 9" />
               <path d="M9 21V12h6v9" />
@@ -266,25 +338,28 @@ export default function ConfirmationContent() {
             <div className="confirm-list">
               <div className="confirm-list__row">
                 <small>Tour</small>
-                <strong>{tour?.title ?? 'Salar de Uyuni 3-Day'}</strong>
+                <strong>{booking.tour_title}</strong>
               </div>
               <div className="confirm-list__row">
                 <small>Fechas</small>
-                <strong>{dateStr}</strong>
+                <strong>
+                  {fmtDate(booking.tour_date)}
+                  {endDate !== booking.tour_date && ` → ${fmtDate(endDate)}`}
+                </strong>
               </div>
               <div className="confirm-list__row">
                 <small>Pasajeros</small>
                 <strong>
-                  {pax} Adulto{pax > 1 ? 's' : ''}
+                  {booking.pax} Adulto{booking.pax > 1 ? 's' : ''}
                 </strong>
               </div>
               <div className="confirm-list__row">
-                <small>Punto de encuentro</small>
-                <strong>Homeland Tours Office · {tour?.startEnd ?? 'Uyuni'}</strong>
+                <small>Nombres</small>
+                <strong>{booking.passengers.map((p) => p.name).join(', ') || '—'}</strong>
               </div>
               <div className="confirm-list__row">
-                <small>Hora de inicio</small>
-                <strong>07:30 AM</strong>
+                <small>Punto de encuentro</small>
+                <strong>{booking.tour_start_end || 'A confirmar'}</strong>
               </div>
             </div>
           </div>
@@ -295,27 +370,53 @@ export default function ConfirmationContent() {
                 <rect x="1" y="4" width="22" height="16" rx="2" />
                 <line x1="1" y1="10" x2="23" y2="10" />
               </svg>
-              Transacción de pago
+              Pago
             </h3>
             <div className="confirm-list">
-              <div className="confirm-list__row">
-                <small>Pasarela</small>
-                <strong style={{ color: 'var(--green-700)' }}>Zwap</strong>
-              </div>
-              <div className="confirm-list__row">
-                <small>ID Transacción</small>
-                <strong>{result?.transactionId ?? 'ZW-8F7G-H4K2-9P1Z'}</strong>
-              </div>
-              <div className="confirm-list__row">
-                <small>Pagado el</small>
-                <strong>{dateStr} — 10:42 AM</strong>
-              </div>
+              {paid ? (
+                <>
+                  <div className="confirm-list__row">
+                    <small>Estado del pago</small>
+                    <strong style={{ color: 'var(--green-700)' }}>Pagado</strong>
+                  </div>
+                  {booking.paid_at && (
+                    <div className="confirm-list__row">
+                      <small>Confirmado el</small>
+                      <strong>{new Date(booking.paid_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="confirm-list__row">
+                    <small>Estado del pago</small>
+                    <strong style={{ color: 'var(--accent-600)' }}>Pendiente</strong>
+                  </div>
+                  <div className="confirm-list__row">
+                    <small>Modalidad</small>
+                    <strong>{booking.payment_method === 'qr' ? 'QR' : 'Enlace de pago'}</strong>
+                  </div>
+                </>
+              )}
+              {settings?.instructions && (
+                <div className="confirm-list__row">
+                  <small>Instrucciones</small>
+                  <strong style={{ fontWeight: 500, textAlign: 'right', maxWidth: '70%' }}>
+                    {settings.instructions}
+                  </strong>
+                </div>
+              )}
               <div className="confirm-list__row">
                 <small>Total</small>
-                <strong style={{ color: 'var(--green-700)' }}>
-                  {formatBob(usdToBob(totalUsd))} ({formatUsd(totalUsd)})
+                <strong style={{ color: paid ? 'var(--green-700)' : 'inherit' }}>
+                  {formatUsd(booking.total)}
                 </strong>
               </div>
+              {!hasPayment && booking.status !== 'cancelada' && (
+                <p className="text-small" style={{ color: 'var(--ink-500)', margin: '8px 0 0' }}>
+                  El operador aún no configuró el pago en línea. Usá WhatsApp para coordinar.
+                </p>
+              )}
             </div>
           </div>
 
@@ -331,22 +432,26 @@ export default function ConfirmationContent() {
               <li className="next-item">
                 <span className="next-item__num">1</span>
                 <div>
-                  <strong>Email enviado</strong>
-                  <p>Voucher enviado a tu correo con todos los detalles.</p>
+                  <strong>{paid ? 'Reserva confirmada' : 'Pagá con tu voucher'}</strong>
+                  <p>
+                    {paid
+                      ? 'Tu operatora ya confirmó tu reserva. ¡Prepará las maletas!'
+                      : 'Usá el enlace o el QR de este voucher para completar el pago.'}
+                  </p>
                 </div>
               </li>
               <li className="next-item">
                 <span className="next-item__num">2</span>
                 <div>
-                  <strong>Guía asignado</strong>
-                  <p>Nuestro equipo prepara tu aventura con un guía local.</p>
+                  <strong>Confirmación de la operatora</strong>
+                  <p>Te confirmamos por email cuando la reserva pasa a “Confirmada”.</p>
                 </div>
               </li>
               <li className="next-item">
                 <span className="next-item__num">3</span>
                 <div>
-                  <strong>Recordatorio 24h</strong>
-                  <p>Vas a recibir un recordatorio 24 horas antes del tour.</p>
+                  <strong>Recordatorio</strong>
+                  <p>Vas a recibir un recordatorio antes de la fecha del tour.</p>
                 </div>
               </li>
               <li className="next-item">
@@ -373,16 +478,16 @@ export default function ConfirmationContent() {
           </div>
           <div className="trust-strip__item">
             <svg className="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <rect x="3" y="11" width="18" height="11" rx="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              <path d="M21 12a9 9 0 1 1-9-9" />
+              <path d="M21 3v6h-6" />
             </svg>
             <div>
-              <h4>Pago 100% seguro</h4>
-              <p>Procesado vía Zwap con encriptación 256-bit.</p>
+              <h4>Pago según te quede cómodo</h4>
+              <p>Enlace, QR o coordinado por WhatsApp.</p>
             </div>
           </div>
           <div className="trust-strip__item">
-            <svg className="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg className="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
             <div>

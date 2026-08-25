@@ -1,12 +1,8 @@
 import Link from 'next/link';
 import TourCard from '@/components/ui/TourCard';
-import { featuredTours, getTourBySlug } from '@/data/tours';
+import type { Tour } from '@/lib/types';
 
-export default function FeaturedSection() {
-  const featured = featuredTours
-    .map((slug) => getTourBySlug(slug))
-    .filter((t): t is NonNullable<typeof t> => Boolean(t));
-
+export default function FeaturedSection({ tours }: { tours: Tour[] }) {
   return (
     <section className="section">
       <div className="container">
@@ -24,7 +20,7 @@ export default function FeaturedSection() {
         </div>
 
         <div className="featured-grid">
-          {featured.map((tour) => (
+          {tours.map((tour) => (
             <TourCard key={tour.slug} tour={tour} />
           ))}
         </div>

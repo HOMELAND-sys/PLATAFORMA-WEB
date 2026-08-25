@@ -4,6 +4,11 @@ export default function Footer() {
   return (
     <footer className="site-footer">
       <div className="container">
+        <img
+          src="/assets/full_trimmed_transparent_black.png"
+          alt="Homeland Tours — Bolivian Tour Operator"
+          className="footer-logo"
+        />
         <div className="footer-grid">
           <div className="footer-col">
             <h4>NOSOTROS</h4>

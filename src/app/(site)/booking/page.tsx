@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import BookingContent from '@/components/booking/BookingContent';
 
 export const metadata: Metadata = {
@@ -6,5 +7,11 @@ export const metadata: Metadata = {
 };
 
 export default function BookingPage() {
-  return <BookingContent />;
+  return (
+    <Suspense
+      fallback={<div style={{ padding: '80px 0', textAlign: 'center' }}>Cargando reserva…</div>}
+    >
+      <BookingContent />
+    </Suspense>
+  );
 }

@@ -1,14 +1,16 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import TourCard from '@/components/ui/TourCard';
 import FilterPanel from '@/components/tours/FilterPanel';
-import { tours, premiumTours } from '@/data/tours';
-import { categories } from '@/data/categories';
-import type { CategoryId, Difficulty } from '@/lib/types';
+import { fetchActiveTours, fetchCategories } from '@/lib/api';
+import type { CategoryRow } from '@/lib/api';
+import { getSupabase } from '@/lib/supabase';
+import { track } from '@/lib/analytics';
+import type { CategoryId, Difficulty, Tour } from '@/lib/types';
 
 interface Filters {
   mode: 'shared' | 'private';
@@ -25,14 +27,22 @@ const DURATION_MAP: Record<string, (t: { duration: string }) => boolean> = {
   '4-plus': (t) => /^4|^5/.test(t.duration.trim()),
 };
 
+// Selección curada de la sección "Experiencias destacadas" (datos reales del catálogo).
+const PREMIUM_SLUGS = [
+  'salkantay-trek-machu-picchu',
+  'laguna-colorada-uyuni-4-day-tour',
+  'rurrenabaque-pampas-jungle-3-day',
+  'valle-de-la-luna-half-day',
+];
+
 export default function ToursContent() {
   const searchParams = useSearchParams();
-  const initialCat = searchParams.get('cat') as CategoryId | null;
+  const initialCat = searchParams.get('cat');
   const initialQuery = searchParams.get('q')?.trim().toLowerCase() ?? '';
 
-  const [category, setCategory] = useState<CategoryId | 'all'>(
-    initialCat && categories.some((c) => c.id === initialCat) ? initialCat : 'all',
-  );
+  const [tours, setTours] = useState<Tour[] | null>(null);
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [category, setCategory] = useState<string>('all');
   const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<Filters>({
     mode: 'shared',
@@ -42,9 +52,39 @@ export default function ToursContent() {
   });
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+    Promise.all([fetchActiveTours(getSupabase()), fetchCategories(getSupabase())])
+      .then(([t, c]) => {
+        if (!active) return;
+        setTours(t);
+        setCategories(c);
+        const validCat = initialCat && c.some((x) => x.slug === initialCat) ? initialCat : 'all';
+        setCategory(validCat);
+      })
+      .catch(() => {
+        if (active) setTours([]);
+      });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (tours) track('tours_browsed', { count: tours.length });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tours !== null]);
+
+  const allPills = useMemo(
+    () => [{ slug: 'all', label: 'All tours' }, ...categories.map((c) => ({ slug: c.slug, label: c.label }))],
+    [categories],
+  );
+
   const filtered = useMemo(() => {
+    if (!tours) return [];
     return tours.filter((t) => {
-      if (category !== 'all' && !t.categories.includes(category)) return false;
+      if (category !== 'all' && !t.categories.includes(category as CategoryId)) return false;
       if (!DURATION_MAP[filters.duration]?.(t)) return false;
       if (!filters.difficulties.includes(t.difficulty)) return false;
       if (t.price > filters.maxPrice) return false;
@@ -56,7 +96,7 @@ export default function ToursContent() {
           t.highlights.join(' '),
           t.typeLabel,
           t.activityLabel,
-          ...(categories.filter((c) => t.categories.includes(c.id as CategoryId)).map((c) => c.label)),
+          ...categories.filter((c) => t.categories.includes(c.slug as CategoryId)).map((c) => c.label),
         ]
           .join(' ')
           .toLowerCase();
@@ -64,7 +104,18 @@ export default function ToursContent() {
       }
       return true;
     });
-  }, [category, filters, query]);
+  }, [tours, category, filters, query, categories]);
+
+  const premium = useMemo(() => {
+    if (!tours) return [];
+    return PREMIUM_SLUGS.map((slug) => tours.find((t) => t.slug === slug)).filter(
+      (t): t is Tour => Boolean(t),
+    );
+  }, [tours]);
+
+  if (tours === null) {
+    return <div style={{ padding: '80px 0', textAlign: 'center' }}>Cargando tours…</div>;
+  }
 
   return (
     <>
@@ -94,11 +145,11 @@ export default function ToursContent() {
       <div className="toolbar">
         <div className="container toolbar__inner">
           <div className="cat-pills">
-            {categories.map((c) => (
+            {allPills.map((c) => (
               <button
-                key={c.id}
-                className={`cat-pill${category === c.id ? ' is-active' : ''}`}
-                onClick={() => setCategory(c.id as CategoryId | 'all')}
+                key={c.slug}
+                className={`cat-pill${category === c.slug ? ' is-active' : ''}`}
+                onClick={() => setCategory(c.slug)}
               >
                 {c.label}
               </button>
@@ -154,7 +205,7 @@ export default function ToursContent() {
               </div>
             </div>
             <div className="stat-item">
-              <span className="stat-item__icon" style={{ color: 'var(--gold-600)' }}>
+              <span className="stat-item__icon" style={{ color: 'var(--accent-600)' }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
@@ -207,8 +258,8 @@ export default function ToursContent() {
           </div>
 
           <div className="premium-grid">
-            {premiumTours.map((p) => (
-              <Link className="premium-card" key={p.title} href={`/tours/${p.slug}`}>
+            {premium.map((p) => (
+              <Link className="premium-card" key={p.slug} href={`/tours/${p.slug}`}>
                 <div className="premium-card__media">
                   <img src={p.image} alt={p.title} />
                   {p.badge && <span className="premium-card__badge">{p.badge}</span>}
@@ -227,13 +278,13 @@ export default function ToursContent() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M2 20l3-10h14l3 10" />
                       </svg>{' '}
-                      {p.difficulty}
+                      {p.activityLabel}
                     </span>
                     <span>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                       </svg>{' '}
-                      {p.type}
+                      {p.typeLabel}
                     </span>
                   </div>
                   <div className="premium-card__price-row">

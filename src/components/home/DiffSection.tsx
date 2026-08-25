@@ -3,7 +3,7 @@ export default function DiffSection() {
     <section className="section section-dark diff">
       <div className="container">
         <div className="section-head">
-          <p className="eyebrow center" style={{ color: 'var(--gold-400)' }}>
+          <p className="eyebrow center" style={{ color: 'var(--ink-900)' }}>
             Lo que nos hace diferentes
           </p>
           <h2>¿Por qué viajar con Homeland Tours?</h2>

@@ -27,9 +27,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(14, 31, 18, 0.3) 0%,
-    rgba(14, 31, 18, 0.3) 50%,
-    rgba(14, 31, 18, 0.32) 100%
+    rgba(35, 45, 19, 0.3) 0%,
+    rgba(35, 45, 19, 0.3) 50%,
+    rgba(35, 45, 19, 0.32) 100%
   );
 }
 
@@ -57,9 +57,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(14, 31, 18, 0.32) 0%,
-    rgba(14, 31, 18, 0.25) 50%,
-    rgba(14, 31, 18, 0.32) 100%
+    rgba(35, 45, 19, 0.32) 0%,
+    rgba(35, 45, 19, 0.25) 50%,
+    rgba(35, 45, 19, 0.32) 100%
   );
 }
 
@@ -131,7 +131,7 @@
   cursor: not-allowed;
 }
 .biz-cal__day.is-today {
-  background: var(--gold-100);
+  background: var(--accent-100);
   font-weight: 600;
 }
 .biz-cal__day.is-selected {

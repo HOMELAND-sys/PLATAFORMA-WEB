@@ -4,8 +4,8 @@
 
 /* ---------- Hero ---------- */
 .confirm-hero {
-  background: var(--green-900);
-  color: var(--white);
+  background: var(--green-bg);
+  color: var(--ink-900);
   padding: 80px 0 120px;
   position: relative;
   overflow: hidden;
@@ -15,7 +15,7 @@
   content: '';
   position: absolute; inset: 0;
   background: url('/assets/uyuni-mirror.jpg') center/cover;
-  opacity: 0.3;
+  opacity: 0.15;
 }
 .confirm-hero::after {
   content: '';
@@ -38,7 +38,7 @@
   display: grid; place-items: center;
   flex-shrink: 0;
   border: 3px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 0 8px rgba(60, 122, 78, 0.2);
+  box-shadow: 0 0 0 8px rgba(85, 112, 44, 0.2);
 }
 .confirm-check svg { color: var(--white); }
 .confirm-hero h1 {
@@ -47,12 +47,12 @@
   margin-bottom: 6px;
 }
 .confirm-hero h1 em {
-  color: var(--gold-300);
+  color: var(--ink-900);
   font-style: italic;
   font-weight: 400;
 }
 .confirm-hero p {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--ink-900);
   font-size: 1.05rem;
   max-width: 640px;
   margin: 0 auto;
@@ -82,8 +82,8 @@
 
 /* ----- Left side: brand + tour ----- */
 .voucher-ticket__left {
-  background: var(--green-900);
-  color: var(--white);
+  background: var(--green-bg);
+  color: var(--ink-900);
   padding: 28px 26px;
   display: flex;
   flex-direction: column;
@@ -98,13 +98,13 @@
 .voucher-ticket__brand-mark {
   width: 42px; height: 42px;
   border-radius: 50%;
-  background: var(--gold-500);
+  background: var(--accent-500);
   color: var(--green-900);
   display: grid; place-items: center;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 1.2rem;
-  border: 1.5px solid var(--gold-500);
+  border: 1.5px solid var(--accent-500);
   flex-shrink: 0;
 }
 .voucher-ticket__brand > div { line-height: 1.1; display: flex; flex-direction: column; }
@@ -119,7 +119,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--ink-300);
+  color: var(--ink-900);
   margin-top: 2px;
 }
 
@@ -128,7 +128,7 @@
   font-size: 0.7rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold-300);
+  color: var(--ink-900);
   font-weight: 600;
   margin-top: 4px;
 }
@@ -138,7 +138,7 @@
   color: var(--white);
   margin: 0;
   line-height: 1.2;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 .voucher-ticket__tour-img {
@@ -148,7 +148,7 @@
   border-radius: var(--radius-md);
   background-size: cover;
   background-position: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(20, 26, 14, 0.15);
 }
 
 /* ----- Perforation ----- */
@@ -206,7 +206,24 @@
 .voucher-ticket__status .dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--green-500);
-  box-shadow: 0 0 0 4px rgba(60, 122, 78, 0.18);
+  box-shadow: 0 0 0 4px rgba(85, 112, 44, 0.18);
+}
+
+/* Variantes de estado (RF-07: pendiente / confirmada / cancelada) */
+.voucher-ticket__status.status--green { color: var(--green-700); }
+.voucher-ticket__status.status--green .dot {
+  background: var(--green-500);
+  box-shadow: 0 0 0 4px rgba(85, 112, 44, 0.18);
+}
+.voucher-ticket__status.status--amber { color: #9a6b12; }
+.voucher-ticket__status.status--amber .dot {
+  background: #d9a441;
+  box-shadow: 0 0 0 4px rgba(217, 164, 65, 0.22);
+}
+.voucher-ticket__status.status--red { color: #b3261e; }
+.voucher-ticket__status.status--red .dot {
+  background: #d66;
+  box-shadow: 0 0 0 4px rgba(214, 102, 102, 0.2);
 }
 
 /* Trip details: PARTIDA ---> REGRESO */
@@ -243,7 +260,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold-500);
+  color: var(--accent-500);
   padding: 0 4px;
 }
 
@@ -280,6 +297,7 @@
   display: grid; place-items: center;
 }
 .voucher-ticket__qr svg { width: 100%; height: 100%; display: block; }
+.voucher-ticket__qr img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .voucher-ticket__qr-block small {
   font-family: var(--font-sans);
   font-size: 0.72rem;
@@ -364,7 +382,7 @@
   transform: translateX(-50%);
   z-index: 2;
 }
-.voucher-ticket__notch--top    { top: -11px; }
+.voucher-ticket__notch--top    { top: -11px; background: var(--green-bg); }
 .voucher-ticket__notch--bottom { bottom: -11px; }
 
 /* ---------- Voucher action buttons ---------- */

@@ -1,479 +1,597 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import SummaryCard from '@/components/booking/SummaryCard';
-import { getTourBySlug } from '@/data/tours';
-import { bookingService } from '@/lib/services/bookingService';
 import { useBooking } from '@/context/BookingContext';
-import { calcBookingTotals, getGroupDiscountLabel, getGroupDiscountRate, GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
-import type { Passenger } from '@/lib/types';
+import { useAuth } from '@/context/AuthContext';
+import {
+  bookingErrorInfo,
+  clientTotals,
+  createBooking,
+  fetchActiveTourBySlug,
+  fetchTourAvailability,
+  type TourDateFree,
+} from '@/lib/api';
+import { getSupabase } from '@/lib/supabase';
+import { formatUsd } from '@/lib/pricing';
+import { track } from '@/lib/analytics';
+import type { MealOption, Tour, TourExtra, TourType } from '@/lib/types';
 
-const COUNTRY_CODES = ['+591', '+54', '+34', '+1', '+52'];
-const NATIONALITIES = [
-  'Bolivia', 'Argentina', 'Brasil', 'Chile', 'Colombia', 'España',
-  'Estados Unidos', 'México', 'Perú', 'Otro',
-];
-
-function makePassenger(num: number, lead = false): Passenger {
-  return {
-    id: `pax-${num}-${Date.now()}`,
-    name: '',
-    doc: '',
-    country: '',
-    meal: 'Vegetariana',
-    isLead: lead,
-  };
+interface BookerData {
+  fullName: string;
+  email: string;
+  phone: string;
 }
+
+interface PassengerData {
+  name: string;
+  doc: string;
+  country: string;
+  meal: MealOption;
+}
+
+type SelectedExtra = TourExtra;
+
+const MEALS: MealOption[] = ['Normal', 'Vegetariano', 'Vegano', 'Sin gluten'];
+
+const TYPE_LABELS: Record<TourType, string> = {
+  group: 'Tour compartido',
+  semi: 'Tour semiprivado',
+  private: 'Tour privado',
+};
 
 export default function BookingContent() {
   const router = useRouter();
-  const { selection, setResult } = useBooking();
-  const tour = getTourBySlug(selection?.tourSlug ?? 'salar-de-uyuni-3-day-adventure');
-  const fallback = !selection || !tour;
+  const searchParams = useSearchParams();
+  const slug = searchParams.get('slug') ?? '';
+  const { selection, setSelection, setResult } = useBooking();
+  const { session, profile, loading: authLoading, updateProfile } = useAuth();
 
-  const [leadName, setLeadName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneCode, setPhoneCode] = useState('+591');
-  const [phone, setPhone] = useState('');
-  const [nationality, setNationality] = useState('Bolivia');
-  const [passengers, setPassengers] = useState<Passenger[]>(() => [
-    makePassenger(1, true),
-    makePassenger(2),
+  const [tour, setTour] = useState<Tour | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  // Sección 1: datos del reservante (viene de la cuenta; email no editable)
+  const [booker, setBooker] = useState<BookerData>({ fullName: '', email: '', phone: '' });
+  const [bookerTouched, setBookerTouched] = useState(false);
+
+  // Sección 2: tipo de tour y extras
+  const [selectedType, setSelectedType] = useState<TourType | null>(null);
+  const [selectedExtras, setSelectedExtras] = useState<SelectedExtra[]>([]);
+
+  // Sección 3: método de pago (link / QR) — el voucher usa la configuración global
+  const [paymentMethod, setPaymentMethod] = useState<'link' | 'qr'>('link');
+
+  // PAX y pasajeros
+  const [pax, setPax] = useState(1);
+  const [passengers, setPassengers] = useState<PassengerData[]>([
+    { name: '', doc: '', country: '', meal: 'Normal' },
   ]);
-  const [couponCode, setCouponCode] = useState<string | null>(null);
-  const [couponDiscount, setCouponDiscount] = useState(0);
+
+  // Cupón (aplicado desde el resumen)
+  const [couponApplied, setCouponApplied] = useState<{ code: string; discountPct: number } | null>(null);
+
+  // Envío
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [fullDates, setFullDates] = useState<TourDateFree[]>([]);
 
-  const pax = selection?.pax ?? passengers.length;
-
+  // Login gate (RF-06): la reserva se asocia a la cuenta.
   useEffect(() => {
-    if (selection?.pax) {
-      const target = Math.min(selection.pax, GROUP_DISCOUNT_MAX_PAX);
-      setPassengers((prev) => {
-        if (target > prev.length) {
-          return [...prev, ...Array.from({ length: target - prev.length }, (_, i) => makePassenger(prev.length + i + 1))];
+    if (!authLoading && !session) {
+      router.replace(`/login?next=/booking?slug=${encodeURIComponent(slug)}`);
+    }
+  }, [authLoading, session, router, slug]);
+
+  // El tour se lee del catálogo (la base es la cuenta única de verdad).
+  useEffect(() => {
+    if (!slug) {
+      setLoadError(true);
+      return;
+    }
+    let active = true;
+    fetchActiveTourBySlug(getSupabase(), slug)
+      .then((t) => {
+        if (!active) return;
+        if (!t) {
+          setLoadError(true);
+          return;
         }
-        if (target < prev.length) {
-          return prev.slice(0, target);
+        setTour(t);
+        if (selection) {
+          setSelectedType(selection.tourType);
+          setPax(selection.pax);
+          if (t) {
+            const extras = t.extras.filter((e) => selection.extras.includes(e.id));
+            setSelectedExtras(extras);
+          }
+          setPassengers(
+            Array.from({ length: selection.pax }, () => ({
+              name: '',
+              doc: '',
+              country: '',
+              meal: 'Normal' as MealOption,
+            })),
+          );
         }
-        return prev;
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  // Precarga los datos del reservante desde la cuenta.
+  useEffect(() => {
+    if (session && !bookerTouched) {
+      setBooker({
+        fullName: profile?.full_name || session.user.email || '',
+        email: session.user.email ?? '',
+        phone: profile?.phone || '',
       });
     }
-  }, [selection?.pax]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, profile]);
 
-  const updatePassenger = (id: string, field: keyof Passenger, value: string) => {
-    setPassengers((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
+  // Mantiene la selección (contexto/localStorage) sincronizada con los cambios.
+  useEffect(() => {
+    if (!tour || !selectedType) return;
+    const extraIds = selectedExtras.map((e) => e.id);
+    const perPerson = tour.tourTypes[selectedType] ?? 0;
+    setSelection({
+      tourSlug: tour.slug,
+      tourType: selectedType,
+      date: selection?.date ?? '',
+      pax,
+      extras: extraIds,
+      perPerson,
+      extrasTotal: selectedExtras.filter((e) => e.kind === 'paid').reduce((s, e) => s + e.price, 0),
+      subtotal: perPerson * pax + selectedExtras.filter((e) => e.kind === 'paid').reduce((s, e) => s + e.price, 0),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tour, selectedType, selectedExtras, pax]);
+
+  const tourTypes = useMemo(() => {
+    if (!tour) return [];
+    return (['group', 'semi', 'private'] as TourType[])
+      .filter((t) => tour.tourTypes[t] >= 0)
+      .map((t) => ({ id: t, label: TYPE_LABELS[t], price: tour.tourTypes[t] }));
+  }, [tour]);
+
+  const selectedTypeData = tourTypes.find((t) => t.id === selectedType);
+  const selectedPrice = selectedTypeData?.price ?? 0;
+
+  const totals = tour && selectedType
+    ? clientTotals(tour, selectedType, pax, selectedExtras.map((e) => e.id), couponApplied?.discountPct ?? 0)
+    : null;
+  const total = totals?.total ?? 0;
+
+  const toggleExtra = (extra: SelectedExtra) => {
+    setSelectedExtras((prev) =>
+      prev.some((e) => e.id === extra.id) ? prev.filter((e) => e.id !== extra.id) : [...prev, extra],
+    );
   };
 
-  const removePassenger = (id: string) => {
-    setPassengers((prev) => prev.filter((p) => p.id !== id));
+  const setPaxSafe = (n: number) => {
+    const clamped = Math.max(1, Math.min(8, n));
+    setPax(clamped);
+    setPassengers((prev) =>
+      clamped <= prev.length
+        ? prev.slice(0, clamped)
+        : [...prev, ...Array.from({ length: clamped - prev.length }, () => ({ name: '', doc: '', country: '', meal: 'Normal' as MealOption }))],
+    );
   };
 
-  const addPassenger = () => {
-    setPassengers((prev) => [...prev, makePassenger(prev.length + 1)]);
+  const removePassenger = (index: number) => setPaxSafe(pax - 1);
+
+  const updatePassenger = (index: number, field: keyof PassengerData, value: string) => {
+    setPassengers((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
   };
-
-  const effectivePax = selection?.pax ?? passengers.length;
-  const perPersonPrice = selection?.perPerson ?? (tour ? tour.price : 299);
-  const baseSubtotal = selection?.subtotal ?? perPersonPrice * effectivePax;
-
-  const totals = useMemo(() => {
-    const paxCount = passengers.length;
-    const t = calcBookingTotals(baseSubtotal, paxCount, couponDiscount);
-    return { groupDiscount: t.groupDiscount, groupDiscountRate: t.groupDiscountRate, coupon: t.couponDiscount, total: t.total };
-  }, [baseSubtotal, passengers.length, couponDiscount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
+    setFormError('');
+    setFullDates([]);
+
+    if (!tour?.id || !session || !selection?.date || !selectedType) return;
+
+    if (!booker.fullName.trim() || !booker.phone.trim()) {
+      setFormError('Completa tu nombre y teléfono.');
+      return;
+    }
+    if (passengers.some((p) => !p.name.trim() || !p.doc.trim() || !p.country.trim())) {
+      setFormError('Completa nombre, documento y nacionalidad de cada viajero.');
+      return;
+    }
+
     setSubmitting(true);
+    track('booking_submitted', { tour: tour.slug, total });
+
     try {
-      const selectionToSend = selection ?? {
-        tourSlug: tour?.slug ?? 'salar-de-uyuni-3-day-adventure',
-        tourType: 'group' as const,
-        date: '',
+      const created = await createBooking(getSupabase(), {
+        tourId: tour.id,
+        date: selection.date,
+        tourType: selectedType,
         pax,
-        extras: [],
-        perPerson: tour?.price ?? 299,
-        extrasTotal: 0,
-        subtotal: baseSubtotal,
-      };
-      const result = await bookingService.createBooking(
-        selectionToSend,
-        passengers[0] ?? makePassenger(1, true),
-        totals.total,
-      );
-      setResult(result);
+        extraIds: selectedExtras.map((x) => x.id),
+        passengers: passengers.map((p, i) => ({
+          name: p.name.trim(),
+          doc: p.doc.trim(),
+          country: p.country.trim(),
+          meal: p.meal,
+          isLead: i === 0,
+        })),
+        couponCode: couponApplied?.code ?? null,
+        paymentMethod,
+      });
+
+      setResult({
+        code: created.reservation.code,
+        reservationId: created.reservation.id,
+        createdAt: created.reservation.created_at,
+      });
+
+      if (booker.phone.trim() && profile && profile.phone !== booker.phone.trim()) {
+        void updateProfile({ phone: booker.phone.trim() });
+      }
+
+      track('booking_created', { code: created.reservation.code, total });
       router.push('/confirmation');
-    } finally {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      const { code } = bookingErrorInfo(message);
+      if (code === 'date_full') {
+        setFormError('Vaya, esa fecha se llenó mientras reservabas. Elegí otra fecha disponible:');
+        const avail = await fetchTourAvailability(getSupabase(), tour.id).catch(() => null);
+        if (avail) setFullDates(avail.filter((a) => a.free > 0).slice(0, 5));
+      } else if (code === 'coupon_invalid') {
+        setCouponApplied(null);
+        setFormError('El cupón no existe, no está activo o venció.');
+      } else if (code === 'not_authenticated') {
+        router.replace(`/login?next=/booking?slug=${encodeURIComponent(slug)}`);
+      } else if (code === 'date_not_open' || code === 'date_past') {
+        setFormError('La fecha seleccionada no está disponible. Volvé al tour para elegir una fecha válida.');
+      } else {
+        setFormError('No pudimos crear la reserva. Volvé a intentarlo.');
+      }
       setSubmitting(false);
     }
   };
 
+  if (loadError) {
+    return (
+      <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '1.8rem', marginBottom: 8 }}>Tour no encontrado</h1>
+        <p style={{ color: 'var(--ink-500)' }}>
+          El tour que buscás no está disponible. Volvé al catálogo para elegir otra aventura.
+        </p>
+        <div style={{ marginTop: 24 }}>
+          <button className="btn btn--primary" onClick={() => router.push('/tours')}>
+            Ver todos los tours
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!tour) {
+    return (
+      <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
+        <p style={{ color: 'var(--ink-500)' }}>Cargando tour…</p>
+      </div>
+    );
+  }
+
+  // Si todavía no hay sesión, el gate de arriba redirige a /login.
+  if (!session) return null;
+
   return (
-    <>
-      <section className="booking-hero">
+    <div className="form-page">
+      <div className="form-hero">
         <div className="container">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Booking & Checkout' }]} />
-          <h1>
-            Completá tu <em>Reserva</em>
-          </h1>
-          <p>¡Casi listo! Por favor, completá tus datos y realizá el pago seguro para confirmar tu aventura.</p>
+          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Tours', href: '/tours' }, { label: 'Reservar' }]} />
+          <h1>Reservá tu aventura</h1>
+          <p>{tour.title} · {tour.duration} · {tour.destination}</p>
         </div>
-      </section>
+      </div>
 
-      <section className="container">
-        {fallback && (
-          <div
-            className="discount-banner"
-            style={{ marginTop: 24 }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z" />
-            </svg>
-            <span>
-              No hay un tour seleccionado: se muestra el <strong>Salar de Uyuni 3-Day Adventure</strong> como
-              ejemplo. Elegí tu aventura en <Link href="/tours" style={{ textDecoration: 'underline' }}>Tours</Link>.
-            </span>
-          </div>
-        )}
-
-        <div className="stepper" style={{ marginTop: 32 }}>
-          <div className="step is-done">
-            <div className="step__num">✓</div>
-            <div className="step__text">
-              <span className="step__title">Fechas & Pasajeros</span>
-              <span className="step__sub">
-                {selection?.date ? new Date(`${selection.date}T12:00:00`).toLocaleDateString('es-ES') : 'Fecha a definir'}
-              </span>
-            </div>
-          </div>
-          <div className="step__line"></div>
+      <div className="container booking-layout">
+        <div className="booking-stepper">
           <div className="step is-active">
-            <div className="step__num">2</div>
-            <div className="step__text">
-              <span className="step__title">Datos del Reservante</span>
-              <span className="step__sub">Tu información</span>
-            </div>
+            <span className="step-badge">1</span>
+            Datos y reserva
           </div>
-          <div className="step__line"></div>
-          <div className="step">
-            <div className="step__num">3</div>
-            <div className="step__text">
-              <span className="step__title">Pago</span>
-              <span className="step__sub">Seguro & local</span>
-            </div>
-          </div>
-          <div className="step__line"></div>
-          <div className="step">
-            <div className="step__num">4</div>
-            <div className="step__text">
-              <span className="step__title">Confirmación</span>
-              <span className="step__sub">¡Estás listo!</span>
-            </div>
+          <div className="step is-pending">
+            <span className="step-badge">2</span>
+            Voucher y pago
           </div>
         </div>
 
-        <div className="booking-layout">
-          <form onSubmit={handleSubmit}>
-            <div className="form-section">
-              <h2>
-                <span className="num">1</span> Datos del Reservante
-              </h2>
-              <p>Información de la persona que realiza la reserva y el pago.</p>
-
-              <div className="form-grid">
-                <div className="field field--full">
-                  <label className="field__label">
-                    Nombre completo (como figura en ID o pasaporte) <span className="req">*</span>
-                  </label>
+        <div className="booking-form-wrap">
+          <form onSubmit={handleSubmit} className="form-card">
+            <div className="form-card__section">
+              <div className="form-card__section-title">
+                <span className="section-num">1</span>
+                Datos del reservante
+              </div>
+              <div className="field-row">
+                <div className="field">
+                  <label htmlFor="fullName">Nombre completo</label>
                   <input
-                    className="input"
+                    id="fullName"
                     type="text"
-                    placeholder="Ej. María Fernanda López"
-                    required
-                    value={leadName}
-                    onChange={(e) => setLeadName(e.target.value)}
-                  />
-                </div>
-                <div className="field">
-                  <label className="field__label">
-                    Correo electrónico <span className="req">*</span>
-                  </label>
-                  <input
-                    className="input"
-                    type="email"
-                    placeholder="maria.lopez@email.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div className="field">
-                  <label className="field__label">
-                    WhatsApp / Teléfono <span className="req">*</span>
-                  </label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <select className="select" style={{ width: 100 }} value={phoneCode} onChange={(e) => setPhoneCode(e.target.value)}>
-                      {COUNTRY_CODES.map((c) => (
-                        <option key={c}>{c}</option>
-                      ))}
-                    </select>
-                    <input
-                      className="input"
-                      type="tel"
-                      placeholder="712 34567"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="field">
-                  <label className="field__label">
-                    Nacionalidad <span className="req">*</span>
-                  </label>
-                  <select className="select" required value={nationality} onChange={(e) => setNationality(e.target.value)}>
-                    {NATIONALITIES.map((n) => (
-                      <option key={n}>{n}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="field">
-                  <label className="field__label">
-                    Cantidad de pasajeros <span className="req">*</span>
-                  </label>
-                  <select
-                    className="select"
-                    value={pax}
+                    placeholder="Tu nombre y apellido"
+                    value={booker.fullName}
                     onChange={(e) => {
-                      const target = Math.min(Number(e.target.value), GROUP_DISCOUNT_MAX_PAX);
-                      setPassengers((prev) => {
-                        if (target > prev.length) {
-                          return [...prev, ...Array.from({ length: target - prev.length }, (_, i) => makePassenger(prev.length + i + 1))];
-                        }
-                        if (target < prev.length) {
-                          return prev.slice(0, target);
-                        }
-                        return prev;
-                      });
+                      setBookerTouched(true);
+                      setBooker({ ...booker, fullName: e.target.value });
                     }}
-                  >
-                    {Array.from({ length: GROUP_DISCOUNT_MAX_PAX }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        {n} Pasajero{n > 1 ? 's' : ''}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
-                <div className="field field--full">
-                  <label className="field__label">Requerimientos especiales (opcional)</label>
-                  <textarea
-                    className="textarea"
-                    placeholder="Necesidades dietarias, accesibilidad, celebraciones, alergias, etc."
-                  ></textarea>
+                <div className="field">
+                  <label htmlFor="phone">Teléfono / WhatsApp</label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    placeholder="+591 7XX XXX XX"
+                    value={booker.phone}
+                    onChange={(e) => setBooker({ ...booker, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="email">Correo electrónico</label>
+                <input id="email" type="email" value={booker.email} readOnly className="input--readonly" />
+                <small style={{ color: 'var(--ink-500)' }}>
+                  Usamos tu cuenta ({booker.email}) para el voucher y la comunicación.
+                </small>
+              </div>
+            </div>
+
+            <div className="form-card__section">
+              <div className="form-card__section-title">
+                <span className="section-num">2</span>
+                Tipo de tour y extras
+              </div>
+              <div className="field">
+                <label>Tipo de tour</label>
+                <div className="radio-row">
+                  {tourTypes.map((t) => (
+                    <label key={t.id} className={`radio-pill${selectedType === t.id ? ' is-active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="tourType"
+                        value={t.id}
+                        checked={selectedType === t.id}
+                        onChange={() => setSelectedType(t.id)}
+                      />
+                      <span>{t.label}</span>
+                      <small>{t.price === 0 ? 'Consultar' : formatUsd(t.price)}/pax</small>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              {totals.groupDiscount > 0 && (
-                <div className="discount-banner">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                    <line x1="7" y1="7" x2="7.01" y2="7" />
-                  </svg>
-                  <span>
-                    <strong>¡Descuento por grupo aplicado!</strong> Viajas con {passengers.length} pasajero
-                    {passengers.length > 1 ? 's' : ''} y obtenés {getGroupDiscountLabel(passengers.length)} automáticamente.{' '}
-                    <span style={{ float: 'right' }}>
-                      Descuento: <strong>-US$ {totals.groupDiscount}</strong>
-                    </span>
-                  </span>
+              <div className="field">
+                <label>Extras disponibles</label>
+                <div className="extras-grid">
+                  {tour.extras.map((extra) => (
+                    <label
+                      key={extra.id}
+                      className={`extra-option${selectedExtras.some((e) => e.id === extra.id) ? ' is-active' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedExtras.some((e) => e.id === extra.id)}
+                        onChange={() => toggleExtra(extra)}
+                      />
+                      <div className="extra-option__body">
+                        <strong>{extra.name}</strong>
+                        <small>{extra.sub}</small>
+                      </div>
+                      <span className="extra-option__price">
+                        {extra.kind === 'paid' ? `+${formatUsd(extra.price)}` : 'Gratuito'}
+                      </span>
+                    </label>
+                  ))}
                 </div>
-              )}
+              </div>
+
+              <div className="field">
+                <label>
+                  Viajeros: <strong>{pax}</strong>
+                  <span style={{ color: 'var(--ink-500)' }}>
+                    {' '}
+                    · {pax === 1 ? 'persona' : 'personas'} · {tour.duration}
+                  </span>
+                </label>
+                <div className="pax-control">
+                  <button type="button" disabled={pax <= 1} onClick={() => setPaxSafe(pax - 1)}>
+                    −
+                  </button>
+                  <span>{pax}</span>
+                  <button type="button" disabled={pax >= 8} onClick={() => setPaxSafe(pax + 1)}>
+                    +
+                  </button>
+                </div>
+                {pax >= 3 && (
+                  <span className="form-note">Descuento por grupo aplicado automáticamente ({totals ? Math.round(totals.groupDiscountRate * 100) : 0}%)</span>
+                )}
+              </div>
+
+              {passengers.map((p, idx) => (
+                <div className="passenger-form" key={idx}>
+                  <div className="passenger-header">
+                    <span>
+                      Viajero {idx + 1}
+                      {idx === 0 && (
+                        <em style={{ marginLeft: 8, fontSize: 12, color: 'var(--accent-600)' }}>(reservante)</em>
+                      )}
+                    </span>
+                    {passengers.length > 1 && (
+                      <button type="button" onClick={() => removePassenger(idx)}>
+                        Quitar
+                      </button>
+                    )}
+                  </div>
+                  <div className="field-row">
+                    <div className="field">
+                      <label>Nombre completo</label>
+                      <input
+                        type="text"
+                        placeholder="Nombre y apellido"
+                        value={p.name}
+                        onChange={(e) => updatePassenger(idx, 'name', e.target.value)}
+                      />
+                    </div>
+                    <div className="field">
+                      <label>Número de documento</label>
+                      <input
+                        type="text"
+                        placeholder="Carnet / Pasaporte"
+                        value={p.doc}
+                        onChange={(e) => updatePassenger(idx, 'doc', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="field-row">
+                    <div className="field">
+                      <label>Nacionalidad</label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Argentina"
+                        value={p.country}
+                        onChange={(e) => updatePassenger(idx, 'country', e.target.value)}
+                      />
+                    </div>
+                    <div className="field">
+                      <label>Tipo de comida</label>
+                      <select value={p.meal} onChange={(e) => updatePassenger(idx, 'meal', e.target.value as MealOption)}>
+                        {MEALS.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="form-section">
-              <h2>
-                <span className="num">2</span> Información de los Pasajeros
-              </h2>
-              <p>Detalles de cada persona que participa del tour. Necesarios para permisos y registro.</p>
+            <div className="form-card__section">
+              <div className="form-card__section-title">
+                <span className="section-num">3</span>
+                Método de pago
+              </div>
+              <div className="form-note" style={{ marginBottom: 12 }}>
+                Al confirmar vas a recibir un voucher con el enlace de pago o el QR del pago. El pago lo
+                coordinás con la operatora — nada se cobra automáticamente.
+              </div>
+              <div className="radio-row">
+                <label className={`radio-pill${paymentMethod === 'link' ? ' is-active' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="link"
+                    checked={paymentMethod === 'link'}
+                    onChange={() => setPaymentMethod('link')}
+                  />
+                  <span>💳 Enlace de pago</span>
+                  <small>Botón para pagar desde el voucher</small>
+                </label>
+                <label className={`radio-pill${paymentMethod === 'qr' ? ' is-active' : ''}`}>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="qr"
+                    checked={paymentMethod === 'qr'}
+                    onChange={() => setPaymentMethod('qr')}
+                  />
+                  <span>📱 QR</span>
+                  <small>Escaneá el QR del voucher</small>
+                </label>
+              </div>
+            </div>
 
-              <div id="passengersContainer">
-                {passengers.map((p, i) => (
-                  <div className="passenger" key={p.id}>
-                    <div className="passenger__head">
-                      <h4>
-                        👤 Pasajero {i + 1}
-                        {i === 0 ? ' (Reservante)' : ''}
-                      </h4>
-                      {i > 0 && (
-                        <span className="passenger__remove" onClick={() => removePassenger(p.id)}>
-                          Quitar
-                        </span>
-                      )}
-                    </div>
-                    <div className="form-grid form-grid--pax">
-                      <div className="field">
-                        <label className="field__label">
-                          Nombre completo <span className="req">*</span>
-                        </label>
-                        <input
-                          className="input"
-                          type="text"
-                          placeholder="Nombre completo"
-                          required
-                          value={p.name}
-                          onChange={(e) => updatePassenger(p.id, 'name', e.target.value)}
-                        />
-                      </div>
-                      <div className="field">
-                        <label className="field__label">
-                          Doc / Pasaporte <span className="req">*</span>
-                        </label>
-                        <input
-                          className="input"
-                          type="text"
-                          placeholder="ID / Pasaporte"
-                          required
-                          value={p.doc}
-                          onChange={(e) => updatePassenger(p.id, 'doc', e.target.value)}
-                        />
-                      </div>
-                      <div className="field field--country">
-                        <label className="field__label">
-                          País <span className="req">*</span>
-                        </label>
-                        <input
-                          className="input"
-                          type="text"
-                          placeholder="País"
-                          required
-                          value={p.country}
-                          onChange={(e) => updatePassenger(p.id, 'country', e.target.value)}
-                        />
-                      </div>
-                      <div className="field field--meal">
-                        <label className="field__label">
-                          Alimentación <span className="req">*</span>
-                        </label>
-                        <select
-                          className="select"
-                          required
-                          value={p.meal}
-                          onChange={(e) => updatePassenger(p.id, 'meal', e.target.value)}
-                        >
-                          <option>Vegetariana</option>
-                          <option>Normal</option>
-                        </select>
-                      </div>
-                    </div>
+            {formError && <div className="error-alert">{formError}</div>}
+
+            {fullDates.length > 0 && (
+              <div className="full-dates">
+                {fullDates.map((d) => (
+                  <div key={d.id} className="full-dates__row">
+                    <strong>
+                      {new Date(d.date + 'T12:00:00').toLocaleDateString('es-BY', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                      })}
+                    </strong>
+                    <span>
+                      {d.free} {d.free === 1 ? 'lugar' : 'lugares'} libres
+                    </span>
                   </div>
                 ))}
               </div>
+            )}
 
-              <div className="divider-or">o agregá un nuevo pasajero</div>
-              <button type="button" className="btn btn--ghost btn--sm" onClick={addPassenger}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Agregar otro pasajero
-              </button>
-            </div>
-
-            <div className="form-section">
-              <h2>
-                <span className="num">3</span> Método de Pago
-              </h2>
-              <p style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span>Todos los pagos son procesados de forma segura a través de</span>
-                <strong style={{ color: 'var(--green-700)', fontFamily: 'var(--font-display)', fontSize: '1.2rem' }}>
-                  + Zwap
-                </strong>
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, marginTop: 16 }}>
-                <label className="radio-pill" style={{ justifyContent: 'center', padding: 14 }}>
-                  <input type="radio" name="pay" defaultChecked /> 💳 Tarjeta de crédito / débito
-                </label>
-              </div>
-
-              <p
-                style={{
-                  marginTop: 20,
-                  padding: 14,
-                  background: 'var(--green-50)',
-                  border: '1px solid var(--green-300)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: '0.88rem',
-                  color: 'var(--green-800)',
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'start',
-                }}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{ flexShrink: 0, marginTop: 2 }}
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-                Al continuar serás redirigido a la plataforma segura de Zwap para completar el pago de tu reserva.
-              </p>
-            </div>
-
-            <div className="form-section">
-              <label className="checkbox">
-                <input type="checkbox" required />
-                <span style={{ fontSize: '0.88rem' }}>
-                  He leído y acepto los{' '}
-                  <a href="#" style={{ color: 'var(--green-700)', textDecoration: 'underline' }}>
-                    Términos de Servicio
-                  </a>{' '}
-                  y{' '}
-                  <a href="#" style={{ color: 'var(--green-700)', textDecoration: 'underline' }}>
-                    Condiciones
-                  </a>{' '}
-                  de Homeland Tours. <span className="req">*</span>
-                </span>
-              </label>
-            </div>
-
-            <button type="submit" className="btn btn--primary btn--lg btn--block" style={{ marginTop: 16 }} disabled={submitting}>
-              {submitting ? 'Procesando…' : 'Continuar con el pago'}
-              {!submitting && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
-              )}
+            <button className="form-card__submit" type="submit" disabled={submitting || !selectedType}>
+              {submitting ? 'Procesando…' : 'Continuar →'}
+            </button>
+            <button className="form-card__cancel" type="button" onClick={() => router.push(`/tours/${slug}`)}>
+              ← Volver al tour
             </button>
           </form>
 
-          <aside>
-            <SummaryCard
-              tour={tour}
-              selection={selection}
-              paxCount={pax}
-              couponCode={couponCode}
-              couponDiscount={totals.coupon}
-              totals={totals}
-              baseSubtotal={baseSubtotal}
-              onApplyCoupon={(code, discount) => {
-                setCouponCode(code);
-                setCouponDiscount(discount);
-              }}
-            />
-          </aside>
+          <SummaryCard
+            tour={tour}
+            selection={selection}
+            paxCount={pax}
+            couponCode={couponApplied?.code ?? null}
+            couponDiscount={totals?.couponDiscount ?? 0}
+            totals={{
+              groupDiscount: totals?.groupDiscount ?? 0,
+              groupDiscountRate: totals?.groupDiscountRate,
+              coupon: totals?.couponDiscount ?? 0,
+              total,
+            }}
+            baseSubtotal={totals?.subtotal ?? 0}
+            onApplyCoupon={(code, discountPct) => setCouponApplied({ code, discountPct })}
+          />
         </div>
-      </section>
-    </>
+      </div>
+
+      <div className="booking-bottom-bar">
+        <div className="booking-bottom-bar__inner">
+          <div className="booking-bottom-bar__total">
+            <span>
+              Total
+              <br />
+              <strong>{formatUsd(total)}</strong>
+            </span>
+          </div>
+          <div className="booking-bottom-bar__actions">
+            <button className="btn btn--ghost" onClick={() => router.push(`/tours/${slug}`)}>
+              Volver al tour
+            </button>
+            <button
+              className="btn btn--primary"
+              disabled={submitting || !selectedType}
+              onClick={() => {
+                const form = document.querySelector<HTMLFormElement>('.form-card');
+                form?.requestSubmit();
+              }}
+            >
+              {submitting ? 'Procesando…' : 'Continuar →'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
