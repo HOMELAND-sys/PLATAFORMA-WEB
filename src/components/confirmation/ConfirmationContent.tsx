@@ -74,7 +74,45 @@ export default function ConfirmationContent() {
       `Hola! Tengo la reserva ${b.code} de "${b.tour_title}" para el ${fmtDate(b.tour_date)} con ${b.pax} pasajero(s). Quiero coordinar el pago.`,
     )}`;
 
-  const downloadPdf = (b: MyBooking) => {
+  // Convierte el QR (URL de Storage) a data URL para incrustarlo en el PDF; null si falla (CORS, etc.).
+  const loadQrDataUrl = (url: string): Promise<string | null> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          canvas.getContext('2d')?.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+
+  const downloadQr = async (url: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('fetch failed');
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = 'qr-de-pago-homeland-tours.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.open(url, '_blank', 'noopener');
+    }
+  };
+
+  const downloadPdf = async (b: MyBooking) => {
     const doc = new jsPDF();
     const meta = STATUS_META[b.status] ?? STATUS_META.pendiente_pago;
     let y = 20;
@@ -100,6 +138,15 @@ export default function ConfirmationContent() {
     line('Duración', b.tour_duration);
     line('Pasajeros', b.passengers.map((p) => p.name).join(', '));
     line('Total', `${formatUsd(b.total)} (≈ BOB ${usdToBob(b.total).toLocaleString('es-BO')})`);
+    const qrData = settings?.qrUrl ? await loadQrDataUrl(settings.qrUrl) : null;
+    if (qrData) {
+      doc.addImage(qrData, 'PNG', 160, 30, 34, 34);
+      doc.setFontSize(7);
+      doc.text('Escaneá para pagar', 177, 68, { align: 'center' });
+    } else if (settings?.qrUrl) {
+      doc.setFontSize(7);
+      doc.text('QR de pago disponible en el voucher en línea', 177, 32, { align: 'center', maxWidth: 26 });
+    }
     if (settings?.link) line('Enlace de pago', settings.link, 8);
     if (settings?.instructions) {
       y += 2;
@@ -301,7 +348,7 @@ export default function ConfirmationContent() {
               💳 Pagar con enlace
             </a>
           )}
-          <button className="btn btn--primary" onClick={() => downloadPdf(booking)}>
+          <button className="btn btn--primary" onClick={() => void downloadPdf(booking)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
@@ -309,6 +356,19 @@ export default function ConfirmationContent() {
             </svg>
             Descargar voucher PDF
           </button>
+          {settings?.qrUrl && booking.status !== 'cancelada' && (
+            <button className="btn btn--ghost" onClick={() => void downloadQr(settings.qrUrl!)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                <line x1="14" y1="14" x2="14" y2="21" />
+                <line x1="17" y1="17" x2="21" y2="17" />
+                <line x1="21" y1="14" x2="21" y2="21" />
+              </svg>
+              Descargar QR de pago
+            </button>
+          )}
           <a className="btn btn--ghost" href={whatsAppUrl(booking)} target="_blank" rel="noopener noreferrer">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />

@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   buildTourPayload,
+  createCategory,
   fetchCategories,
   fetchToursForAdmin,
+  resizeImageForUpload,
   uploadToBucket,
   type AdminTour,
   type CategoryRow,
@@ -62,6 +64,10 @@ export default function ToursTab() {
   const [editing, setEditing] = useState<AdminTour | 'new' | null>(null);
   const [error, setError] = useState('');
   const [okMsg, setOkMsg] = useState('');
+  const [showCatForm, setShowCatForm] = useState(false);
+  const [catLabel, setCatLabel] = useState('');
+  const [catEmoji, setCatEmoji] = useState('');
+  const [savingCat, setSavingCat] = useState(false);
 
   const load = useCallback(() => {
     Promise.all([fetchToursForAdmin(getSupabase()), fetchCategories(getSupabase())])
@@ -98,6 +104,36 @@ export default function ToursTab() {
     load();
   };
 
+  const addCategory = async () => {
+    const label = catLabel.trim();
+    if (!label || savingCat) return;
+    const sb = getSupabase();
+    const slug = slugify(label);
+    if (!slug) {
+      setError('El nombre de la categoría no es válido.');
+      return;
+    }
+    if (categories.some((c) => c.slug === slug)) {
+      setError(`La categoría “${label}” ya existe.`);
+      return;
+    }
+    setSavingCat(true);
+    setError('');
+    try {
+      const position = categories.length ? Math.max(...categories.map((c) => c.position)) + 1 : 1;
+      await createCategory(sb, { slug, label, emoji: catEmoji.trim(), position });
+      setOkMsg(`Categoría “${label}” creada: ya podés asignarla a los tours.`);
+      setCatLabel('');
+      setCatEmoji('');
+      setShowCatForm(false);
+      load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo crear la categoría.');
+    } finally {
+      setSavingCat(false);
+    }
+  };
+
   if (tours === null) return <p style={{ color: 'var(--ink-500)' }}>Cargando tours…</p>;
 
   return (
@@ -108,12 +144,49 @@ export default function ToursTab() {
           <p>{tours.length} tours · {tours.filter((t) => t.active).length} activos</p>
         </div>
         <div className="admin-header__actions">
+          <button className="btn btn--ghost btn--sm" onClick={() => setShowCatForm((v) => !v)}>
+            {showCatForm ? 'Cerrar categorías' : '+ Categoría'}
+          </button>
           <button className="btn btn--primary btn--sm" onClick={() => setEditing('new')}>
             + Nuevo tour
           </button>
         </div>
       </div>
 
+      {showCatForm && (
+        <div
+          style={{
+            border: '1px solid var(--border)',
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 16,
+            background: 'var(--paper, #fff)',
+          }}
+        >
+          <div className="admin-form__row">
+            <div className="af-field">
+              <label>Nombre de la categoría</label>
+              <input
+                value={catLabel}
+                onChange={(e) => setCatLabel(e.target.value)}
+                placeholder="Gastronomía"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void addCategory();
+                }}
+              />
+            </div>
+            <div className="af-field" style={{ maxWidth: 120 }}>
+              <label>Emoji <small>(opcional)</small></label>
+              <input value={catEmoji} onChange={(e) => setCatEmoji(e.target.value)} placeholder="🍽️" />
+            </div>
+            <div className="af-field" style={{ justifyContent: 'flex-end' }}>
+              <button className="btn btn--primary" disabled={savingCat} onClick={() => void addCategory()}>
+                {savingCat ? 'Creando…' : 'Crear categoría'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {error && <div className="admin-alert admin-alert--error">{error}</div>}
       {okMsg && <div className="admin-alert admin-alert--ok">{okMsg}</div>}
 
@@ -216,9 +289,10 @@ function TourEditor({
 
   const uploadImage = async (file: File, target: 'main' | 'gallery') => {
     const sb = getSupabase();
-    const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+    const optimized = await resizeImageForUpload(file);
+    const safe = optimized.name.replace(/[^a-zA-Z0-9._-]/g, '-');
     const path = `${slugify(data.slug) || 'tour'}/${Date.now()}-${safe}`;
-    const url = await uploadToBucket(sb, 'tours', path, file);
+    const url = await uploadToBucket(sb, 'tours', path, optimized);
     if (target === 'main') set('image', url);
     else set('gallery', [...data.gallery, url]);
   };

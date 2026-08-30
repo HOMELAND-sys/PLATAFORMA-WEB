@@ -594,3 +594,47 @@ export async function uploadToBucket(
   const { data } = sb.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
+
+// Reescalado en cliente antes de subir (RF-10): limita el lado mayor a maxDim px.
+// Los GIF/SVG y los archivos ya pequeños pasan intactos; ante cualquier fallo devuelve el original.
+export async function resizeImageForUpload(file: File, maxDim = 1600, quality = 0.82): Promise<File> {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') {
+    return file;
+  }
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+    if (scale === 1 && file.size < 900_000) return file;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (!blob) return file;
+    const name = `${file.name.replace(/\.[^.]+$/, '')}.jpg`;
+    return new File([blob], name, { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
+}
+
+// Categorías nuevas desde el panel (RF-10).
+export async function createCategory(
+  sb: SupabaseClient,
+  cat: { slug: string; label: string; emoji?: string; position?: number },
+): Promise<CategoryRow> {
+  const { data, error } = await sb
+    .from('categories')
+    .insert({
+      slug: cat.slug,
+      label: cat.label,
+      emoji: cat.emoji ?? '',
+      position: cat.position ?? 99,
+    })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data as CategoryRow;
+}

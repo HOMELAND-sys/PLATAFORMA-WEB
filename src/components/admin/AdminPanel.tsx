@@ -60,43 +60,24 @@ export default function AdminPanel() {
   const { session, profile, isAdmin, loading, signOut } = useAuth();
   const tab = searchParams.get('tab') ?? 'reservas';
 
-  // RF-12: solo sesión admin entra. Sin sesión → login; con sesión no admin → bloque.
+  // RF-12: solo sesión admin entra. Sin sesión → login; con sesión no admin → home.
   useEffect(() => {
-    if (!loading && !session) {
+    if (loading) return;
+    if (!session) {
       router.replace('/login?next=/admin');
+      return;
     }
-  }, [loading, session, router]);
+    if (profile && !isAdmin) {
+      router.replace('/');
+    }
+  }, [loading, session, profile, isAdmin, router]);
 
   if (loading || !session) {
     return <div style={{ padding: 48, textAlign: 'center', color: 'var(--ink-500)' }}>Verificando acceso…</div>;
   }
 
   if (!isAdmin) {
-    return (
-      <div style={{ padding: 64, textAlign: 'center' }}>
-        <div className="admin-shell" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-          <div style={{ maxWidth: 420 }}>
-            <h1 style={{ fontFamily: 'var(--font-display)', marginBottom: 8 }}>Acceso restringido</h1>
-            <p style={{ color: 'var(--ink-500)', marginBottom: 24 }}>
-              Esta sección es solo para el equipo de Homeland Tours.
-            </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-              <Link className="btn btn--ghost" href="/">
-                Volver al sitio
-              </Link>
-              <button
-                className="btn btn--primary"
-                onClick={() =>
-                  void signOut().then(() => router.replace('/login?next=/admin'))
-                }
-              >
-                Cambiar de cuenta
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <div style={{ padding: 48, textAlign: 'center', color: 'var(--ink-500)' }}>Verificando acceso…</div>;
   }
 
   const initials = (profile?.full_name || profile?.role || 'A')

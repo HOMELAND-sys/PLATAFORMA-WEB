@@ -28,6 +28,7 @@ export default function ReservasTab() {
   const [bookings, setBookings] = useState<AdminBooking[] | null>(null);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('todas');
+  const [tourFilter, setTourFilter] = useState('todos');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selected, setSelected] = useState<AdminBooking | null>(null);
@@ -45,11 +46,19 @@ export default function ReservasTab() {
 
   useEffect(load, [load]);
 
+  const tourOptions = useMemo(() => {
+    if (!bookings) return [] as { slug: string; title: string }[];
+    const seen = new Map<string, string>();
+    for (const b of bookings) if (b.tour_slug) seen.set(b.tour_slug, b.tour_title);
+    return [...seen.entries()].map(([slug, title]) => ({ slug, title }));
+  }, [bookings]);
+
   const filtered = useMemo(() => {
     if (!bookings) return [];
     const q = search.trim().toLowerCase();
     return bookings.filter((b) => {
       if (status !== 'todas' && b.status !== status) return false;
+      if (tourFilter !== 'todos' && b.tour_slug !== tourFilter) return false;
       if (dateFrom && b.tour_date < dateFrom) return false;
       if (dateTo && b.tour_date > dateTo) return false;
       if (q) {
@@ -58,7 +67,7 @@ export default function ReservasTab() {
       }
       return true;
     });
-  }, [bookings, search, status, dateFrom, dateTo]);
+  }, [bookings, search, status, tourFilter, dateFrom, dateTo]);
 
   const changeStatus = async (next: 'confirmada' | 'completada' | 'cancelada') => {
     if (!selected) return;
@@ -125,6 +134,14 @@ export default function ReservasTab() {
           <option value="confirmada">Confirmada</option>
           <option value="completada">Completada</option>
           <option value="cancelada">Cancelada</option>
+        </select>
+        <select value={tourFilter} onChange={(e) => setTourFilter(e.target.value)} title="Tour">
+          <option value="todos">Todos los tours</option>
+          {tourOptions.map((t) => (
+            <option key={t.slug} value={t.slug}>
+              {t.title}
+            </option>
+          ))}
         </select>
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} title="Desde" />
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} title="Hasta" />
