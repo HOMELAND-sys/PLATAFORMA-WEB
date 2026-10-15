@@ -105,7 +105,7 @@ export default function AdminPanel() {
           <button className="admin-mobile-toggle" onClick={() => setMobileOpen((open) => !open)} aria-label="Abrir menú de administración" aria-controls="admin-navigation" aria-expanded={mobileOpen}><AdminIcon name="menu" /></button>
           <form className="admin-search" role="search" onSubmit={(event) => {
             event.preventDefault();
-            router.push(`/admin?tab=reservas&q=${encodeURIComponent(search.trim())}`);
+            router.push(`/admin?tab=${tab === 'tours' ? 'tours' : 'reservas'}&q=${encodeURIComponent(search.trim())}`);
           }}>
             <button type="submit" aria-label="Buscar"><AdminIcon name="search" /></button>
             <input ref={searchRef} aria-label="Buscar reservas, clientes o tours" type="search" placeholder="Buscar reservas, clientes, tours…" value={search} onChange={(event) => setSearch(event.target.value)} />

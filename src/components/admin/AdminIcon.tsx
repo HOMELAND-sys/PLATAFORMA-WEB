@@ -22,6 +22,23 @@ const paths: Record<string, ReactNode> = {
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   close: <path d="m6 6 12 12M6 18 18 6" />,
   refresh: <><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1" /></>,
+  plus: <path d="M12 5v14M5 12h14" />,
+  star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />,
+  pin: <><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></>,
+  document: <><path d="M14 3H5v18h14V8l-5-5Zm0 0v5h5M8 12h8m-8 4h6" /></>,
+  filter: <><path d="M4 6h16M4 12h16M4 18h16" /><path d="M8 4v4m8 2v4M10 16v4" /></>,
+  more: <><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></>,
+  check: <path d="m5 12 4 4L19 6" />,
+  checkCircle: <><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></>,
+  crossCircle: <><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6m-6 0 6-6" /></>,
+  eye: <><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></>,
+  copy: <><rect x="8" y="8" width="12" height="13" rx="2" /><path d="M16 8V3H3v13h5" /></>,
+  power: <><path d="M12 2v10M6 5a9 9 0 1 0 12 0" /></>,
+  upload: <><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6" /></>,
+  save: <><path d="M4 3h13l4 4v14H3V3h1Zm3 0v6h9V3M7 21v-8h10v8" /></>,
+  trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7" /></>,
+  left: <path d="m14 6-6 6 6 6" />,
+  right: <path d="m10 6 6 6-6 6" />,
 };
 
 export default function AdminIcon({ name, size = 20 }: { name: string; size?: number }) {

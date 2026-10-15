@@ -13,6 +13,7 @@ import '@/styles/tour-detail.css';
 import '@/styles/confirmation.css';
 import '@/styles/auth.css';
 import '@/styles/admin.css';
+import '@/styles/admin-tours.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://homeland.tours'),
