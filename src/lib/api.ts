@@ -638,3 +638,197 @@ export async function createCategory(
   if (error) throw error;
   return data as CategoryRow;
 }
+
+// ---------------------------------------------------------------------------
+// Fase 2 — Dashboard (RF-13)
+// ---------------------------------------------------------------------------
+
+export interface DashboardKpis {
+  reservations_total: number;
+  pending_payment: number;
+  pending_amount: number;
+  confirmed_count: number;
+  confirmed_revenue: number;
+  cancelled: number;
+  avg_ticket: number;
+  clients_new: number;
+  clients_total: number;
+}
+
+export interface DashboardOccupancyRow {
+  date: string;
+  tour_id: string;
+  tour_title: string;
+  capacity: number;
+  occupied: number;
+  free: number;
+}
+
+export interface DashboardTopTour {
+  tour_id: string;
+  tour_title: string;
+  reservations: number;
+  pax: number;
+  revenue: number;
+}
+
+export interface DashboardStalePending {
+  id: string;
+  code: string;
+  client_name: string;
+  tour_title: string;
+  tour_date: string;
+  total: number;
+  created_at: string;
+  days_pending: number;
+}
+
+export interface DashboardOverview {
+  from: string;
+  to: string;
+  kpis: DashboardKpis;
+  occupancy: DashboardOccupancyRow[];
+  top_tours: DashboardTopTour[];
+  stale_pending: DashboardStalePending[];
+}
+
+export async function fetchDashboardOverview(
+  sb: SupabaseClient,
+  from: string,
+  to: string,
+): Promise<DashboardOverview> {
+  const { data, error } = await sb.rpc('admin_dashboard_overview', { p_from: from, p_to: to });
+  if (error) throw error;
+  return data as DashboardOverview;
+}
+
+// ---------------------------------------------------------------------------
+// Fase 2 — Clientes (RF-14)
+// ---------------------------------------------------------------------------
+
+export interface AdminClientRow {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone: string;
+  created_at: string;
+  reservations_count: number;
+  total_spent: number;
+  last_reservation_at: string | null;
+}
+
+export async function fetchAdminClients(sb: SupabaseClient): Promise<AdminClientRow[]> {
+  const { data, error } = await sb
+    .from('v_admin_clients')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as AdminClientRow[];
+}
+
+// Historial de reservas de un cliente (detalle del tab Clientes).
+export type ClientBooking = Omit<AdminBooking, 'passengers'>;
+
+export async function fetchClientBookings(
+  sb: SupabaseClient,
+  userId: string,
+): Promise<ClientBooking[]> {
+  const { data, error } = await sb
+    .from('reservations')
+    .select(
+      '*, tour:reservations_tour_id_fkey (slug, title), profile:reservations_user_id_fkey (full_name), date_row:reservations_tour_date_id_fkey (date)',
+    )
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  const rows = (data ?? []) as unknown as (ReservationRow & {
+    tour: { slug: string; title: string } | null;
+    profile: { full_name: string } | null;
+    date_row: { date: string } | null;
+  })[];
+  return rows.map((r) => ({
+    ...r,
+    tour_slug: r.tour?.slug ?? '',
+    tour_title: r.tour?.title ?? '',
+    client_name: r.profile?.full_name ?? '',
+    client_email: '',
+    tour_date: r.date_row?.date ?? '',
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Fase 2 — Reportes (RF-15): agregados calculados en la base
+// ---------------------------------------------------------------------------
+
+export interface ReportSales {
+  from: string;
+  to: string;
+  tours: { tour_title: string; reservations: number; pax: number; revenue: number; cancellations: number }[];
+  months: { month: string; reservations: number; pax: number; revenue: number; cancellations: number }[];
+  totals: { reservations: number; pax: number; revenue: number; cancellations: number };
+}
+
+export interface ReportBookingsRow {
+  code: string;
+  created_at: string;
+  client_name: string;
+  client_email: string;
+  tour_title: string;
+  tour_date: string;
+  tour_type: TourType;
+  pax: number;
+  total: number;
+  status: ReservationRow['status'];
+}
+
+export interface ReportBookings {
+  from: string;
+  to: string;
+  status: string | null;
+  rows: ReportBookingsRow[];
+  totals: { reservations: number; pax: number; revenue: number; grand_total: number };
+}
+
+export interface ReportClients {
+  from: string | null;
+  to: string | null;
+  rows: {
+    full_name: string;
+    email: string;
+    created_at: string;
+    reservations_count: number;
+    total_spent: number;
+  }[];
+  totals: { clients: number; reservations: number; revenue: number };
+}
+
+export async function fetchReportSales(sb: SupabaseClient, from: string, to: string): Promise<ReportSales> {
+  const { data, error } = await sb.rpc('admin_report_sales', { p_from: from, p_to: to });
+  if (error) throw error;
+  return data as ReportSales;
+}
+
+export async function fetchReportBookings(
+  sb: SupabaseClient,
+  from: string,
+  to: string,
+  status: string | null,
+): Promise<ReportBookings> {
+  const { data, error } = await sb.rpc('admin_report_bookings', {
+    p_from: from,
+    p_to: to,
+    p_status: status,
+  });
+  if (error) throw error;
+  return data as ReportBookings;
+}
+
+export async function fetchReportClients(
+  sb: SupabaseClient,
+  from: string | null,
+  to: string | null,
+): Promise<ReportClients> {
+  const { data, error } = await sb.rpc('admin_report_clients', { p_from: from, p_to: to });
+  if (error) throw error;
+  return data as ReportClients;
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { fetchTourDates, fetchToursForAdmin, type AdminTour, type TourDateFree } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 
@@ -13,6 +14,8 @@ const fmtDate = (d: string) =>
   });
 
 export default function AvailabilityTab() {
+  const searchParams = useSearchParams();
+  const requestedTour = searchParams.get('tour');
   const [tours, setTours] = useState<AdminTour[] | null>(null);
   const [tourId, setTourId] = useState('');
   const [dates, setDates] = useState<TourDateFree[] | null>(null);
@@ -24,6 +27,10 @@ export default function AvailabilityTab() {
   const [okMsg, setOkMsg] = useState('');
 
   const sb = getSupabase();
+
+  useEffect(() => {
+    if (requestedTour && tours?.some((tour) => tour.id === requestedTour)) setTourId(requestedTour);
+  }, [requestedTour, tours]);
 
   useEffect(() => {
     fetchToursForAdmin(sb)
@@ -121,10 +128,11 @@ export default function AvailabilityTab() {
 
       <div className="admin-card">
         <h3>Abrir una fecha</h3>
-        <div className="admin-filters" style={{ marginBottom: 0 }}>
+        <p>Definí el día y su capacidad; queda reservable al instante.</p>
+        <div className="admin-filters" style={{ marginBottom: 0, marginTop: 14 }}>
           <input type="date" min={today} value={newDate} onChange={(e) => setNewDate(e.target.value)} style={{ flex: '0 1 220px', minWidth: 160 }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label style={{ fontSize: '0.85rem', color: 'var(--ink-500)' }}>Cupo</label>
+            <label style={{ fontSize: '0.82rem', color: 'var(--ad-ink-2)', fontWeight: 600 }}>Cupo</label>
             <input
               type="number"
               min={1}

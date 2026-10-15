@@ -2,141 +2,149 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import ReservasTab from '@/components/admin/ReservasTab';
-import ToursTab from '@/components/admin/ToursTab';
-import AvailabilityTab from '@/components/admin/AvailabilityTab';
-import PaymentTab from '@/components/admin/PaymentTab';
+import { getSupabase } from '@/lib/supabase';
+import { DASHBOARD_PERIODS, dashboardDate, operatorDay, shiftDay, type DashboardPeriod } from '@/lib/admin-dashboard';
+import AdminBrand from './AdminBrand';
+import AdminIcon from './AdminIcon';
+import DashboardTab from './DashboardTab';
+import ReservasTab from './ReservasTab';
+import ToursTab from './ToursTab';
+import AvailabilityTab from './AvailabilityTab';
+import ClientsTab from './ClientsTab';
+import ReportsTab from './ReportsTab';
+import PaymentTab from './PaymentTab';
 
-const TABS = [
-  {
-    id: 'reservas',
-    label: 'Reservas',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M9 11l3 3L22 4" />
-        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-      </svg>
-    ),
-  },
-  {
-    id: 'tours',
-    label: 'Tours',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
-    ),
-  },
-  {
-    id: 'disponibilidad',
-    label: 'Disponibilidad',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </svg>
-    ),
-  },
-  {
-    id: 'pago',
-    label: 'Pago',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <rect x="1" y="4" width="22" height="16" rx="2" />
-        <line x1="1" y1="10" x2="23" y2="10" />
-      </svg>
-    ),
-  },
-];
+const NAV_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { id: 'tours', label: 'Tours', icon: 'tours' },
+  { id: 'disponibilidad', label: 'Disponibilidad', icon: 'calendar' },
+  { id: 'reservas', label: 'Reservas', icon: 'ticket' },
+  { id: 'clientes', label: 'Clientes', icon: 'users' },
+  { id: 'reportes', label: 'Reportes', icon: 'chart' },
+  { id: 'pago', label: 'Configuración de pago', icon: 'settings' },
+] as const;
 
 export default function AdminPanel() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { session, profile, isAdmin, loading, signOut } = useAuth();
-  const tab = searchParams.get('tab') ?? 'reservas';
+  const requestedTab = searchParams.get('tab') ?? 'dashboard';
+  const tab = NAV_ITEMS.some((item) => item.id === requestedTab) ? requestedTab : 'dashboard';
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [search, setSearch] = useState('');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [period, setPeriod] = useState<DashboardPeriod>('30d');
+  const [customFrom, setCustomFrom] = useState(() => shiftDay(operatorDay(), -29));
+  const [customTo, setCustomTo] = useState(() => operatorDay());
+  const searchRef = useRef<HTMLInputElement>(null);
+  const range = useMemo(() => {
+    if (period === 'custom') return { from: customFrom, to: customTo };
+    const days = DASHBOARD_PERIODS.find((item) => item.id === period)?.days ?? 30;
+    return { from: shiftDay(operatorDay(), 1 - days), to: operatorDay() };
+  }, [period, customFrom, customTo]);
 
-  // RF-12: solo sesión admin entra. Sin sesión → login; con sesión no admin → home.
   useEffect(() => {
     if (loading) return;
-    if (!session) {
-      router.replace('/login?next=/admin');
-      return;
-    }
-    if (profile && !isAdmin) {
-      router.replace('/');
-    }
+    if (!session) router.replace('/login?next=/admin');
+    else if (profile && !isAdmin) router.replace('/');
   }, [loading, session, profile, isAdmin, router]);
 
-  if (loading || !session) {
-    return <div style={{ padding: 48, textAlign: 'center', color: 'var(--ink-500)' }}>Verificando acceso…</div>;
+  useEffect(() => {
+    if (!isAdmin) return;
+    let active = true;
+    getSupabase().from('reservations').select('id', { count: 'exact', head: true })
+      .eq('status', 'pendiente_pago')
+      .then(({ count, error }) => { if (active) setPendingCount(error ? null : count ?? 0); });
+    return () => { active = false; };
+  }, [tab, isAdmin]);
+
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  useEffect(() => { setMobileOpen(false); }, [tab]);
+
+  if (loading || !session || !isAdmin) {
+    return <div className="admin-access" role="status"><span className="admin-access__spinner" />Verificando acceso…</div>;
   }
 
-  if (!isAdmin) {
-    return <div style={{ padding: 48, textAlign: 'center', color: 'var(--ink-500)' }}>Verificando acceso…</div>;
-  }
-
-  const initials = (profile?.full_name || profile?.role || 'A')
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+  const initials = (profile?.full_name || 'Admin').split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 
   return (
-    <div className="admin-layout">
-      <aside className="admin-side">
-        <div className="admin-side__brand">
-          <div className="admin-side__mark">H</div>
-          <div>
-            <strong>HOMELAND</strong>
-            <small>Panel admin</small>
-          </div>
-        </div>
-        <nav className="admin-nav">
-          {TABS.map((t) => (
-            <Link
-              key={t.id}
-              href={`/admin?tab=${t.id}`}
-              className={tab === t.id ? 'is-active' : ''}
-            >
-              {t.icon}
-              {t.label}
+    <div className={`admin-layout${mobileOpen ? ' admin-layout--menu-open' : ''}`}>
+      <a className="admin-skip" href="#admin-content">Ir al contenido</a>
+      {mobileOpen && <button className="admin-menu-backdrop" aria-label="Cerrar menú" onClick={() => setMobileOpen(false)} />}
+      <aside className="admin-side" id="admin-navigation">
+        <Link className="admin-side__brand" href="/admin" aria-label="Homeland Tours · Dashboard"><AdminBrand /></Link>
+        <button className="admin-mobile-close" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú"><AdminIcon name="close" /></button>
+        <nav className="admin-nav" aria-label="Administración">
+          {NAV_ITEMS.map((item) => (
+            <Link key={item.id} href={`/admin?tab=${item.id}`} className={tab === item.id ? 'is-active' : ''} aria-current={tab === item.id ? 'page' : undefined}>
+              <AdminIcon name={item.icon} size={23} />
+              <span className="admin-nav__text">{item.label}</span>
+              {item.id === 'reservas' && (pendingCount ?? 0) > 0 && <span className="admin-nav__badge" title={`${pendingCount} pendientes de pago`}>{pendingCount}</span>}
             </Link>
           ))}
         </nav>
-        <div className="admin-side__foot">
-          <div className="admin-side__avatar">{initials}</div>
-          <div className="admin-side__user">
-            <strong>{profile?.full_name || 'Admin'}</strong>
-            <small>{session.user.email}</small>
-          </div>
-          <button
-            className="admin-side__logout"
-            title="Cerrar sesión"
-            onClick={() =>
-              void signOut().then(() => router.replace('/'))
-            }
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </button>
-        </div>
+        <div className="admin-side__journey"><span>AUTHENTIC JOURNEYS.</span><span>LOCAL HEARTS.</span></div>
+        <Link href="/" className="admin-side__site"><AdminIcon name="external" size={15} /> Visitar sitio web</Link>
       </aside>
 
-      <main className="admin-main">
-        {tab === 'reservas' && <ReservasTab />}
-        {tab === 'tours' && <ToursTab />}
-        {tab === 'disponibilidad' && <AvailabilityTab />}
-        {tab === 'pago' && <PaymentTab />}
-      </main>
+      <div className="admin-workspace">
+        <header className="admin-topbar">
+          <button className="admin-mobile-toggle" onClick={() => setMobileOpen((open) => !open)} aria-label="Abrir menú de administración" aria-controls="admin-navigation" aria-expanded={mobileOpen}><AdminIcon name="menu" /></button>
+          <form className="admin-search" role="search" onSubmit={(event) => {
+            event.preventDefault();
+            router.push(`/admin?tab=reservas&q=${encodeURIComponent(search.trim())}`);
+          }}>
+            <button type="submit" aria-label="Buscar"><AdminIcon name="search" /></button>
+            <input ref={searchRef} aria-label="Buscar reservas, clientes o tours" type="search" placeholder="Buscar reservas, clientes, tours…" value={search} onChange={(event) => setSearch(event.target.value)} />
+            <kbd>Ctrl K</kbd>
+          </form>
+          <div className="admin-topbar__actions">
+            {tab === 'dashboard' && <div className="admin-date-picker">
+              <AdminIcon name="calendar" size={19} />
+              <span>{dashboardDate(range.from)} – {dashboardDate(range.to)}</span>
+              <select aria-label="Período del dashboard" value={period} onChange={(event) => setPeriod(event.target.value as DashboardPeriod)}>
+                {DASHBOARD_PERIODS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+              </select>
+              <AdminIcon name="chevron" size={16} />
+            </div>}
+            <Link className="admin-notification" href="/admin?tab=reservas&status=pendiente_pago" aria-label={`Ver reservas pendientes de pago${pendingCount === null ? '' : `: ${pendingCount}`}`}>
+              <AdminIcon name="bell" size={23} />
+              {(pendingCount ?? 0) > 0 && <span>{pendingCount! > 99 ? '99+' : pendingCount}</span>}
+            </Link>
+            <details className="admin-account">
+              <summary><span className="admin-account__avatar">{initials}</span><span className="admin-account__name"><strong>{profile?.full_name || 'Admin'}</strong><small>Administrador</small></span><AdminIcon name="chevron" size={16} /></summary>
+              <div className="admin-account__menu"><small>{session.user.email}</small><Link href="/">Visitar sitio web <AdminIcon name="external" size={16} /></Link><button onClick={() => void signOut().then(() => router.replace('/'))}>Cerrar sesión <AdminIcon name="logout" size={17} /></button></div>
+            </details>
+          </div>
+        </header>
+
+        <main className="admin-main" id="admin-content">
+          {tab === 'dashboard' && period === 'custom' && <div className="admin-custom-range">
+            <label>Desde <input type="date" value={customFrom} max={customTo} onChange={(event) => { if (event.target.value && event.target.value <= customTo) setCustomFrom(event.target.value); }} /></label>
+            <label>Hasta <input type="date" value={customTo} min={customFrom} onChange={(event) => { if (event.target.value && event.target.value >= customFrom) setCustomTo(event.target.value); }} /></label>
+          </div>}
+          {tab === 'dashboard' && <DashboardTab range={range} />}
+          {tab === 'reservas' && <ReservasTab />}
+          {tab === 'tours' && <ToursTab />}
+          {tab === 'disponibilidad' && <AvailabilityTab />}
+          {tab === 'pago' && <PaymentTab />}
+          {tab === 'clientes' && <ClientsTab />}
+          {tab === 'reportes' && <ReportsTab />}
+        </main>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   fetchAdminBookings,
   updateReservationStatus,
@@ -16,6 +17,22 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
   cancelada: { label: 'Cancelada', cls: 'badge-status--red' },
 };
 
+const STATUS_FILTERS = [
+  { id: 'todas', label: 'Todas' },
+  { id: 'pendiente_pago', label: 'Pendientes' },
+  { id: 'confirmada', label: 'Confirmadas' },
+  { id: 'completada', label: 'Completadas' },
+  { id: 'cancelada', label: 'Canceladas' },
+];
+
+const initialsOf = (name: string): string =>
+  (name || '?')
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
 const fmtDate = (d: string) =>
   new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -25,6 +42,10 @@ const fmtDateTime = (d: string | null) =>
     : '—';
 
 export default function ReservasTab() {
+  const searchParams = useSearchParams();
+  const requestedSearch = searchParams.get('q') ?? '';
+  const requestedStatus = searchParams.get('status') ?? 'todas';
+  const requestedBooking = searchParams.get('booking');
   const [bookings, setBookings] = useState<AdminBooking[] | null>(null);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('todas');
@@ -45,6 +66,15 @@ export default function ReservasTab() {
   }, []);
 
   useEffect(load, [load]);
+
+  useEffect(() => {
+    setSearch(requestedSearch);
+    setStatus(STATUS_FILTERS.some((item) => item.id === requestedStatus) ? requestedStatus : 'todas');
+  }, [requestedSearch, requestedStatus]);
+
+  useEffect(() => {
+    if (requestedBooking && bookings) setSelected(bookings.find((booking) => booking.id === requestedBooking) ?? null);
+  }, [requestedBooking, bookings]);
 
   const tourOptions = useMemo(() => {
     if (!bookings) return [] as { slug: string; title: string }[];
@@ -128,13 +158,6 @@ export default function ReservasTab() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="todas">Todos los estados</option>
-          <option value="pendiente_pago">Pendiente de pago</option>
-          <option value="confirmada">Confirmada</option>
-          <option value="completada">Completada</option>
-          <option value="cancelada">Cancelada</option>
-        </select>
         <select value={tourFilter} onChange={(e) => setTourFilter(e.target.value)} title="Tour">
           <option value="todos">Todos los tours</option>
           {tourOptions.map((t) => (
@@ -147,11 +170,25 @@ export default function ReservasTab() {
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} title="Hasta" />
       </div>
 
+      <div className="admin-seg" role="tablist" aria-label="Filtrar por estado">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            className={status === f.id ? 'is-active' : ''}
+            onClick={() => setStatus(f.id)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <div style={{ height: 14 }}></div>
+
       {error && <div className="admin-alert admin-alert--error">{error}</div>}
       {okMsg && <div className="admin-alert admin-alert--ok">{okMsg}</div>}
 
       <div className="admin-table-wrap">
-        <table className="admin-table">
+        <table className="admin-table admin-table--cards">
           <thead>
             <tr>
               <th>Código</th>
@@ -161,7 +198,7 @@ export default function ReservasTab() {
               <th>Pax</th>
               <th>Total</th>
               <th>Estado</th>
-              <th>Creada</th>
+              <th className="col-aux">Creada</th>
             </tr>
           </thead>
           <tbody>
@@ -169,25 +206,27 @@ export default function ReservasTab() {
               const meta = STATUS_META[b.status];
               return (
                 <tr key={b.id} className="is-clickable" onClick={() => { setSelected(b); setError(''); setCancelMode(false); setCancelReason(''); }}>
-                  <td className="cell-strong">{b.code}</td>
-                  <td>
-                    {b.client_name || '—'}
-                    <span className="cell-sub">{b.client_email}</span>
+                  <td className="cell-strong cell-code" data-label="Código">{b.code}</td>
+                  <td data-label="Cliente">
+                    <span className="admin-entity">
+                      <span className="admin-avatar">{initialsOf(b.client_name)}</span>
+                      <span className="admin-entity__meta">
+                        {b.client_name || '—'}
+                        <span className="cell-sub">{b.client_email}</span>
+                      </span>
+                    </span>
                   </td>
-                  <td>
-                    {b.tour_title}
-                    <span className="cell-sub">{fmtDate(b.tour_date)}</span>
-                  </td>
-                  <td>{fmtDate(b.tour_date)}</td>
-                  <td>{b.pax}</td>
-                  <td className="cell-strong">{formatUsd(b.total)}</td>
-                  <td>
+                  <td data-label="Tour">{b.tour_title}</td>
+                  <td className="cell-date" data-label="Fecha">{fmtDate(b.tour_date)}</td>
+                  <td data-label="Pax">{b.pax}</td>
+                  <td className="cell-strong cell-date" data-label="Total">{formatUsd(b.total)}</td>
+                  <td data-label="Estado">
                     <span className={`badge-status ${meta.cls}`}>
                       <span className="dot"></span>
                       {meta.label}
                     </span>
                   </td>
-                  <td>{fmtDateTime(b.created_at)}</td>
+                  <td className="cell-date col-aux" data-label="Creada">{fmtDateTime(b.created_at)}</td>
                 </tr>
               );
             })}
