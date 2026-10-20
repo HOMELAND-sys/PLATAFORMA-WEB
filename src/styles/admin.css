@@ -1558,19 +1558,55 @@
 .admin-layout { display: grid; grid-template-columns: var(--ad-sidebar-w) minmax(0, 1fr); background: var(--ad-bg); font-size: 13px; min-height: 100dvh; }
 .admin-layout button, .admin-layout input, .admin-layout select { font-family: var(--font-sans, Inter, sans-serif); }
 .admin-workspace { min-width: 0; background: radial-gradient(ellipse at 90% 2%, #f4efe760, transparent 48%), var(--ad-bg); }
-.admin-side { position: sticky; top: 0; height: 100dvh; padding: 34px 23px 20px; overflow: hidden; isolation: isolate; gap: 0; box-shadow: none; background: #243829; }
-.admin-side::before { content: ''; position: absolute; z-index: -2; inset: 0; background: linear-gradient(180deg, #233526 0%, #243829ed 42%, #243829a0 67%, #14261f18 100%), url('/assets/andes-mountains.jpg') center bottom / auto 58% no-repeat; }
-.admin-side::after { content: ''; position: absolute; z-index: -1; inset: 0; opacity: .065; background-image: repeating-radial-gradient(ellipse at 2% 36%, transparent 0 20px, #c1c8ac 21px, transparent 22px 32px); pointer-events: none; }
-.admin-side__brand { padding: 0; display: block; margin: 0 4px 42px; }
-.admin-brand { width: 100%; height: auto; max-height: 53px; }
-.admin-nav { display: flex; flex-direction: column; gap: 8px; padding: 0; overflow: visible; flex: 0; margin: 0; }
-.admin-nav a { padding: 13px 14px; min-height: 48px; border-radius: 15px; font-family: var(--font-display, Georgia, serif); font-size: 15px; font-weight: 400; color: #f3f3e9; gap: 15px; white-space: normal; line-height: 1.35; }
-.admin-nav a.is-active { background: #a7ad6f36; color: #fff; box-shadow: none; }
+.admin-side {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  padding: 38px 22px 0;
+  overflow: hidden;
+  isolation: isolate;
+  gap: 0;
+  box-shadow: inset -1px 0 #ffffff09;
+  background: radial-gradient(ellipse at 12% 0, #53604426, transparent 58%), linear-gradient(180deg, #243424 0%, #21372b 53%, #2a4240 100%);
+}
+
+/* The photograph fades to transparency over the green, so it has no top edge. */
+.admin-side::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: auto 0 0;
+  height: 52%;
+  background: url('/assets/admin-sidebar-landscape.png') 54% bottom / cover no-repeat;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #00000014 13%, #00000066 28%, #000000d9 47%, #000 65%);
+  mask-image: linear-gradient(180deg, transparent 0%, #00000014 13%, #00000066 28%, #000000d9 47%, #000 65%);
+  pointer-events: none;
+}
+
+.admin-side::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: url('/assets/admin-sidebar-contours.svg') center top / 100% 100% no-repeat;
+  opacity: .04;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 51%, transparent 75%);
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 51%, transparent 75%);
+  pointer-events: none;
+}
+
+.admin-side__brand { padding: 0; display: block; flex: none; margin: 0 3px 36px; }
+.admin-brand { display: block; width: 100%; height: auto; max-height: 51px; }
+.admin-nav { display: flex; flex-direction: column; gap: 7px; padding: 2px; overflow: visible; flex: none; margin: 0 -2px; }
+.admin-nav a { padding: 11px 12px; min-height: 46px; border-radius: 13px; font-family: Georgia, 'Times New Roman', serif; font-size: 15px; font-weight: 400; color: #f1f2e9; gap: 14px; white-space: nowrap; line-height: 1.35; }
+.admin-nav a svg { width: 22px; height: 22px; opacity: .95; }
+.admin-nav a.is-active { background: linear-gradient(100deg, #a8ae7552, #a8ae7536); color: #fff; box-shadow: inset 0 1px #ffffff06; }
 .admin-nav a.is-active::before { display: none; }
+.admin-nav a.is-active svg { stroke-width: 1.9; }
 .admin-nav a:hover { background: #a7ad6f25; color: #fff; }
+.admin-nav a:focus-visible, .admin-side__brand:focus-visible { outline: 2px solid #d8dfbb; outline-offset: 2px; }
 .admin-nav__badge { background: #f7f2df24; color: #f6efcc; font-family: var(--font-sans); font-size: 10px; }
-.admin-side__journey { margin-top: auto; padding: 68px 0 25vh; text-align: center; display: flex; flex-direction: column; gap: 9px; color: #efeddb; font-size: 9px; font-weight: 500; letter-spacing: .25em; line-height: 1.7; text-shadow: 0 1px 6px #17271f; }
-.admin-side__site { display: flex; align-items: center; justify-content: center; gap: 9px; color: #fff; font-size: 11px; text-decoration: none; background: #1c302d65; padding: 9px 6px; border-radius: 8px; backdrop-filter: blur(5px); }
+.admin-side__journey { margin-top: max(38px, calc(63dvh - 497px)); padding: 0; text-align: center; display: flex; flex-direction: column; flex: none; gap: 6px; color: #e4e6d5; font-size: 8px; font-weight: 500; letter-spacing: .28em; line-height: 1.8; text-shadow: 0 1px 9px #1d332c80; }
 .admin-topbar { height: 72px; border-bottom: 1px solid var(--ad-border); display: flex; align-items: center; gap: 24px; justify-content: space-between; padding: 0 34px; background: #fffefaee; }
 .admin-search { display: flex; align-items: center; width: min(410px, 42%); height: 39px; border: 1px solid #deded5; border-radius: 10px; padding: 0 10px 0 7px; gap: 7px; background: #fff; }
 .admin-search button { display: grid; place-items: center; padding: 5px; flex: none; border: 0; background: transparent; color: #465144; cursor: pointer; }
@@ -1737,8 +1773,8 @@
 
 @media (min-width: 1600px) {
   .admin-shell { --ad-sidebar-w: 280px; }
-  .admin-side { padding: 41px 25px 22px; }
-  .admin-side__brand { margin-bottom: 43px; }
+  .admin-side { padding: 42px 24px 0; }
+  .admin-side__brand { margin-bottom: 37px; }
   .admin-topbar { padding-inline: 38px; }
   .admin-main { padding: 20px 34px 30px; }
   .dash-metric { padding: 18px 15px; gap: 14px; min-height: 112px; }
@@ -1804,7 +1840,7 @@
 }
 @media (max-width: 959px) {
   .admin-layout { grid-template-columns: minmax(0, 1fr); }
-  .admin-side { position: fixed; left: 0; top: 0; bottom: 0; width: 264px; height: 100dvh; z-index: 70; padding: 37px 23px 20px; transform: translateX(-100%); visibility: hidden; transition: transform .2s ease, visibility .2s ease; }
+  .admin-side { position: fixed; left: 0; top: 0; bottom: 0; width: 264px; height: 100dvh; z-index: 70; padding: 38px 22px 0; transform: translateX(-100%); visibility: hidden; transition: transform .2s ease, visibility .2s ease; }
   .admin-layout--menu-open .admin-side { transform: translateX(0); visibility: visible; }
   .admin-mobile-toggle { display: grid; place-items: center; flex: none; border: 0; background: transparent; color: #3d5137; padding: 9px 4px; cursor: pointer; }
   .admin-mobile-close { position: absolute; display: grid; place-items: center; right: 9px; top: 7px; border: 0; background: transparent; color: #e9eedc; cursor: pointer; padding: 5px; }
@@ -1892,6 +1928,26 @@
   .dash-footer { flex-direction: column; align-items: flex-start; gap: 7px; font-size: 9px; }
   .admin-custom-range { margin-top: 39px; justify-content: flex-start; }
   .admin-custom-range ~ .dash-page-heading h1 { padding-right: 0; }
+}
+@media (max-height: 780px) {
+  .admin-side { padding-top: 29px; }
+  .admin-side__brand { margin-bottom: 28px; }
+  .admin-brand { max-height: 44px; }
+  .admin-nav { gap: 4px; }
+  .admin-nav a { min-height: 42px; padding-block: 10px; font-size: 14px; }
+  .admin-side__journey { margin-top: max(28px, calc(63dvh - 424px)); }
+}
+@media (max-height: 640px) {
+  .admin-side { padding-top: 22px; }
+  .admin-side__brand { margin-bottom: 20px; }
+  .admin-brand { max-height: 40px; }
+  .admin-nav { gap: 3px; max-height: calc(100dvh - 90px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a8ae7570 transparent; }
+  .admin-nav a { min-height: 40px; padding-block: 9px; }
+  .admin-side__journey { margin-top: 24px; }
+}
+@media (max-height: 540px) {
+  .admin-side__journey { display: none; }
+  .admin-side::before { opacity: .5; }
 }
 @media (prefers-reduced-motion: reduce) {
   .admin-layout *, .admin-access__spinner { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { id: 'reservas', label: 'Reservas', icon: 'ticket' },
   { id: 'clientes', label: 'Clientes', icon: 'users' },
   { id: 'reportes', label: 'Reportes', icon: 'chart' },
-  { id: 'pago', label: 'Configuración de pago', icon: 'settings' },
+  { id: 'pago', label: 'Configuración', icon: 'settings' },
 ] as const;
 
 export default function AdminPanel() {
@@ -89,7 +89,7 @@ export default function AdminPanel() {
         <button className="admin-mobile-close" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú"><AdminIcon name="close" /></button>
         <nav className="admin-nav" aria-label="Administración">
           {NAV_ITEMS.map((item) => (
-            <Link key={item.id} href={`/admin?tab=${item.id}`} className={tab === item.id ? 'is-active' : ''} aria-current={tab === item.id ? 'page' : undefined}>
+            <Link key={item.id} href={`/admin?tab=${item.id}`} className={tab === item.id ? 'is-active' : ''} aria-current={tab === item.id ? 'page' : undefined} title={item.id === 'pago' ? 'Configuración de pago' : undefined}>
               <AdminIcon name={item.icon} size={23} />
               <span className="admin-nav__text">{item.label}</span>
               {item.id === 'reservas' && (pendingCount ?? 0) > 0 && <span className="admin-nav__badge" title={`${pendingCount} pendientes de pago`}>{pendingCount}</span>}
@@ -97,7 +97,6 @@ export default function AdminPanel() {
           ))}
         </nav>
         <div className="admin-side__journey"><span>AUTHENTIC JOURNEYS.</span><span>LOCAL HEARTS.</span></div>
-        <Link href="/" className="admin-side__site"><AdminIcon name="external" size={15} /> Visitar sitio web</Link>
       </aside>
 
       <div className="admin-workspace">
