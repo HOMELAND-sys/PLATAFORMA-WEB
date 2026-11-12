@@ -1,6 +1,7 @@
 'use client';
 
 import type { Difficulty } from '@/lib/types';
+import Icon from '@/components/ui/Icon';
 
 export interface FilterState {
   category?: string;
@@ -29,9 +30,7 @@ export default function FilterPanel({ open, filters, onChange, onClose }: Filter
   return (
     <aside className={`filter-panel${open ? ' is-open' : ''}`}>
       <button className="filter-panel__close" onClick={onClose}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
+        <Icon name="close" size={20} />
       </button>
       <h3>Filtros</h3>
 

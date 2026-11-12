@@ -14,6 +14,8 @@ import '@/styles/confirmation.css';
 import '@/styles/auth.css';
 import '@/styles/admin.css';
 import '@/styles/admin-tours.css';
+import '@/styles/icons.css';
+import '@/styles/intro.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://homeland.tours'),

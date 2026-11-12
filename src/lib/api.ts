@@ -336,6 +336,12 @@ export interface MyBooking extends ReservationRow {
   tour_duration: string;
   tour_start_end: string;
   passengers: PassengerRow[];
+  /** Detalle extra del tour (solo lo trae fetchBookingByCode, para el voucher). */
+  tour_destination?: string;
+  tour_max_altitude?: string;
+  tour_difficulty?: string;
+  tour_info?: Partial<TourInfo>;
+  tour_included?: string[];
 }
 
 export async function fetchMyBookings(sb: SupabaseClient): Promise<MyBooking[]> {
@@ -369,13 +375,24 @@ export async function fetchBookingByCode(sb: SupabaseClient, code: string): Prom
   const { data, error } = await sb
     .from('reservations')
     .select(
-      '*, tour:reservations_tour_id_fkey (slug, title, image, duration, start_end), date_row:reservations_tour_date_id_fkey (date), passengers:booking_passengers_reservations_id_fkey (*)',
+      '*, tour:reservations_tour_id_fkey (slug, title, image, duration, start_end, destination, max_altitude, difficulty, info, included), date_row:reservations_tour_date_id_fkey (date), passengers:booking_passengers_reservations_id_fkey (*)',
     )
     .eq('code', code)
     .maybeSingle();
   if (error) throw error;
   const r = data as unknown as (ReservationRow & {
-    tour: { slug: string; title: string; image: string; duration: string; start_end: string } | null;
+    tour: {
+      slug: string;
+      title: string;
+      image: string;
+      duration: string;
+      start_end: string;
+      destination: string;
+      max_altitude: string;
+      difficulty: string;
+      info: Partial<TourInfo> | null;
+      included: string[] | null;
+    } | null;
     date_row: { date: string } | null;
     passengers: PassengerRow[];
   }) | null;
@@ -388,7 +405,12 @@ export async function fetchBookingByCode(sb: SupabaseClient, code: string): Prom
     tour_date: r.date_row?.date ?? '',
     tour_duration: r.tour.duration,
     tour_start_end: r.tour.start_end,
-    passengers: r.passengers,
+    tour_destination: r.tour.destination,
+    tour_max_altitude: r.tour.max_altitude,
+    tour_difficulty: r.tour.difficulty,
+    tour_info: r.tour.info ?? {},
+    tour_included: r.tour.included ?? [],
+    passengers: [...(r.passengers ?? [])].sort((a, b) => a.position - b.position),
   };
 }
 

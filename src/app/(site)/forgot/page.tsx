@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import { getSupabase } from '@/lib/supabase';
+import Icon from '@/components/ui/Icon';
 
 function ForgotForm() {
   const searchParams = useSearchParams();
@@ -46,10 +47,7 @@ function ForgotForm() {
             {sent ? (
               <>
                 <div className="auth-alert auth-alert--success" style={{ marginBottom: 16 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                    <path d="M21 12a9 9 0 11-9-9" />
-                    <path d="M21 3v6h-6" />
-                  </svg>
+                  <Icon name="check-circle" size={20} />
                   <span>
                     <strong style={{ display: 'block', marginBottom: 4 }}>Revisá tu email</strong>
                     Si existe una cuenta para <strong>{email}</strong>, te enviamos un enlace para
@@ -87,7 +85,9 @@ function ForgotForm() {
                   </button>
                 </form>
                 <div className="auth-links">
-                  <a href={`/login?next=${encodeURIComponent(next)}`}>← Volver a iniciar sesión</a>
+                  <a href={`/login?next=${encodeURIComponent(next)}`} className="icon-inline">
+                    <Icon name="arrow-left" size={15} /> Volver a iniciar sesión
+                  </a>
                 </div>
               </>
             )}

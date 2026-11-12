@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Tour } from '@/lib/types';
+import Icon from '@/components/ui/Icon';
 
 interface TourCardProps {
   tour: Tour;
@@ -8,18 +9,14 @@ interface TourCardProps {
 function HeartIcon() {
   return (
     <span className="tour-card__heart" aria-label="Favorito">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
+      <Icon name="heart" size={17} />
     </span>
   );
 }
 
 function ArrowIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-      <path d="M5 12h14M13 5l7 7-7 7" />
-    </svg>
+    <Icon name="arrow-right" size={17} />
   );
 }
 
@@ -43,9 +40,15 @@ export default function TourCard({ tour }: TourCardProps) {
       <div className="card__body">
         <h3 className="card__title">{tour.title}</h3>
         <div className="card__meta">
-          <span>⏱ {tour.duration}</span>
-          <span>⛰ {tour.difficulty}</span>
-          <span>👥 {tour.typeLabel}</span>
+          <span>
+            <Icon name="clock" size={15} /> {tour.duration}
+          </span>
+          <span>
+            <Icon name="mountain" size={15} /> {tour.difficulty}
+          </span>
+          <span>
+            <Icon name="users" size={15} /> {tour.typeLabel}
+          </span>
         </div>
         <div className="card__price">
           <small>Desde</small>

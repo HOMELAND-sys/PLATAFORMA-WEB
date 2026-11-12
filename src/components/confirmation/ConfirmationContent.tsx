@@ -1,38 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { jsPDF } from 'jspdf';
-import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useBooking } from '@/context/BookingContext';
 import { useAuth } from '@/context/AuthContext';
 import { fetchBookingByCode, fetchPaymentSettings, type MyBooking, type PaymentSettings } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
-import { formatUsd, usdToBob } from '@/lib/pricing';
+import { prefersReducedMotion } from '@/lib/intro';
+import Icon from '@/components/ui/Icon';
+import DrawIcon from '@/components/ui/DrawIcon';
+import VoucherHero from './VoucherHero';
+import VoucherTicket from './VoucherTicket';
+import {
+  SUPPORT_PHONE,
+  bob,
+  buildIcs,
+  downloadBlob,
+  leadPassenger,
+  meetingTime,
+  money,
+  whatsAppUrl,
+} from './voucher-data';
 
-const WHATSAPP_NUMBER = '59176012345';
-
-const STATUS_META: Record<string, { label: string; cls: string }> = {
-  pendiente_pago: { label: 'Pendiente de pago', cls: 'status--amber' },
-  confirmada: { label: 'Confirmada', cls: 'status--green' },
-  completada: { label: 'Completada', cls: 'status--green' },
-  cancelada: { label: 'Cancelada', cls: 'status--red' },
-};
-
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(`${dateStr}T12:00:00`);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-function durationDays(duration: string): number {
-  const m = duration.match(/(\d+)/);
-  return m ? Math.max(1, parseInt(m[1], 10)) : 1;
-}
-
-const fmtDate = (d: string) =>
-  new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+gsap.registerPlugin(useGSAP, DrawSVGPlugin, MorphSVGPlugin, ScrollTrigger);
 
 export default function ConfirmationContent() {
   const { result } = useBooking();
@@ -53,7 +49,10 @@ export default function ConfirmationContent() {
     }
     let active = true;
     (async () => {
-      const b = await fetchBookingByCode(getSupabase(), code).catch(() => null);
+      const [b, s] = await Promise.all([
+        fetchBookingByCode(getSupabase(), code).catch(() => null),
+        fetchPaymentSettings(getSupabase()).catch(() => null),
+      ]);
       if (!active) return;
       if (!b) {
         setNotFound(true);
@@ -61,7 +60,7 @@ export default function ConfirmationContent() {
         return;
       }
       setBooking(b);
-      setSettings(await fetchPaymentSettings(getSupabase()).catch(() => null));
+      setSettings(s);
       setLoading(false);
     })();
     return () => {
@@ -69,102 +68,7 @@ export default function ConfirmationContent() {
     };
   }, [code]);
 
-  const whatsAppUrl = (b: MyBooking) =>
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      `Hola! Tengo la reserva ${b.code} de "${b.tour_title}" para el ${fmtDate(b.tour_date)} con ${b.pax} pasajero(s). Quiero coordinar el pago.`,
-    )}`;
-
-  // Convierte el QR (URL de Storage) a data URL para incrustarlo en el PDF; null si falla (CORS, etc.).
-  const loadQrDataUrl = (url: string): Promise<string | null> =>
-    new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          canvas.getContext('2d')?.drawImage(img, 0, 0);
-          resolve(canvas.toDataURL('image/png'));
-        } catch {
-          resolve(null);
-        }
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
-
-  const downloadQr = async (url: string) => {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('fetch failed');
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objectUrl;
-      a.download = 'qr-de-pago-homeland-tours.png';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(objectUrl);
-    } catch {
-      window.open(url, '_blank', 'noopener');
-    }
-  };
-
-  const downloadPdf = async (b: MyBooking) => {
-    const doc = new jsPDF();
-    const meta = STATUS_META[b.status] ?? STATUS_META.pendiente_pago;
-    let y = 20;
-    const line = (label: string, value: string, size = 10) => {
-      doc.setFontSize(size);
-      doc.text(label, 16, y);
-      doc.text(value, 120, y);
-      y += 7;
-    };
-    doc.setFontSize(16);
-    doc.text('HOMELAND.TOURS', 16, y);
-    y += 6;
-    doc.setFontSize(9);
-    doc.text('BOLIVIAN TOUR OPERATOR — TRAVEL VOUCHER', 16, y);
-    y += 10;
-    doc.setFontSize(12);
-    doc.text(b.tour_title, 16, y, { maxWidth: 180 });
-    y += 10;
-    line('Reserva', b.code);
-    line('Fecha emisión', fmtDate(b.created_at.slice(0, 10)));
-    line('Estado', meta.label);
-    line('Fecha del tour', fmtDate(b.tour_date));
-    line('Duración', b.tour_duration);
-    line('Pasajeros', b.passengers.map((p) => p.name).join(', '));
-    line('Total', `${formatUsd(b.total)} (≈ BOB ${usdToBob(b.total).toLocaleString('es-BO')})`);
-    const qrData = settings?.qrUrl ? await loadQrDataUrl(settings.qrUrl) : null;
-    if (qrData) {
-      doc.addImage(qrData, 'PNG', 160, 30, 34, 34);
-      doc.setFontSize(7);
-      doc.text('Escaneá para pagar', 177, 68, { align: 'center' });
-    } else if (settings?.qrUrl) {
-      doc.setFontSize(7);
-      doc.text('QR de pago disponible en el voucher en línea', 177, 32, { align: 'center', maxWidth: 26 });
-    }
-    if (settings?.link) line('Enlace de pago', settings.link, 8);
-    if (settings?.instructions) {
-      y += 2;
-      doc.setFontSize(9);
-      doc.text(doc.splitTextToSize(`Instrucciones: ${settings.instructions}`, 180), 16, y);
-    }
-    doc.setFontSize(8);
-    doc.text(`${b.code} · BOLETA ELECTRÓNICA · NO VÁLIDO COMO FACTURA`, 16, 285);
-    doc.save(`voucher-${b.code}.pdf`);
-  };
-
-  if (loading) {
-    return (
-      <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
-        <p style={{ color: 'var(--ink-500)' }}>Cargando tu voucher…</p>
-      </div>
-    );
-  }
+  if (loading) return <VoucherLoading />;
 
   if (notFound || !booking) {
     return (
@@ -195,379 +99,355 @@ export default function ConfirmationContent() {
     );
   }
 
-  const meta = STATUS_META[booking.status] ?? STATUS_META.pendiente_pago;
-  const paid = booking.status === 'confirmada' || booking.status === 'completada';
-  const lead = booking.passengers.find((p) => p.is_lead) ?? booking.passengers[0];
-  const otherPax = booking.pax - booking.passengers.length;
-  const endDate = addDays(booking.tour_date, durationDays(booking.tour_duration) - 1);
+  return <VoucherPage booking={booking} settings={settings} />;
+}
+
+/* ------------------------------------------------------------------ */
+
+function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: PaymentSettings | null }) {
+  const root = useRef<HTMLDivElement>(null);
+  const paid = b.status === 'confirmada' || b.status === 'completada';
+  const cancelled = b.status === 'cancelada';
+  const lead = leadPassenger(b);
+  const info = b.tour_info ?? {};
+  const time = meetingTime(info.meeting);
   const hasPayment = Boolean(settings?.link || settings?.qrUrl);
 
+  /* Paso activo de la línea de tiempo según el estado. */
+  const stepDone = b.status === 'completada' ? 4 : b.status === 'confirmada' ? 2 : 0;
+
+  useGSAP(
+    () => {
+      const el = root.current;
+      if (!el || prefersReducedMotion()) return;
+      const q = gsap.utils.selector(el);
+
+      /* Revelado al hacer scroll */
+      gsap.set(q('.reveal-up'), { autoAlpha: 0, y: 34 });
+      ScrollTrigger.batch(q('.reveal-up'), {
+        start: 'top 90%',
+        once: true,
+        onEnter: (batch) =>
+          gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.12, ease: 'power3.out', clearProps: 'transform' }),
+      });
+
+      /* Línea de pasos: el trazo avanza hasta el paso actual */
+      const line = q('.steps__bar')[0];
+      if (q('.steps')[0]) {
+        if (line)
+          gsap.from(line, {
+            scaleX: 0,
+            transformOrigin: '0% 50%',
+            duration: 1.6,
+            ease: 'power2.inOut',
+            scrollTrigger: { trigger: q('.steps')[0], start: 'top 82%', once: true },
+          });
+        gsap.from(q('.steps__item'), {
+          autoAlpha: 0,
+          y: 20,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power2.inOut',
+          scrollTrigger: { trigger: q('.steps')[0], start: 'top 82%', once: true },
+        });
+        gsap.from(q('.steps__dot'), {
+          scale: 0,
+          duration: 0.6,
+          stagger: 0.18,
+          ease: 'back.out(2.6)',
+          scrollTrigger: { trigger: q('.steps')[0], start: 'top 82%', once: true },
+        });
+      }
+
+      /* QR de pago: brillo que lo recorre */
+      const sheen = q('.pay-card__sheen')[0];
+      if (sheen) {
+        gsap.fromTo(
+          sheen,
+          { xPercent: -140 },
+          { xPercent: 140, duration: 1.6, ease: 'power2.inOut', repeat: -1, repeatDelay: 2.8, delay: 1 },
+        );
+      }
+    },
+    { scope: root, dependencies: [b.code] },
+  );
+
+  const downloadQr = async (url: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('fetch failed');
+      downloadBlob(await res.blob(), 'image/png', 'qr-de-pago-homeland-tours.png');
+    } catch {
+      window.open(url, '_blank', 'noopener');
+    }
+  };
+
+  const steps = [
+    {
+      icon: 'card' as const,
+      title: paid ? 'Pago recibido' : 'Completá el pago',
+      text: paid ? 'Tu operadora ya registró el pago.' : 'Con el QR o el enlace de pago de este voucher.',
+    },
+    { icon: 'badge-check' as const, title: 'Confirmación', text: 'Te avisamos por email cuando pase a “Confirmada”.' },
+    { icon: 'bell' as const, title: 'Recordatorio', text: 'Recibís un aviso antes de la fecha del tour.' },
+    { icon: 'ticket' as const, title: 'Check-in', text: 'Mostrá el QR del voucher en el punto de encuentro.' },
+  ];
+
+  const infoCards = [
+    { icon: 'pin' as const, title: 'Punto de encuentro', text: info.meeting || `${b.tour_start_end || 'A confirmar'}. Te enviamos la dirección exacta por email.`, extra: time ? `Presentarse ${time}` : null },
+    { icon: 'rotate-ccw' as const, title: 'Cancelación', text: info.cancellation },
+    { icon: 'altitude' as const, title: 'Salud y altitud', text: info.health },
+    { icon: 'route' as const, title: 'Transporte', text: info.transport },
+  ].filter((c) => c.text);
+
   return (
-    <>
-      <section className="confirm-hero">
-        <div className="container">
-          <div className="confirm-hero__check">
-            <div className="confirm-check">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-          </div>
-          <h1>
-            {booking.status === 'cancelada' ? (
-              <>
-                Tu reserva fue <em>cancelada</em>
-              </>
-            ) : (
-              <>
-                ¡Tu aventura está <em>reservada!</em>
-              </>
-            )}
-          </h1>
-          <p>
-            Gracias por elegir Homeland Tours. Tu voucher <strong>{booking.code}</strong> está asociado a tu
-            cuenta — podés verlo cuando quieras desde “Mis reservas”.
-          </p>
-        </div>
-      </section>
+    <div className="voucher-page" ref={root}>
+      <VoucherHero status={b.status} code={b.code} firstName={lead?.name.split(' ')[0]} />
 
       <section className="container confirm-page">
-        <div className="voucher-ticket">
-          <div className="voucher-ticket__left">
-            <div className="voucher-ticket__brand">
-              <div className="voucher-ticket__brand-mark">H</div>
-              <div>
-                <strong>HOMELAND.TOURS</strong>
-                <small>BOLIVIAN TOUR OPERATOR</small>
-              </div>
-            </div>
-
-            <div className="voucher-ticket__label">TRAVEL VOUCHER</div>
-            <h2 className="voucher-ticket__title">{booking.tour_title}</h2>
-
-            <div
-              className="voucher-ticket__tour-img"
-              style={{ backgroundImage: `url('${booking.tour_image}')` }}
-            ></div>
-          </div>
-
-          <div className="voucher-ticket__perf"></div>
-
-          <div className="voucher-ticket__right">
-            <div className="voucher-ticket__top">
-              <div>
-                <small>Reserva</small>
-                <strong>{booking.code}</strong>
-              </div>
-              <div>
-                <small>Fecha emisión</small>
-                <strong>{fmtDate(booking.created_at.slice(0, 10))}</strong>
-              </div>
-              <div>
-                <small>Estado</small>
-                <strong className={`voucher-ticket__status ${meta.cls}`}>
-                  <span className="dot"></span> {meta.label}
-                </strong>
-              </div>
-            </div>
-
-            <div className="voucher-ticket__details">
-              <div className="voucher-ticket__detail">
-                <small>PASAJERO</small>
-                <strong>{lead?.name ?? '—'}</strong>
-                {booking.passengers.length > 1 && <span>+ {booking.passengers.length - 1} más</span>}
-                {otherPax > 0 && <span>{otherPax} adulto(s) sin datos</span>}
-              </div>
-              <div className="voucher-ticket__detail">
-                <small>PARTIDA</small>
-                <strong>{fmtDate(booking.tour_date)}</strong>
-                <span>{booking.tour_start_end || 'Punto de encuentro a confirmar'}</span>
-              </div>
-              <div className="voucher-ticket__detail voucher-ticket__detail--arrow">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </div>
-              <div className="voucher-ticket__detail">
-                <small>REGRESO</small>
-                <strong>{fmtDate(endDate)}</strong>
-                <span>{booking.tour_duration}</span>
-              </div>
-            </div>
-
-            <div className="voucher-ticket__divider"></div>
-
-            <div className="voucher-ticket__bottom">
-              {settings?.qrUrl && (
-                <div className="voucher-ticket__qr-block">
-                  <div className="voucher-ticket__qr">
-                    <img src={settings.qrUrl} alt="QR de pago" />
-                  </div>
-                  <small>
-                    Escaneá para
-                    <br />
-                    pagar
-                  </small>
-                </div>
-              )}
-
-              <div className="voucher-ticket__info-block">
-                <div className="voucher-ticket__info-row">
-                  <small>Pasajeros</small>
-                  <strong>
-                    {booking.pax} Adulto{booking.pax > 1 ? 's' : ''}
-                  </strong>
-                </div>
-                <div className="voucher-ticket__info-row">
-                  <small>Duración</small>
-                  <strong>{booking.tour_duration}</strong>
-                </div>
-                <div className="voucher-ticket__info-row">
-                  <small>{paid ? 'Total pagado' : 'Total a pagar'}</small>
-                  <strong className="voucher-ticket__price">
-                    {formatUsd(booking.total)} <span className="text-muted">(≈ BOB {usdToBob(booking.total).toLocaleString('es-BO')})</span>
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="voucher-ticket__barcode">
-              <div className="voucher-ticket__barcode-lines"></div>
-              <small>{booking.code} · BOLETA ELECTRÓNICA · NO VÁLIDO COMO FACTURA</small>
-            </div>
-          </div>
-
-          <div className="voucher-ticket__notch voucher-ticket__notch--top"></div>
-          <div className="voucher-ticket__notch voucher-ticket__notch--bottom"></div>
-        </div>
+        <VoucherTicket booking={b} />
 
         <div className="voucher-actions">
-          {settings?.link && booking.status !== 'cancelada' && (
-            <a className="btn btn--primary" href={settings.link} target="_blank" rel="noopener noreferrer">
-              💳 Pagar con enlace
-            </a>
-          )}
-          <button className="btn btn--primary" onClick={() => void downloadPdf(booking)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Descargar voucher PDF
-          </button>
-          {settings?.qrUrl && booking.status !== 'cancelada' && (
-            <button className="btn btn--ghost" onClick={() => void downloadQr(settings.qrUrl!)}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-                <line x1="14" y1="14" x2="14" y2="21" />
-                <line x1="17" y1="17" x2="21" y2="17" />
-                <line x1="21" y1="14" x2="21" y2="21" />
-              </svg>
-              Descargar QR de pago
+          <PdfButton booking={b} settings={settings} />
+          {!cancelled && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => downloadBlob(buildIcs(b), 'text/calendar;charset=utf-8', `homeland-${b.code}.ics`)}
+            >
+              <Icon name="calendar" size={17} /> Agregar al calendario
             </button>
           )}
-          <a className="btn btn--ghost" href={whatsAppUrl(booking)} target="_blank" rel="noopener noreferrer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-            WhatsApp
+          <a className="btn btn--ghost" href={whatsAppUrl(b)} target="_blank" rel="noopener noreferrer">
+            <Icon name="whatsapp" size={17} /> WhatsApp
           </a>
-          <Link href="/tours" className="btn btn--ghost">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 12l9-9 9 9" />
-              <path d="M9 21V12h6v9" />
-            </svg>
-            Volver al inicio
+          <Link href="/bookings" className="btn btn--ghost">
+            <Icon name="ticket" size={17} /> Mis reservas
           </Link>
         </div>
 
-        <div className="confirm-grid">
-          <div className="confirm-card">
-            <h3>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              Resumen de reserva
-            </h3>
-            <div className="confirm-list">
-              <div className="confirm-list__row">
-                <small>Tour</small>
-                <strong>{booking.tour_title}</strong>
-              </div>
-              <div className="confirm-list__row">
-                <small>Fechas</small>
-                <strong>
-                  {fmtDate(booking.tour_date)}
-                  {endDate !== booking.tour_date && ` → ${fmtDate(endDate)}`}
-                </strong>
-              </div>
-              <div className="confirm-list__row">
-                <small>Pasajeros</small>
-                <strong>
-                  {booking.pax} Adulto{booking.pax > 1 ? 's' : ''}
-                </strong>
-              </div>
-              <div className="confirm-list__row">
-                <small>Nombres</small>
-                <strong>{booking.passengers.map((p) => p.name).join(', ') || '—'}</strong>
-              </div>
-              <div className="confirm-list__row">
-                <small>Punto de encuentro</small>
-                <strong>{booking.tour_start_end || 'A confirmar'}</strong>
+        {/* ---------- Pago pendiente ---------- */}
+        {!paid && !cancelled && (
+          <section className="pay-card reveal-up">
+            <div className="pay-card__body">
+              <span className="pay-card__eyebrow">
+                <span className="pay-card__pulse" /> Paso siguiente
+              </span>
+              <h3>
+                Asegurá tu lugar pagando <em>{money(b.total)}</em>
+              </h3>
+              <p className="pay-card__bob">≈ {bob(b.total)}</p>
+              <p>
+                {settings?.instructions ||
+                  (hasPayment
+                    ? 'Pagá con el QR o el enlace. Apenas lo registremos, tu voucher cambia a “Confirmada” y te avisamos por email.'
+                    : 'El operador aún no configuró el pago en línea. Escribinos por WhatsApp y lo coordinamos al instante.')}
+              </p>
+              <div className="pay-card__actions">
+                {settings?.link && (
+                  <a className="btn btn--primary" href={settings.link} target="_blank" rel="noopener noreferrer">
+                    <Icon name="card" size={17} /> Pagar con enlace
+                  </a>
+                )}
+                {settings?.qrUrl && (
+                  <button type="button" className="btn btn--ghost" onClick={() => void downloadQr(settings.qrUrl!)}>
+                    <Icon name="qr" size={17} /> Descargar QR
+                  </button>
+                )}
+                {!hasPayment && (
+                  <a className="btn btn--primary" href={whatsAppUrl(b)} target="_blank" rel="noopener noreferrer">
+                    <Icon name="whatsapp" size={17} /> Coordinar por WhatsApp
+                  </a>
+                )}
               </div>
             </div>
-          </div>
-
-          <div className="confirm-card">
-            <h3>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <rect x="1" y="4" width="22" height="16" rx="2" />
-                <line x1="1" y1="10" x2="23" y2="10" />
-              </svg>
-              Pago
-            </h3>
-            <div className="confirm-list">
-              {paid ? (
-                <>
-                  <div className="confirm-list__row">
-                    <small>Estado del pago</small>
-                    <strong style={{ color: 'var(--green-700)' }}>Pagado</strong>
-                  </div>
-                  {booking.paid_at && (
-                    <div className="confirm-list__row">
-                      <small>Confirmado el</small>
-                      <strong>{new Date(booking.paid_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="confirm-list__row">
-                    <small>Estado del pago</small>
-                    <strong style={{ color: 'var(--accent-600)' }}>Pendiente</strong>
-                  </div>
-                  <div className="confirm-list__row">
-                    <small>Modalidad</small>
-                    <strong>{booking.payment_method === 'qr' ? 'QR' : 'Enlace de pago'}</strong>
-                  </div>
-                </>
-              )}
-              {settings?.instructions && (
-                <div className="confirm-list__row">
-                  <small>Instrucciones</small>
-                  <strong style={{ fontWeight: 500, textAlign: 'right', maxWidth: '70%' }}>
-                    {settings.instructions}
-                  </strong>
+            {settings?.qrUrl && (
+              <div className="pay-card__qr">
+                <div className="pay-card__qr-img">
+                  <img src={settings.qrUrl} alt="QR de pago" />
+                  <span className="pay-card__sheen" />
                 </div>
-              )}
-              <div className="confirm-list__row">
-                <small>Total</small>
-                <strong style={{ color: paid ? 'var(--green-700)' : 'inherit' }}>
-                  {formatUsd(booking.total)}
-                </strong>
+                <small>Escaneá para pagar</small>
               </div>
-              {!hasPayment && booking.status !== 'cancelada' && (
-                <p className="text-small" style={{ color: 'var(--ink-500)', margin: '8px 0 0' }}>
-                  El operador aún no configuró el pago en línea. Usá WhatsApp para coordinar.
-                </p>
-              )}
-            </div>
-          </div>
+            )}
+          </section>
+        )}
 
-          <div className="confirm-card">
-            <h3>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <polyline points="9 11 12 14 22 4" />
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-              </svg>
-              ¿Qué sigue?
+        {/* ---------- Próximos pasos ---------- */}
+        {!cancelled && (
+          <section className="steps reveal-up">
+            <h3 className="confirm-title">
+              <span>¿Qué sigue?</span>
             </h3>
-            <ul className="next-list">
-              <li className="next-item">
-                <span className="next-item__num">1</span>
-                <div>
-                  <strong>{paid ? 'Reserva confirmada' : 'Pagá con tu voucher'}</strong>
-                  <p>
-                    {paid
-                      ? 'Tu operatora ya confirmó tu reserva. ¡Prepará las maletas!'
-                      : 'Usá el enlace o el QR de este voucher para completar el pago.'}
-                  </p>
-                </div>
-              </li>
-              <li className="next-item">
-                <span className="next-item__num">2</span>
-                <div>
-                  <strong>Confirmación de la operatora</strong>
-                  <p>Te confirmamos por email cuando la reserva pasa a “Confirmada”.</p>
-                </div>
-              </li>
-              <li className="next-item">
-                <span className="next-item__num">3</span>
-                <div>
-                  <strong>Recordatorio</strong>
-                  <p>Vas a recibir un recordatorio antes de la fecha del tour.</p>
-                </div>
-              </li>
-              <li className="next-item">
-                <span className="next-item__num">4</span>
-                <div>
-                  <strong>Check-in</strong>
-                  <p>Mostrá tu voucher en el punto de encuentro.</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
+            <div className="steps__track">
+              <div className="steps__line" aria-hidden="true">
+                {stepDone > 0 && <span className="steps__bar" style={{ width: `${(Math.min(3, stepDone) / 3) * 100}%` }} />}
+              </div>
+              <ol className="steps__list">
+                {steps.map((s, i) => (
+                  <li key={s.title} className={`steps__item${i < stepDone ? ' is-done' : i === stepDone ? ' is-current' : ''}`}>
+                    <span className="steps__dot">
+                      {i < stepDone ? <Icon name="check" size={18} strokeWidth={2.6} /> : <Icon name={s.icon} size={19} />}
+                    </span>
+                    <strong>{s.title}</strong>
+                    <p>{s.text}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        )}
 
-        <div className="trust-strip">
+        {/* ---------- Información del viaje ---------- */}
+        {infoCards.length > 0 && (
+          <section className="trip-info">
+            <h3 className="confirm-title reveal-up">
+              <span>Antes de viajar</span>
+            </h3>
+            <div className="trip-info__grid">
+              {infoCards.map((c, i) => (
+                <article className="trip-info__card reveal-up" key={c.title}>
+                  <span className="trip-info__icon">
+                    <DrawIcon name={c.icon} size={26} delay={i * 0.08} />
+                  </span>
+                  <h4>{c.title}</h4>
+                  <p>{c.text}</p>
+                  {c.extra && <span className="trip-info__tag">{c.extra}</span>}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="trust-strip reveal-up">
           <div className="trust-strip__item">
-            <svg className="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M9 12l2 2 4-4" />
-              <path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z" />
-            </svg>
+            <Icon name="shield-check" size={24} className="trust-strip__icon" />
             <div>
               <h4>Operador local & confiable</h4>
               <p>100% boliviano, owned & operated.</p>
             </div>
           </div>
           <div className="trust-strip__item">
-            <svg className="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M21 12a9 9 0 1 1-9-9" />
-              <path d="M21 3v6h-6" />
-            </svg>
+            <Icon name="rotate-ccw" size={24} className="trust-strip__icon" />
             <div>
               <h4>Pago según te quede cómodo</h4>
               <p>Enlace, QR o coordinado por WhatsApp.</p>
             </div>
           </div>
           <div className="trust-strip__item">
-            <svg className="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
+            <Icon name="star-solid" size={24} className="trust-strip__icon" />
             <div>
               <h4>Best Price Guarantee</h4>
               <p>Sin cargos ocultos, siempre.</p>
             </div>
           </div>
           <div className="trust-strip__item">
-            <svg className="trust-strip__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.33 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
+            <Icon name="chat" size={24} className="trust-strip__icon" />
             <div>
               <h4>¿Necesitas ayuda?</h4>
               <p>
-                24/7 · <strong>+591 760 12345</strong>
+                24/7 · <strong>{SUPPORT_PHONE}</strong>
               </p>
             </div>
           </div>
         </div>
       </section>
-    </>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------
+   Botón "Descargar PDF": la flecha rebota mientras se genera y se
+   transforma (MorphSVG) en un check al terminar.
+   ------------------------------------------------------------------ */
+const ARROW = 'M12 4.5V15M7.2 10.4 12 15.2l4.8-4.8';
+const CHECK = 'M5.2 12.6 9.8 17.2 18.8 7.4';
+
+function PdfButton({ booking, settings }: { booking: MyBooking; settings: PaymentSettings | null }) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+
+  const { contextSafe } = useGSAP({ scope: ref });
+
+  const run = contextSafe(async () => {
+    if (state === 'busy') return;
+    const el = ref.current;
+    const arrow = el?.querySelector('.pdf-btn__arrow') ?? null;
+    const tray = el?.querySelector('.pdf-btn__tray') ?? null;
+    const reduce = prefersReducedMotion();
+    setState('busy');
+    const bounce = !reduce && arrow ? gsap.to(arrow, { y: 2.4, duration: 0.32, repeat: -1, yoyo: true, ease: 'sine.inOut' }) : null;
+    try {
+      const { generateVoucherPdf } = await import('./voucher-pdf');
+      await generateVoucherPdf(booking, settings);
+      bounce?.kill();
+      setState('done');
+      if (!reduce && arrow && tray) {
+        gsap
+          .timeline()
+          .to(arrow, { y: 0, duration: 0.15 })
+          .to(arrow, { morphSVG: CHECK, duration: 0.5, ease: 'back.out(2)' })
+          .to(tray, { opacity: 0, scaleX: 0.3, transformOrigin: '50% 50%', duration: 0.3 }, '<')
+          .to(arrow, { morphSVG: ARROW, duration: 0.45, ease: 'power2.inOut' }, '+=2')
+          .to(tray, { opacity: 1, scaleX: 1, duration: 0.3 }, '<')
+          .add(() => setState('idle'));
+      } else {
+        window.setTimeout(() => setState('idle'), 2400);
+      }
+    } catch (err) {
+      console.error('[voucher] PDF', err);
+      bounce?.kill();
+      if (arrow) gsap.set(arrow, { y: 0 });
+      setState('error');
+      window.setTimeout(() => setState('idle'), 3000);
+    }
+  });
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className={`btn btn--primary pdf-btn pdf-btn--${state}`}
+      onClick={() => void run()}
+      aria-busy={state === 'busy'}
+    >
+      <svg className="pdf-btn__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <path className="pdf-btn__arrow" d={ARROW} />
+        <path className="pdf-btn__tray" d="M5 19.5h14" />
+      </svg>
+      <span>
+        {state === 'busy'
+          ? 'Generando PDF…'
+          : state === 'done'
+            ? '¡Voucher descargado!'
+            : state === 'error'
+              ? 'No se pudo generar'
+              : 'Descargar voucher PDF'}
+      </span>
+    </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+function VoucherLoading() {
+  const ref = useRef<HTMLDivElement>(null);
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return;
+      gsap.to('.vl__needle', { rotation: 360, svgOrigin: '24 24', duration: 1.6, repeat: -1, ease: 'power2.inOut' });
+      gsap.from('.vl__ring', { drawSVG: '0%', duration: 1.2, ease: 'power2.inOut' });
+    },
+    { scope: ref },
+  );
+  return (
+    <div className="voucher-loading" ref={ref}>
+      <svg viewBox="0 0 48 48" width="56" height="56" aria-hidden="true">
+        <circle className="vl__ring" cx="24" cy="24" r="20" />
+        <path className="vl__needle" d="M24 9 28 24 24 39 20 24Z" />
+        <circle cx="24" cy="24" r="2.4" fill="var(--white)" />
+      </svg>
+      <p>Preparando tu voucher…</p>
+    </div>
   );
 }

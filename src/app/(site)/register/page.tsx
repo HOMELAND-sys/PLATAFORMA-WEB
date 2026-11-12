@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import { getSupabase } from '@/lib/supabase';
+import Icon from '@/components/ui/Icon';
 
 function RegisterForm() {
   const searchParams = useSearchParams();
@@ -76,10 +77,7 @@ function RegisterForm() {
         <div className="auth-shell">
           <div className="auth-card">
             <div className="auth-alert auth-alert--success" style={{ marginBottom: 16 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                <path d="M21 12a9 9 0 11-9-9" />
-                <path d="M21 3v6h-6" />
-              </svg>
+              <Icon name="check-circle" size={20} />
               <span>
                 <strong style={{ display: 'block', marginBottom: 4 }}>¡Cuenta creada!</strong>
                 Te enviamos un email de verificación a <strong>{email}</strong>. Abrilo y hací click
@@ -120,11 +118,7 @@ function RegisterForm() {
 
             {error && (
               <div className="auth-alert auth-alert--error" role="alert">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <Icon name="alert" size={20} />
                 <span>
                   {error}
                   {existingAccount && (

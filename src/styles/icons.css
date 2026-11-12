@@ -1,0 +1,149 @@
+/* ============================================
+   Homeland Icons
+   ============================================ */
+.hi {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  overflow: visible;
+}
+.hi .hi-tone {
+  fill: var(--hi-tone, currentColor);
+  opacity: var(--hi-tone-opacity, 0.16);
+}
+
+/* Contextos de marca: el duotono toma el verde oliva de Homeland. */
+.site-header,
+.why-card__icon,
+.diff-card__icon,
+.trust-bar,
+.info-strip,
+.footer-contact,
+.card__meta,
+.stat-item__icon,
+.trust-strip,
+.nav-dropdown,
+.account__menu,
+.policy-list,
+.booking-card__guarantee,
+.hi--brand {
+  --hi-tone: var(--green-400);
+  --hi-tone-opacity: 0.32;
+}
+
+/* ---------- Marca en header / footer ---------- */
+.brand { color: var(--green-900); }
+.brand:hover { color: var(--green-700); }
+.brand { flex-shrink: 0; }
+.brand__logo,
+.site-footer .footer-logo { width: auto; aspect-ratio: 87.6 / 58.8; flex-shrink: 0; }
+.brand__logo { height: 44px; }
+.site-footer .footer-logo { color: var(--green-900); }
+
+/* ---------- Micro-interacciones ---------- */
+.hi { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.hi .hi-tone { transition: opacity 0.3s ease; }
+
+.icon-btn:hover .hi,
+.lang-pill:hover .hi { transform: translateY(-1px) scale(1.08); }
+.icon-btn:hover .hi-tone { opacity: 0.5; }
+
+/* Corazón: se rellena al pasar el cursor */
+.icon-btn:hover .hi--heart .hi-tone,
+.tour-card__heart:hover .hi-tone,
+.gallery__action:hover .hi--heart .hi-tone { opacity: 1; fill: #d9534f; }
+.icon-btn:hover .hi--heart,
+.tour-card__heart:hover .hi--heart { color: #c44b3d; }
+
+.nav-item.has-dropdown > a .nav-caret { transition: transform var(--t-fast); }
+.nav-item.has-dropdown:hover > a .nav-caret { transform: rotate(180deg); }
+
+.nav-dropdown__icon {
+  width: 34px;
+  height: 34px;
+  color: var(--green-700);
+  border-radius: 10px;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+.nav-dropdown a:hover .nav-dropdown__icon { transform: rotate(-6deg) scale(1.06); }
+
+.account__item .hi { color: var(--green-600); }
+.account__item--danger .hi { color: currentColor; }
+
+/* Flechas que avanzan en botones / CTAs */
+.btn .hi--arrow-right,
+.search__submit .hi--arrow-right,
+.card__cta .hi--arrow-right { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.btn:hover .hi--arrow-right,
+.search__submit:hover .hi--arrow-right,
+.tour-card:hover .card__cta .hi--arrow-right { transform: translateX(3px); }
+
+/* Iconos de tarjetas de beneficios: animación de trazo controlada por GSAP */
+.draw-icon { display: inline-grid; place-items: center; line-height: 0; }
+
+/* Listas con check (antes con caracteres ✓ / ✕) */
+.included-list--yes li::before,
+.included-list--no li::before,
+.badge-soft::before,
+.sidebar-why li::before {
+  content: '' !important;
+  width: 16px !important;
+  height: 16px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: var(--hi-mask) center / contain no-repeat;
+  mask: var(--hi-mask) center / contain no-repeat;
+}
+.included-list--yes li::before,
+.badge-soft::before,
+.sidebar-why li::before {
+  --hi-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+}
+.included-list--no li::before {
+  --hi-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6.5 6.5l11 11M17.5 6.5l-11 11'/%3E%3C/svg%3E");
+}
+
+.icon-inline { display: inline-flex; align-items: center; gap: 6px; }
+.icon-inline .hi { color: var(--green-600); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hi, .hi .hi-tone { transition: none; }
+}
+
+/* ---------- Ajustes por contexto ---------- */
+.rating .stars,
+.ta-review__stars { display: inline-flex; align-items: center; gap: 2px; }
+.ta-review__verified { color: #00aa6c; --hi-tone-opacity: 0.22; }
+.highlights-list li .hi { color: var(--green-600); --hi-tone: var(--green-400); --hi-tone-opacity: 0.3; }
+.icon-inline--danger .hi { color: var(--danger); }
+.itinerary__meals .hi { color: var(--green-600); }
+.summary-row .icon-inline .hi,
+.radio-pill .icon-inline .hi { color: var(--green-600); }
+.stat-item__icon .hi--star-solid { color: var(--accent-600); }
+.trust-strip__icon .hi--star-solid { color: var(--accent-500); }
+.confirm-check .hi { color: #fff; }
+.auth-alert .hi { margin-top: 0; }
+
+/* Tarjetas de beneficios: el icono reacciona al hover */
+.why-card__icon,
+.diff-card__icon {
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, color 0.3s ease;
+}
+.why-card:hover .why-card__icon {
+  transform: translateY(-3px) rotate(-5deg);
+  background: var(--green-400);
+  color: #fff;
+  --hi-tone: #fff;
+  --hi-tone-opacity: 0.22;
+}
+.diff-card:hover .diff-card__icon {
+  transform: translateY(-3px) rotate(5deg);
+  background: var(--green-900);
+  color: #fff;
+  --hi-tone: var(--green-300);
+  --hi-tone-opacity: 0.4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .why-card__icon, .diff-card__icon { transition: background 0.3s ease, color 0.3s ease; }
+  .why-card:hover .why-card__icon, .diff-card:hover .diff-card__icon { transform: none; }
+}

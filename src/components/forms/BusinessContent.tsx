@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import CalendarScheduler from '@/components/forms/CalendarScheduler';
+import Icon from '@/components/ui/Icon';
 
 const STATES = [
   'Seleccioná', 'La Paz', 'Cochabamba', 'Santa Cruz', 'Oruro',
@@ -154,12 +155,7 @@ export default function BusinessContent() {
 
             <button type="submit" className="btn btn--primary btn--lg btn--block">
               Agendar reunión
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
+              <Icon name="calendar" size={18} />
             </button>
           </form>
 
@@ -193,15 +189,7 @@ export default function BusinessContent() {
                   WhatsApp B2B
                 </h4>
                 <p style={{ fontSize: '1.3rem', color: 'var(--accent-400)', fontWeight: 600, margin: 0 }}>
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}
-                  >
-                    <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z" />
-                  </svg>
+                  <Icon name="whatsapp" size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />
                   +591 760-12346
                 </p>
               </div>
@@ -212,18 +200,19 @@ export default function BusinessContent() {
                 ¿Qué tipo de alianza buscás?
               </h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.88rem', color: 'var(--ink-200)', lineHeight: 1.8 }}>
-                <li>✓ Agencias de viaje (B2B)</li>
-                <li>✓ Operadores turísticos</li>
-                <li>✓ Hoteles y lodges</li>
-                <li>✓ Guías independientes</li>
-                <li>✓ Transporte turístico</li>
-                <li>✓ Empresas de aventura</li>
+                <li className="icon-inline"><Icon name="check" size={15} /> Agencias de viaje (B2B)</li>
+                <li className="icon-inline"><Icon name="check" size={15} /> Operadores turísticos</li>
+                <li className="icon-inline"><Icon name="check" size={15} /> Hoteles y lodges</li>
+                <li className="icon-inline"><Icon name="check" size={15} /> Guías independientes</li>
+                <li className="icon-inline"><Icon name="check" size={15} /> Transporte turístico</li>
+                <li className="icon-inline"><Icon name="check" size={15} /> Empresas de aventura</li>
               </ul>
 
               <div className="aside-divider"></div>
 
               <p style={{ fontSize: '0.85rem', color: 'var(--ink-300)', textAlign: 'center', margin: 0 }}>
-                💳 <strong style={{ color: 'var(--white)' }}>Pagos con Zwap</strong>
+                <Icon name="card" size={16} style={{ marginRight: 4 }} />
+                <strong style={{ color: 'var(--white)' }}>Pagos con Zwap</strong>
               </p>
             </div>
           </aside>

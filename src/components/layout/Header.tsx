@@ -7,6 +7,20 @@ import { useAuth } from '@/context/AuthContext';
 import { fetchCategories } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import type { CategoryRow } from '@/lib/api';
+import HomelandLogo from '@/components/brand/HomelandLogo';
+import Icon, { type IconName } from '@/components/ui/Icon';
+
+/** Icono propio por categoría (fallback al emoji de la base de datos). */
+const CATEGORY_ICONS: Record<string, IconName> = {
+  'lapaz-city': 'cable-car',
+  'lapaz-top': 'sparkle',
+  uyuni: 'salt-flat',
+  amazon: 'palm',
+  trekking: 'altitude',
+  'bolivia-top': 'gate',
+  peru: 'llama',
+  all: 'globe',
+};
 
 interface HeaderProps {
   activeNav?: 'tours' | 'customize' | 'business' | null;
@@ -76,26 +90,22 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
     >
       <div className="container site-header__inner">
         <Link className="brand" href="/" aria-label="Ir al inicio — Homeland Tours">
-          <img
-            src="/assets/full_trimmed_transparent_black.png"
-            alt="Homeland Tours — Bolivian Tour Operator"
-            className="brand__logo"
-          />
+          <HomelandLogo className="brand__logo" height={44} />
         </Link>
 
         <nav className={`nav${menuOpen ? ' is-open' : ''}`} id="primaryNav">
           {withDropdown ? (
             <div className="nav-item has-dropdown">
               <Link href="/tours" className={activeNav === 'tours' ? 'active' : ''}>
-                Explorar tours{' '}
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
+                Explorar tours <Icon name="chevron-down" size={14} className="nav-caret" />
               </Link>
               <div className="nav-dropdown">
                 {categories.map((cat) => (
                   <Link key={cat.slug} href={`/tours?cat=${cat.slug}`} onClick={() => setMenuOpen(false)}>
-                    <span className="nav-dropdown__icon">{cat.emoji}</span> {cat.label}
+                    <span className="nav-dropdown__icon">
+                      {CATEGORY_ICONS[cat.slug] ? <Icon name={CATEGORY_ICONS[cat.slug]} size={20} /> : cat.emoji}
+                    </span>{' '}
+                    {cat.label}
                   </Link>
                 ))}
               </div>
@@ -127,16 +137,11 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
 
         <div className="header-actions">
           <a className="lang-pill" href="#" aria-label="Cambiar idioma">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" />
-            </svg>
+            <Icon name="globe" size={17} />
             <span>ES</span>
           </a>
           <a className="icon-btn" href="#" aria-label="Favoritos">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
+            <Icon name="heart" size={21} />
           </a>
 
           {session ? (
@@ -158,11 +163,11 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
                     {profile?.full_name || session.user.email}
                   </div>
                   <Link className="account__item" href="/bookings" onClick={() => setAccountOpen(false)}>
-                    🎫 Mis reservas
+                    <Icon name="ticket" size={18} /> Mis reservas
                   </Link>
                   {isAdmin && (
                     <Link className="account__item" href="/admin" onClick={() => setAccountOpen(false)}>
-                      ⚙️ Panel de administración
+                      <Icon name="settings" size={18} /> Panel de administración
                     </Link>
                   )}
                   <button
@@ -174,7 +179,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
                       window.location.href = '/';
                     }}
                   >
-                    Cerrar sesión
+                    <Icon name="logout" size={18} /> Cerrar sesión
                   </button>
                 </div>
               )}
@@ -186,10 +191,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
               aria-label="Mi cuenta — iniciar sesión"
               title="Iniciar sesión"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+              <Icon name="user" size={21} />
             </Link>
           )}
 
@@ -199,11 +201,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
             aria-label={cartCount > 0 ? `Carrito: ${cartCount} ${cartCount === 1 ? 'persona' : 'personas'}` : 'Carrito de compras'}
             title="Carrito de compras"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
+            <Icon name="bag" size={21} />
             {cartCount > 0 && <span className="icon-btn__badge">{cartCount}</span>}
           </Link>
           <Link className="btn btn--gold btn--sm" href={session ? '/bookings' : '/login?next=%2Fbookings'}>
@@ -214,9 +212,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
             aria-label="Abrir menú"
             onClick={() => setMenuOpen((v) => !v)}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 6h18M3 12h18M3 18h18" />
-            </svg>
+            <Icon name={menuOpen ? 'close' : 'menu'} size={22} />
           </button>
         </div>
       </div>

@@ -1,0 +1,132 @@
+/* ============================================
+   Intro del logotipo — Homeland Tours
+   ============================================ */
+
+/* Bloquea el scroll mientras la intro cubre la página, sin salto de layout. */
+html:has(.intro:not(.is-unlocked)) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  /* El hueco reservado de la barra toma el color de la intro. */
+  background: #10160a;
+}
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: auto;
+  /* Failsafe: si JS no llega a tomar el control, la intro desaparece sola. */
+  animation: intro-failsafe 0.6s ease 7s forwards;
+}
+.intro.is-revealed { pointer-events: none; }
+
+@keyframes intro-failsafe {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
+.intro__front,
+.intro__back {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: clip-path;
+}
+
+/* ---------- Capa trasera: segunda cordillera ---------- */
+.intro__back {
+  background: #121809;
+}
+.intro__hills {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(120% 60% at 50% 100%, rgba(20, 26, 14, 0.55), transparent 70%),
+    linear-gradient(180deg, #3b4c24 0%, #4e6330 55%, #5c7536 68%, #3b4c24 84%, #1d2610 100%);
+}
+.intro__back-logo {
+  position: absolute;
+  visibility: hidden;
+  color: #fff;
+  line-height: 0;
+}
+.intro__back-logo svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- Capa frontal: cielo ---------- */
+.intro__front {
+  background:
+    radial-gradient(90% 70% at 50% 42%, #2b3819 0%, #1a2310 48%, #10160a 100%);
+  color: #fff;
+}
+.intro__glow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(900px, 130vw);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(154, 178, 110, 0.28) 0%, rgba(117, 149, 62, 0.1) 38%, transparent 68%);
+  opacity: 0;
+  scale: 0.7;
+  pointer-events: none;
+}
+.intro__topo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgba(183, 201, 149, 0.13);
+  stroke-width: 1.1;
+  pointer-events: none;
+}
+
+.intro__stage {
+  position: absolute;
+  inset: 0 0 16% 0;
+  display: grid;
+  place-items: center;
+}
+.intro__logo {
+  visibility: hidden;
+  width: min(360px, 66vw);
+  line-height: 0;
+  color: #fff;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.intro__logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+
+/* ---------- Líneas de cresta ---------- */
+.intro__edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  pointer-events: none;
+}
+.intro__edge-front {
+  stroke: #c9d8ab;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(201, 216, 171, 0.65));
+}
+.intro__edge-back {
+  stroke: rgba(201, 216, 171, 0.55);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .intro { animation-delay: 2s; }
+}

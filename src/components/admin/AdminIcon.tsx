@@ -1,46 +1,18 @@
-import type { ReactNode } from 'react';
+import Icon, { isIconName, type IconName } from '@/components/ui/Icon';
 
-const paths: Record<string, ReactNode> = {
-  dashboard: <><path d="m3 10 9-7 9 7" /><path d="M5 9v11h14V9M9 20v-7h6v7" /></>,
-  tours: <><path d="m9 4 6 3 6-3v16l-6 3-6-3-6 3V7l6-3Z" /><path d="M9 4v16m6-13v16" /><circle cx="9" cy="8" r="2.5" /></>,
-  calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4m10-4v4M3 11h18m-13 4h.01m4 0h.01m4 0h.01M8 18h.01m4 0h.01" /></>,
-  ticket: <><path d="M4 5h16v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6V5Z" /><path d="M9 9h6m-6 4h6m-6 3h4" /></>,
-  users: <><circle cx="9" cy="7" r="3" /><path d="M3 20v-3a5 5 0 0 1 10 0v3H3Zm12-16a3 3 0 0 1 0 6m2 3a5 5 0 0 1 4 5v2h-5" /></>,
-  chart: <><path d="M3 21h18M5 17V9h4v8m3 0V3h4v14m3 0v-5h3v5" /></>,
-  settings: <><path d="m10 3-1 3-3-1-2 3 2 2-1 3-2 1 1 4 3 .2 2 2-.1 2h4l1-2 3-1 2 1 2-3-2-2 1-3 2-1-1-4-3-.2-2-2V3Z" /><circle cx="12" cy="12" r="3" /></>,
-  search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></>,
-  bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4m-2-19v2" /></>,
-  chevron: <path d="m8 10 4 4 4-4" />,
-  logout: <><path d="M9 4H4v16h5m5-12 5 4-5 4m-6-4h11" /></>,
-  external: <><path d="M14 3h7v7m0-7L10 14" /><path d="M10 4H4v16h16v-6" /></>,
-  money: <><path d="m9 3 3 2 3-2 1 3-2 3c5 4 7 7 5 10-2 3-12 3-14 0-2-3 0-6 5-10L8 6l1-3Z" /><path d="M14 12c-4-2-5 3-2 3s2 5-2 3m2-7v8" /></>,
-  occupancy: <><path d="M10 3a9 9 0 1 0 11 11H10V3Z" /><path d="M14 2v8h8a9 9 0 0 0-8-8Z" /></>,
-  tag: <><path d="M3 4h9l9 9-8 8-10-9V4Z" /><circle cx="8" cy="9" r="1.5" /></>,
-  discount: <><circle cx="12" cy="12" r="9" /><path d="m12 6 2 4 4 .5-3 3 .7 4.5-3.7-2-3.7 2 .7-4.5-3-3 4-.5 2-4Z" /></>,
-  arrow: <path d="M4 12h16m-5-5 5 5-5 5" />,
-  up: <path d="M12 20V4m-5 5 5-5 5 5" />,
-  menu: <path d="M4 6h16M4 12h16M4 18h16" />,
-  close: <path d="m6 6 12 12M6 18 18 6" />,
-  refresh: <><path d="M20 7v5h-5M4 17v-5h5" /><path d="M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1" /></>,
-  plus: <path d="M12 5v14M5 12h14" />,
-  star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" />,
-  pin: <><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></>,
-  document: <><path d="M14 3H5v18h14V8l-5-5Zm0 0v5h5M8 12h8m-8 4h6" /></>,
-  filter: <><path d="M4 6h16M4 12h16M4 18h16" /><path d="M8 4v4m8 2v4M10 16v4" /></>,
-  more: <><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></>,
-  check: <path d="m5 12 4 4L19 6" />,
-  checkCircle: <><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></>,
-  crossCircle: <><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6m-6 0 6-6" /></>,
-  eye: <><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></>,
-  copy: <><rect x="8" y="8" width="12" height="13" rx="2" /><path d="M16 8V3H3v13h5" /></>,
-  power: <><path d="M12 2v10M6 5a9 9 0 1 0 12 0" /></>,
-  upload: <><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6" /></>,
-  save: <><path d="M4 3h13l4 4v14H3V3h1Zm3 0v6h9V3M7 21v-8h10v8" /></>,
-  trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7" /></>,
-  left: <path d="m14 6-6 6 6 6" />,
-  right: <path d="m10 6 6 6-6 6" />,
+/** Nombres históricos del panel admin → iconos del sistema Homeland Icons. */
+const ALIASES: Record<string, IconName> = {
+  tours: 'map',
+  chevron: 'chevron-down',
+  arrow: 'arrow-right',
+  up: 'arrow-up',
+  checkCircle: 'check-circle',
+  crossCircle: 'x-circle',
+  left: 'chevron-left',
+  right: 'chevron-right',
 };
 
 export default function AdminIcon({ name, size = 20 }: { name: string; size?: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] ?? paths.dashboard}</svg>;
+  const resolved: IconName = ALIASES[name] ?? (isIconName(name) ? name : 'dashboard');
+  return <Icon name={resolved} size={size} />;
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { reviews } from '@/data/reviews';
+import Icon from '@/components/ui/Icon';
 
 const VISIBLE = 3;
 const ROTATE_MS = 5000;
@@ -42,14 +43,10 @@ export default function ReviewsCarousel() {
       </div>
 
       <button className="ta-reviews__nav ta-reviews__nav--prev" onClick={prev} aria-label="Anterior">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
+        <Icon name="chevron-left" size={22} />
       </button>
       <button className="ta-reviews__nav ta-reviews__nav--next" onClick={next} aria-label="Siguiente">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
+        <Icon name="chevron-right" size={22} />
       </button>
 
       <div className="ta-reviews__head">
@@ -83,12 +80,7 @@ export default function ReviewsCarousel() {
                 </span>
               </div>
               <div className="ta-review__verified" aria-label="Reseña verificada">
-                <svg viewBox="0 0 24 24" width="22" height="22">
-                  <circle cx="12" cy="12" r="11" fill="#00aa6c" />
-                  <circle cx="12" cy="12" r="4" fill="#fff" />
-                  <circle cx="9" cy="9" r="1.4" fill="#00aa6c" />
-                  <circle cx="15" cy="9" r="1.4" fill="#00aa6c" />
-                </svg>
+                <Icon name="badge-check" size={24} />
               </div>
               <div className="ta-review__tail"></div>
             </div>

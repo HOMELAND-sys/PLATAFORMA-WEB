@@ -9,6 +9,7 @@ import {
 } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import { formatUsd } from '@/lib/pricing';
+import Icon from '@/components/ui/Icon';
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   pendiente_pago: { label: 'Pendiente de pago', cls: 'badge-status--amber' },
@@ -164,10 +165,7 @@ function ClientDrawer({
         <div className="admin-drawer__head">
           <h3>{client.full_name || 'Cliente'}</h3>
           <button className="admin-side__logout" onClick={onClose} title="Cerrar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <Icon name="close" size={18} />
           </button>
         </div>
 

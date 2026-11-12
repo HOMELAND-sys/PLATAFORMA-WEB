@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Icon from '@/components/ui/Icon';
 import TourCard from '@/components/ui/TourCard';
 import type { Tour } from '@/lib/types';
 
@@ -13,9 +14,7 @@ export default function FeaturedSection({ tours }: { tours: Tour[] }) {
           </div>
           <Link className="btn btn--ghost btn--sm" href="/tours">
             Ver todos los tours
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
+            <Icon name="arrow-right" size={16} />
           </Link>
         </div>
 

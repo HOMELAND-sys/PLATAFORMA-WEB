@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Icon from '@/components/ui/Icon';
 import type { CategoryRow } from '@/lib/api';
 
 export default function CategoriesSection({ categories }: { categories: CategoryRow[] }) {
@@ -12,9 +13,7 @@ export default function CategoriesSection({ categories }: { categories: Category
           </div>
           <Link className="btn btn--ghost btn--sm" href="/tours">
             Ver todos los destinos
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
+            <Icon name="arrow-right" size={16} />
           </Link>
         </div>
 
@@ -35,7 +34,9 @@ export default function CategoriesSection({ categories }: { categories: Category
               </div>
               <div className="cat-card__body">
                 <h3>{cat.label}</h3>
-                <span>Explorar categoría →</span>
+                <span className="icon-inline">
+                  Explorar categoría <Icon name="arrow-right" size={14} />
+                </span>
               </div>
             </Link>
           ))}

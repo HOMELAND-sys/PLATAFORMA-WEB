@@ -5,6 +5,7 @@ import { checkCoupon } from '@/lib/api';
 import { formatUsd, usdToBob } from '@/lib/pricing';
 import { getSupabase } from '@/lib/supabase';
 import type { BookingSelection, Tour } from '@/lib/types';
+import Icon from '@/components/ui/Icon';
 
 interface SummaryCardProps {
   tour?: Tour;
@@ -72,7 +73,9 @@ export default function SummaryCard({
       </div>
 
       <div className="summary-row">
-        <span>📅 Fechas</span>
+        <span className="icon-inline">
+          <Icon name="calendar" size={16} /> Fechas
+        </span>
         <span style={{ textAlign: 'right' }}>
           {selection?.date
             ? new Date(`${selection.date}T12:00:00`).toLocaleDateString('es-ES', {
@@ -86,7 +89,9 @@ export default function SummaryCard({
         </span>
       </div>
       <div className="summary-row">
-        <span>👥 Pasajeros</span>
+        <span className="icon-inline">
+          <Icon name="users" size={16} /> Pasajeros
+        </span>
         <span>
           {paxCount} Adulto{paxCount > 1 ? 's' : ''}
         </span>
@@ -96,10 +101,7 @@ export default function SummaryCard({
 
       <div className="summary-coupon">
         <label className="summary-coupon__label">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-            <line x1="7" y1="7" x2="7.01" y2="7" />
-          </svg>
+          <Icon name="tag" size={15} />
           ¿Tenés un cupón?
         </label>
         <div className="summary-coupon__form">
@@ -158,16 +160,11 @@ export default function SummaryCard({
 
       <div className="summary-cta">
         <p className="text-small" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z" />
-          </svg>
+          <Icon name="shield-check" size={15} />
           Pago seguro y encriptado
         </p>
         <p className="text-small" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 6v6l4 2" />
-          </svg>
+          <Icon name="clock" size={15} />
           Confirmación instantánea
         </p>
       </div>

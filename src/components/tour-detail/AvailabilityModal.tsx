@@ -2,6 +2,7 @@
 
 import { getGroupDiscountLabel, getGroupDiscountRate, GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
 import type { Tour, TourType } from '@/lib/types';
+import Icon from '@/components/ui/Icon';
 
 interface AvailabilityModalProps {
   open: boolean;
@@ -43,17 +44,12 @@ export default function AvailabilityModal({
       <div className="am-modal__overlay" onClick={onClose}></div>
       <div className="am-modal__panel" role="dialog" aria-modal="true" aria-labelledby="availTitle">
         <button className="am-modal__close" aria-label="Cerrar" onClick={onClose}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <Icon name="close" size={20} />
         </button>
 
         <header className="am-head">
           <p className="am-head__tour">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>{' '}
+            <Icon name="pin" size={14} />{' '}
             {tour.title}
           </p>
           <h2 className="am-head__title" id="availTitle">
@@ -109,18 +105,7 @@ export default function AvailabilityModal({
                     />
                     <label htmlFor={`extra-${extra.id}`} className="am-extra">
                       <span className="am-extra__icon" aria-hidden="true">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
-                        </svg>
+                        <Icon name="plane" size={17} />
                       </span>
                       <span className="am-extra__name">{extra.name}</span>
                       <span className="am-extra__sub">{extra.sub}</span>
@@ -165,10 +150,7 @@ export default function AvailabilityModal({
 
           {getGroupDiscountRate(pax) > 0 && (
             <div className="am-promo">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                <line x1="7" y1="7" x2="7.01" y2="7" />
-              </svg>
+              <Icon name="tag" size={15} />
               <span>
                 {pax >= GROUP_DISCOUNT_MAX_PAX
                   ? `¡Descuento máximo! ${getGroupDiscountLabel(pax)} por reservar ${pax} pasajeros.`
@@ -181,9 +163,7 @@ export default function AvailabilityModal({
 
           <button className="am-cta" onClick={onAddToCart}>
             Añadir al carrito
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
+            <Icon name="arrow-right" size={17} />
           </button>
         </footer>
       </div>

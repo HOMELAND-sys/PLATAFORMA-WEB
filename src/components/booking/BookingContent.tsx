@@ -19,6 +19,7 @@ import { getSupabase } from '@/lib/supabase';
 import { formatUsd } from '@/lib/pricing';
 import { track } from '@/lib/analytics';
 import type { MealOption, Tour, TourExtra, TourType } from '@/lib/types';
+import Icon from '@/components/ui/Icon';
 
 interface BookerData {
   fullName: string;
@@ -502,7 +503,9 @@ export default function BookingContent() {
                     checked={paymentMethod === 'link'}
                     onChange={() => setPaymentMethod('link')}
                   />
-                  <span>💳 Enlace de pago</span>
+                  <span className="icon-inline">
+                    <Icon name="card" size={17} /> Enlace de pago
+                  </span>
                   <small>Botón para pagar desde el voucher</small>
                 </label>
                 <label className={`radio-pill${paymentMethod === 'qr' ? ' is-active' : ''}`}>
@@ -513,7 +516,9 @@ export default function BookingContent() {
                     checked={paymentMethod === 'qr'}
                     onChange={() => setPaymentMethod('qr')}
                   />
-                  <span>📱 QR</span>
+                  <span className="icon-inline">
+                    <Icon name="qr" size={17} /> QR
+                  </span>
                   <small>Escaneá el QR del voucher</small>
                 </label>
               </div>

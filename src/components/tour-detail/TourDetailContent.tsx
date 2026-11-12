@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import Icon from '@/components/ui/Icon';
 import TourCard from '@/components/ui/TourCard';
 import AvailabilityModal from '@/components/tour-detail/AvailabilityModal';
 import { calcAvailabilityTotal, GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
@@ -102,10 +103,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
           <h1>{tour.title}</h1>
           <div className="detail-meta">
             <span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>{' '}
+              <Icon name="pin" size={15} />{' '}
               {tour.destination}
             </span>
           </div>
@@ -132,15 +130,11 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                 <img src={tour.gallery[activeImg]} alt={tour.title} />
                 <div className="gallery__overlay-actions">
                   <button className="gallery__action" aria-label="Compartir">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" />
-                    </svg>
+                    <Icon name="share" size={17} />
                     Compartir
                   </button>
                   <button className="gallery__action" aria-label="Añadir a lista de deseos">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
+                    <Icon name="heart" size={17} />
                     Guardar
                   </button>
                 </div>
@@ -149,75 +143,56 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                   aria-label="Anterior"
                   onClick={() => setActiveImg((i) => (i - 1 + tour.gallery.length) % tour.gallery.length)}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M15 18l-6-6 6-6" />
-                  </svg>
+                  <Icon name="chevron-left" size={20} />
                 </button>
                 <button
                   className="gallery__nav gallery__nav--next"
                   aria-label="Siguiente"
                   onClick={() => setActiveImg((i) => (i + 1) % tour.gallery.length)}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
+                  <Icon name="chevron-right" size={20} />
                 </button>
               </div>
             </div>
 
             <div className="info-strip">
               <div className="info-strip__item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
+                <Icon name="pin" size={22} />
                 <div>
                   <div className="info-strip__item-label">Destino</div>
                   <div className="info-strip__item-value">{tour.destination}</div>
                 </div>
               </div>
               <div className="info-strip__item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 6v6l4 2" />
-                </svg>
+                <Icon name="clock" size={22} />
                 <div>
                   <div className="info-strip__item-label">Inicio / Fin</div>
                   <div className="info-strip__item-value">{tour.startEnd}</div>
                 </div>
               </div>
               <div className="info-strip__item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <path d="M12 2v20M4 7l8-5 8 5" />
-                </svg>
+                <Icon name="sun" size={22} />
                 <div>
                   <div className="info-strip__item-label">Mejor temporada</div>
                   <div className="info-strip__item-value">{tour.bestSeason}</div>
                 </div>
               </div>
               <div className="info-strip__item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <circle cx="12" cy="8" r="6" />
-                  <path d="M9 14l-2 8 5-3 5 3-2-8" />
-                </svg>
+                <Icon name="compass" size={22} />
                 <div>
                   <div className="info-strip__item-label">Tipo de tour</div>
                   <div className="info-strip__item-value">{tour.typeLabel}</div>
                 </div>
               </div>
               <div className="info-strip__item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <path d="M2 20h20M5 20l3-10h8l3 10M9 10V4h6v6" />
-                </svg>
+                <Icon name="backpack" size={22} />
                 <div>
                   <div className="info-strip__item-label">Actividad</div>
                   <div className="info-strip__item-value">{tour.activityLabel}</div>
                 </div>
               </div>
               <div className="info-strip__item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                  <path d="M2 20l3-10h14l3 10M5 20l5-15h4l5 15" />
-                </svg>
+                <Icon name="altitude" size={22} />
                 <div>
                   <div className="info-strip__item-label">Altitud máx.</div>
                   <div className="info-strip__item-value">{tour.maxAltitude}</div>
@@ -235,7 +210,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
               <ul className="highlights-list">
                 {tour.highlights.map((h) => (
                   <li key={h}>
-                    <span>✓</span> {h}
+                    <Icon name="check-circle" size={18} /> {h}
                   </li>
                 ))}
               </ul>
@@ -270,15 +245,19 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                             <h4>{day.title}</h4>
                             <div className="itinerary__meals">
                               {day.meals.map((m) => (
-                                <span key={m}>🍽 {m}</span>
+                                <span key={m}>
+                                  <Icon name="meal" size={14} /> {m}
+                                </span>
                               ))}
-                              {day.stay && <span>🏨 {day.stay}</span>}
+                              {day.stay && (
+                                <span>
+                                  <Icon name="bed" size={14} /> {day.stay}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <span className="itinerary__chevron">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M6 9l6 6 6-6" />
-                            </svg>
+                            <Icon name="chevron-down" size={20} />
                           </span>
                         </summary>
                         <div className="itinerary__body">
@@ -305,7 +284,9 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                 <p>Todo lo que necesitás saber sobre qué está cubierto en el precio.</p>
                 <div className="included-grid">
                   <div>
-                    <h4 style={{ color: 'var(--green-700)', marginBottom: 8 }}>✓ Incluido</h4>
+                    <h4 className="icon-inline" style={{ color: 'var(--green-700)', marginBottom: 8 }}>
+                      <Icon name="check-circle" size={20} /> Incluido
+                    </h4>
                     <ul className="included-list included-list--yes">
                       {tour.included.map((item) => (
                         <li key={item}>{item}</li>
@@ -313,7 +294,9 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                     </ul>
                   </div>
                   <div>
-                    <h4 style={{ color: 'var(--danger)', marginBottom: 8 }}>✕ No incluido</h4>
+                    <h4 className="icon-inline icon-inline--danger" style={{ color: 'var(--danger)', marginBottom: 8 }}>
+                      <Icon name="x-circle" size={20} /> No incluido
+                    </h4>
                     <ul className="included-list included-list--no">
                       {tour.notIncluded.map((item) => (
                         <li key={item}>{item}</li>
@@ -364,7 +347,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
               <div className="flex-between" style={{ marginBottom: 24 }}>
                 <h3 style={{ margin: 0 }}>También te puede interesar</h3>
                 <Link className="btn btn--ghost btn--sm" href="/tours">
-                  Ver todos los tours →
+                  Ver todos los tours <Icon name="arrow-right" size={16} />
                 </Link>
               </div>
               <div className="featured-grid">
@@ -380,10 +363,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
               <div className="booking-card__head">
                 <h3 className="booking-card__title">Reservá tu aventura</h3>
                 <div className="booking-card__guarantee">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M9 12l2 2 4-4" />
-                    <path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  </svg>
+                  <Icon name="shield-check" size={15} />
                   <span>Best Price Guarantee</span>
                 </div>
               </div>
@@ -454,24 +434,15 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
 
               <ul className="booking-card__perks">
                 <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                    <path d="M3 3v5h5" />
-                  </svg>
+                  <Icon name="rotate-ccw" size={17} />
                   Cancelación gratis hasta 48h antes
                 </li>
                 <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
+                  <Icon name="check-circle" size={17} />
                   Confirmación instantánea
                 </li>
                 <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
+                  <Icon name="pin" size={17} />
                   Operador local 100% boliviano
                 </li>
               </ul>

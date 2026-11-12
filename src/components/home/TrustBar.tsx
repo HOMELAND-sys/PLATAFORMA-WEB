@@ -1,3 +1,5 @@
+import Icon from '@/components/ui/Icon';
+
 export default function TrustBar() {
   return (
     <div className="trust-bar">
@@ -14,22 +16,21 @@ export default function TrustBar() {
           </span>
         </div>
         <div className="trust-bar__item rating">
-          <span className="stars">★ ★ ★ ★ ★</span>
+          <span className="stars" aria-label="5 de 5 estrellas">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Icon key={i} name="star-solid" size={15} />
+            ))}
+          </span>
           <span>
             <strong>4.9/5</strong> Excelente
           </span>
         </div>
         <div className="trust-bar__item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 12l2 2 4-4" />
-            <path d="M21 12c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-          </svg>
+          <Icon name="badge-check" size={20} />
           Operador local verificado
         </div>
         <div className="trust-bar__item">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2 4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z" />
-          </svg>
+          <Icon name="lock" size={20} />
           Pago seguro · Zwap
         </div>
       </div>

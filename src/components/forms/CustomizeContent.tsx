@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import Icon from '@/components/ui/Icon';
 
 const COUNTRIES = [
   'Afganistán', 'Alemania', 'Argentina', 'Australia', 'Bolivia', 'Brasil',
@@ -198,9 +199,7 @@ export default function CustomizeContent() {
 
             <button type="submit" className="btn btn--primary btn--lg btn--block">
               Entregar
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-              </svg>
+              <Icon name="send" size={18} />
             </button>
           </form>
 
@@ -234,15 +233,7 @@ export default function CustomizeContent() {
                   Envíanos un mensaje por WhatsApp
                 </h4>
                 <p style={{ fontSize: '1.3rem', color: 'var(--accent-400)', fontWeight: 600, margin: 0 }}>
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}
-                  >
-                    <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.7 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z" />
-                  </svg>
+                  <Icon name="whatsapp" size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />
                   +591 760-12345
                 </p>
               </div>
@@ -250,7 +241,8 @@ export default function CustomizeContent() {
               <div className="aside-divider"></div>
 
               <p style={{ fontSize: '0.85rem', color: 'var(--ink-300)', textAlign: 'center', margin: 0 }}>
-                💳 <strong style={{ color: 'var(--white)' }}>Pagos seguros con Zwap</strong>
+                <Icon name="lock" size={16} style={{ marginRight: 4 }} />
+                <strong style={{ color: 'var(--white)' }}>Pagos seguros con Zwap</strong>
               </p>
             </div>
           </aside>

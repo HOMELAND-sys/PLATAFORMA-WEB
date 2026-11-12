@@ -2,9 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { SplitText } from 'gsap/SplitText';
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
+import Icon from '@/components/ui/Icon';
+import { onIntroReveal, prefersReducedMotion } from '@/lib/intro';
 import { fetchActiveTours, fetchCategories, type CategoryRow } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import type { Tour } from '@/lib/types';
+
+gsap.registerPlugin(useGSAP, SplitText, ScrambleTextPlugin);
 
 const PLACEHOLDERS = [
   '¿A dónde quieres ir?',
@@ -42,6 +50,72 @@ export default function Hero() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+
+  /* Entrada del hero: espera a que la intro del logotipo abra la cortina. */
+  useGSAP(
+    () => {
+      const hero = heroRef.current;
+      if (!hero || prefersReducedMotion()) return;
+      const q = gsap.utils.selector(hero);
+      const img = q('.hero__media img');
+      const eyebrow = q('.hero__eyebrow')[0] as HTMLElement | undefined;
+      const title = q('.hero__title')[0] as HTMLElement | undefined;
+      const rest = q('.hero__lead, .search');
+
+      gsap.set(img, { scale: 1.18, transformOrigin: '50% 60%' });
+      gsap.set([eyebrow, title, ...rest], { autoAlpha: 0 });
+
+      let split: SplitText | null = null;
+      const play = () => {
+        const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+        tl.to(img, { scale: 1, duration: 2.6, ease: 'power3.out' }, 0);
+
+        if (eyebrow) {
+          const text = eyebrow.textContent ?? '';
+          tl.set(eyebrow, { autoAlpha: 1 }, 0.25).to(
+            eyebrow,
+            { duration: 1.2, scrambleText: { text, chars: 'upperCase', speed: 0.5, revealDelay: 0.15 }, ease: 'none' },
+            0.25,
+          );
+        }
+
+        if (title) {
+          split = SplitText.create(title, { type: 'lines,words', mask: 'lines', linesClass: 'hero__line' });
+          tl.set(title, { autoAlpha: 1 }, 0.3).from(
+            split.words,
+            { yPercent: 115, rotate: 4, duration: 1.3, stagger: 0.07, transformOrigin: '0% 100%' },
+            0.3,
+          );
+          tl.add(() => {
+            split?.revert();
+            split = null;
+          });
+        }
+
+        tl.fromTo(
+          rest,
+          { autoAlpha: 0, y: 26 },
+          { autoAlpha: 1, y: 0, duration: 1.2, stagger: 0.12, clearProps: 'transform' },
+          0.75,
+        );
+      };
+
+      let cancelled = false;
+      const unsubscribe = onIntroReveal(() => {
+        // Espera a las fuentes para que SplitText corte las líneas correctamente.
+        void document.fonts.ready.then(() => {
+          if (!cancelled) play();
+        });
+      });
+      return () => {
+        cancelled = true;
+        unsubscribe();
+        split?.revert();
+      };
+    },
+    { scope: heroRef },
+  );
 
   useEffect(() => {
     let active = true;
@@ -123,7 +197,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="hero">
+    <section className="hero" ref={heroRef}>
       <div className="hero__media">
         <img src="/assets/uyuni-mirror.jpg" alt="Paisaje andino" />
         <div className="hero__veil"></div>
@@ -143,10 +217,7 @@ export default function Hero() {
         <form className="search" onSubmit={handleSubmit} autoComplete="off">
           <div className="search__field search__field--main" ref={containerRef}>
             <span className="search__icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
+              <Icon name="search" size={19} />
             </span>
             <div className="search__field-text">
               <label>Buscar tour</label>
@@ -209,9 +280,7 @@ export default function Hero() {
           </div>
           <button className="search__submit" type="submit">
             <span>Buscar tours</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M5 12h14M13 5l7 7-7 7" />
-            </svg>
+            <Icon name="arrow-right" size={18} />
           </button>
         </form>
       </div>
