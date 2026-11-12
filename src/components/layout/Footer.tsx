@@ -6,7 +6,13 @@ export default function Footer() {
   return (
     <footer className="site-footer">
       <div className="container">
-        <HomelandLogo className="footer-logo" height={56} />
+        <div className="footer-brand">
+          <HomelandLogo className="footer-logo" height={96} />
+          <p className="footer-brand__text">
+            <strong>Authentic journeys. Local hearts.</strong>
+            Operador 100% boliviano: viajes auténticos diseñados por gente de aquí, con operadores locales y precio justo.
+          </p>
+        </div>
         <div className="footer-grid">
           <div className="footer-col">
             <h4>NOSOTROS</h4>

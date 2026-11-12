@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { reviews } from '@/data/reviews';
+import { REVIEWS_BG } from '@/data/site-photos';
 import Icon from '@/components/ui/Icon';
 
 const VISIBLE = 3;
@@ -38,7 +39,7 @@ export default function ReviewsCarousel() {
   return (
     <section className="ta-reviews">
       <div className="ta-reviews__bg">
-        <img src="/assets/uyuni-salt.jpg" alt="" />
+        <img src={REVIEWS_BG.src} alt="" loading="lazy" />
         <div className="ta-reviews__bg-tint"></div>
       </div>
 

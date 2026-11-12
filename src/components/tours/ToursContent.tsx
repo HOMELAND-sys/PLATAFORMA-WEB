@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import TourCard from '@/components/ui/TourCard';
 import FilterPanel from '@/components/tours/FilterPanel';
-import { fetchActiveTours, fetchCategories } from '@/lib/api';
+import { fetchActiveTours, fetchCategories, tourThumb } from '@/lib/api';
 import type { CategoryRow } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import { track } from '@/lib/analytics';
@@ -28,6 +28,25 @@ const DURATION_MAP: Record<string, (t: { duration: string }) => boolean> = {
   '4-plus': (t) => /^4|^5/.test(t.duration.trim()),
 };
 
+function durationDays(duration: string): number {
+  const s = duration.toLowerCase();
+  if (s.includes('half')) return 0.5;
+  const m = s.match(/(\d+(?:[.,]\d+)?)\s*(day|día|hora|hour)/);
+  if (!m) return 99;
+  const n = parseFloat(m[1].replace(',', '.'));
+  return /hora|hour/.test(m[2]) ? n / 24 : n;
+}
+
+function effectivePrice(t: Tour): number {
+  return t.price * (1 - (t.offerPct ?? 0) / 100);
+}
+
+function fmtChipDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 // Selección curada de la sección "Experiencias destacadas" (datos reales del catálogo).
 const PREMIUM_SLUGS = [
   'salkantay-trek-machu-picchu',
@@ -40,11 +59,16 @@ export default function ToursContent() {
   const searchParams = useSearchParams();
   const initialCat = searchParams.get('cat');
   const initialQuery = searchParams.get('q')?.trim().toLowerCase() ?? '';
+  const initialDate = searchParams.get('date') ?? '';
+  const initialPax = searchParams.get('pax') ?? '';
 
   const [tours, setTours] = useState<Tour[] | null>(null);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [category, setCategory] = useState<string>('all');
   const [query, setQuery] = useState(initialQuery);
+  const [dateChip, setDateChip] = useState(initialDate);
+  const [paxChip, setPaxChip] = useState(initialPax);
+  const [sort, setSort] = useState('recommended');
   const [filters, setFilters] = useState<Filters>({
     mode: 'shared',
     duration: 'any',
@@ -84,7 +108,7 @@ export default function ToursContent() {
 
   const filtered = useMemo(() => {
     if (!tours) return [];
-    return tours.filter((t) => {
+    const list = tours.filter((t) => {
       if (category !== 'all' && !t.categories.includes(category as CategoryId)) return false;
       if (!DURATION_MAP[filters.duration]?.(t)) return false;
       if (!filters.difficulties.includes(t.difficulty)) return false;
@@ -105,7 +129,23 @@ export default function ToursContent() {
       }
       return true;
     });
-  }, [tours, category, filters, query, categories]);
+    switch (sort) {
+      case 'price-asc':
+        list.sort((a, b) => effectivePrice(a) - effectivePrice(b));
+        break;
+      case 'price-desc':
+        list.sort((a, b) => effectivePrice(b) - effectivePrice(a));
+        break;
+      case 'duration':
+        list.sort((a, b) => durationDays(a.duration) - durationDays(b.duration));
+        break;
+      default:
+        list.sort(
+          (a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.reviewCount ?? 0) - (a.reviewCount ?? 0),
+        );
+    }
+    return list;
+  }, [tours, category, filters, query, categories, sort]);
 
   const premium = useMemo(() => {
     if (!tours) return [];
@@ -130,14 +170,36 @@ export default function ToursContent() {
             Journeys handpicked across Bolivia&apos;s most extraordinary landscapes and cultures. 200+ curated
             tours, all with local operators and best-price guarantee.
           </p>
-          {query && (
+          {(query || dateChip || paxChip) && (
             <div className="tours-search-summary">
-              <span>
-                Resultados para <strong>&ldquo;{query}&rdquo;</strong>
-              </span>
-              <button type="button" className="tours-search-clear" onClick={() => setQuery('')}>
-                Limpiar búsqueda
-              </button>
+              {query && (
+                <span>
+                  Resultados para <strong>&ldquo;{query}&rdquo;</strong>
+                </span>
+              )}
+              {dateChip && (
+                <span className="tours-search-chip">
+                  <Icon name="calendar" size={14} />
+                  {fmtChipDate(dateChip)}
+                  <button type="button" aria-label="Quitar fecha" onClick={() => setDateChip('')}>
+                    <Icon name="close" size={12} />
+                  </button>
+                </span>
+              )}
+              {paxChip && (
+                <span className="tours-search-chip">
+                  <Icon name="users" size={14} />
+                  {paxChip} viajero{paxChip === '1' ? '' : 's'}
+                  <button type="button" aria-label="Quitar viajeros" onClick={() => setPaxChip('')}>
+                    <Icon name="close" size={12} />
+                  </button>
+                </span>
+              )}
+              {query && (
+                <button type="button" className="tours-search-clear" onClick={() => setQuery('')}>
+                  Limpiar búsqueda
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -170,8 +232,17 @@ export default function ToursContent() {
         <div className="container">
           <div className="results-head">
             <span>
-              Mostrando <strong>{filtered.length} tours</strong> · Tour compartido / privado
+              Mostrando <strong>{filtered.length} de {tours.length} tours</strong> · Tour compartido / privado
             </span>
+            <label className="sort-select">
+              <span>Ordenar por</span>
+              <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="recommended">Recomendados</option>
+                <option value="price-asc">Precio: menor a mayor</option>
+                <option value="price-desc">Precio: mayor a menor</option>
+                <option value="duration">Duración</option>
+              </select>
+            </label>
           </div>
 
           <div className="tour-grid">
@@ -246,7 +317,7 @@ export default function ToursContent() {
             {premium.map((p) => (
               <Link className="premium-card" key={p.slug} href={`/tours/${p.slug}`}>
                 <div className="premium-card__media">
-                  <img src={p.image} alt={p.title} />
+                  <img src={tourThumb(p.image)} alt={p.title} loading="lazy" />
                   {p.badge && <span className="premium-card__badge">{p.badge}</span>}
                 </div>
                 <div className="premium-card__body">

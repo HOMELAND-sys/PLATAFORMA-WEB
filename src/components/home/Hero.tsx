@@ -7,9 +7,11 @@ import { useGSAP } from '@gsap/react';
 import { SplitText } from 'gsap/SplitText';
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import Icon from '@/components/ui/Icon';
+import HomelandLogo from '@/components/brand/HomelandLogo';
 import { onIntroReveal, prefersReducedMotion } from '@/lib/intro';
-import { fetchActiveTours, fetchCategories, type CategoryRow } from '@/lib/api';
+import { fetchActiveTours, fetchCategories, tourThumb, type CategoryRow } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
+import { HERO_SLIDES } from '@/data/site-photos';
 import type { Tour } from '@/lib/types';
 
 gsap.registerPlugin(useGSAP, SplitText, ScrambleTextPlugin);
@@ -23,6 +25,9 @@ const PLACEHOLDERS = [
   'Titicaca',
   'Potosí',
 ];
+
+const SLIDE_MS = 7000;
+const PROOF_AVATARS = [12, 32, 45, 8];
 
 function tourMatchesQuery(tour: Tour, q: string, categories: CategoryRow[]): boolean {
   if (!q) return true;
@@ -47,10 +52,17 @@ export default function Hero() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [tours, setTours] = useState<Tour[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [date, setDate] = useState('');
+  const [pax, setPax] = useState(2);
+  const [paxOpen, setPaxOpen] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const paxRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
+
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   /* Entrada del hero: espera a que la intro del logotipo abra la cortina. */
   useGSAP(
@@ -58,18 +70,18 @@ export default function Hero() {
       const hero = heroRef.current;
       if (!hero || prefersReducedMotion()) return;
       const q = gsap.utils.selector(hero);
-      const img = q('.hero__media img');
+      const media = q('.hero__media');
       const eyebrow = q('.hero__eyebrow')[0] as HTMLElement | undefined;
       const title = q('.hero__title')[0] as HTMLElement | undefined;
-      const rest = q('.hero__lead, .search');
+      const rest = q('.hero__lead, .search, .hero__proof, .hero__foot');
 
-      gsap.set(img, { scale: 1.18, transformOrigin: '50% 60%' });
+      gsap.set(media, { autoAlpha: 0 });
       gsap.set([eyebrow, title, ...rest], { autoAlpha: 0 });
 
       let split: SplitText | null = null;
       const play = () => {
         const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-        tl.to(img, { scale: 1, duration: 2.6, ease: 'power3.out' }, 0);
+        tl.to(media, { autoAlpha: 1, duration: 1.6, ease: 'power2.out' }, 0);
 
         if (eyebrow) {
           const text = eyebrow.textContent ?? '';
@@ -134,6 +146,12 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
+    if (prefersReducedMotion()) return;
+    const t = setTimeout(() => setSlideIdx((i) => (i + 1) % HERO_SLIDES.length), SLIDE_MS);
+    return () => clearTimeout(t);
+  }, [slideIdx]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setPlaceholderIdx((i) => (i + 1) % PLACEHOLDERS.length);
     }, 3500);
@@ -150,6 +168,9 @@ export default function Hero() {
     const onClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
+      }
+      if (paxRef.current && !paxRef.current.contains(e.target as Node)) {
+        setPaxOpen(false);
       }
     };
     document.addEventListener('mousedown', onClickOutside);
@@ -173,11 +194,14 @@ export default function Hero() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (results.length > 0) {
-      goToTour(results[activeIdx]?.slug ?? results[0].slug);
-    } else {
-      router.push(`/tours?q=${encodeURIComponent(search.trim())}`);
-    }
+    setOpen(false);
+    setPaxOpen(false);
+    const params = new URLSearchParams();
+    const q = search.trim();
+    if (q) params.set('q', q);
+    if (date) params.set('date', date);
+    params.set('pax', String(pax));
+    router.push(`/tours?${params.toString()}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -188,21 +212,31 @@ export default function Hero() {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIdx((i) => Math.max(0, i - 1));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSubmit(e as unknown as React.FormEvent);
     } else if (e.key === 'Escape') {
       setOpen(false);
     }
   };
 
+  const slide = HERO_SLIDES[slideIdx];
+
   return (
     <section className="hero" ref={heroRef}>
       <div className="hero__media">
-        <img src="/assets/uyuni-mirror.jpg" alt="Paisaje andino" />
+        {HERO_SLIDES.map((s, i) => (
+          <img
+            key={s.src}
+            src={s.src}
+            alt={i === slideIdx ? s.alt : ''}
+            aria-hidden={i !== slideIdx}
+            className={`hero__slide${i === slideIdx ? ' is-active' : ''}`}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            fetchPriority={i === 0 ? 'high' : 'auto'}
+          />
+        ))}
         <div className="hero__veil"></div>
       </div>
       <div className="container hero__inner">
+        <HomelandLogo className="hero__brand" height={30} />
         <p className="hero__eyebrow">Authentic journeys. Local hearts.</p>
         <h1 className="hero__title">
           Descubre la magia
@@ -220,7 +254,7 @@ export default function Hero() {
               <Icon name="search" size={19} />
             </span>
             <div className="search__field-text">
-              <label>Buscar tour</label>
+              <label>Destino o tour</label>
               <input
                 ref={inputRef}
                 type="text"
@@ -259,7 +293,7 @@ export default function Hero() {
                     >
                       <span
                         className="hero-search-item__img"
-                        style={{ backgroundImage: `url('${tour.image}')` }}
+                        style={{ backgroundImage: `url('${tourThumb(tour.image)}')` }}
                         aria-hidden="true"
                       ></span>
                       <span className="hero-search-item__body">
@@ -278,11 +312,106 @@ export default function Hero() {
               </div>
             )}
           </div>
+          <div className="search__field search__field--date">
+            <span className="search__icon">
+              <Icon name="calendar" size={19} />
+            </span>
+            <div className="search__field-text">
+              <label htmlFor="hero-date">Fecha</label>
+              <input
+                id="hero-date"
+                type="date"
+                min={today}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="search__field search__field--pax" ref={paxRef}>
+            <span className="search__icon">
+              <Icon name="users" size={19} />
+            </span>
+            <div className="search__field-text">
+              <label id="hero-pax-label">Viajeros</label>
+              <button
+                type="button"
+                className="search__pax-btn"
+                aria-labelledby="hero-pax-label"
+                aria-expanded={paxOpen}
+                onClick={() => setPaxOpen((v) => !v)}
+              >
+                {pax} viajero{pax === 1 ? '' : 's'}
+              </button>
+            </div>
+            {paxOpen && (
+              <div className="hero-pax-pop">
+                <button
+                  type="button"
+                  aria-label="Quitar un viajero"
+                  disabled={pax <= 1}
+                  onClick={() => setPax((p) => Math.max(1, p - 1))}
+                >
+                  <Icon name="minus" size={16} />
+                </button>
+                <span aria-live="polite">{pax}</span>
+                <button
+                  type="button"
+                  aria-label="Añadir un viajero"
+                  disabled={pax >= 12}
+                  onClick={() => setPax((p) => Math.min(12, p + 1))}
+                >
+                  <Icon name="plus" size={16} />
+                </button>
+              </div>
+            )}
+          </div>
           <button className="search__submit" type="submit">
-            <span>Buscar tours</span>
+            <span>Buscar</span>
             <Icon name="arrow-right" size={18} />
           </button>
         </form>
+      </div>
+
+      <aside className="hero__proof">
+        <div className="avatar-group">
+          {PROOF_AVATARS.map((n) => (
+            <span
+              key={n}
+              className="avatar"
+              style={{ backgroundImage: `url('https://i.pravatar.cc/60?img=${n}')` }}
+            ></span>
+          ))}
+        </div>
+        <div className="hero__proof-body">
+          <span className="hero__proof-score">
+            <Icon name="star-solid" size={14} />
+            <strong>4.9/5</strong> Excelente
+          </span>
+          <span className="hero__proof-text">
+            Confianza de <strong>12.000+</strong> viajeros
+          </span>
+        </div>
+      </aside>
+
+      <div className="hero__foot">
+        <div className="container hero__foot-inner">
+          <span className="hero__dest">
+            <Icon name="pin" size={14} />
+            {slide.destination}
+          </span>
+          <div className="hero__dots" role="group" aria-label="Destinos destacados">
+            {HERO_SLIDES.map((s, i) => (
+              <button
+                key={s.src}
+                type="button"
+                className={`hero__dot${i === slideIdx ? ' is-active' : ''}`}
+                aria-label={`Ver ${s.destination}`}
+                aria-current={i === slideIdx}
+                onClick={() => setSlideIdx(i)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
