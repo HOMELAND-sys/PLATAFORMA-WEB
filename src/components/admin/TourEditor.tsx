@@ -7,6 +7,8 @@ import { GROUP_DISCOUNT_TIERS } from '@/lib/pricing';
 import { cleanTourLines, DIFFICULTY_LABELS, makeTourForm, slugifyTour, tourMoney } from '@/lib/tour-form';
 import type { Difficulty, ItineraryDay, TourExtra, TourInfo } from '@/lib/types';
 import AdminIcon from './AdminIcon';
+import ProductOperations from './ProductOperations';
+import { setting } from '@/lib/admin/core';
 
 type EditorTab = 'content' | 'itinerary' | 'details';
 const EDITOR_TABS = [{ id: 'content', label: 'Contenido' }, { id: 'itinerary', label: 'Itinerario' }, { id: 'details', label: 'Configuración' }] as const;
@@ -113,6 +115,10 @@ export default function TourEditor({ tour, initialData, categories, busy, onClos
         extras: data.extras.map((extra) => ({ ...extra, id: extra.id || crypto.randomUUID() })),
       };
       const payload = buildTourPayload(cleaned, categories);
+      if (!tour) {
+        const defaults = await setting('policies', { free_cancellation_hours: 24, default_cutoff_hours: 12 });
+        Object.assign(payload, { free_cancellation_hours: defaults.free_cancellation_hours, default_cutoff_hours: defaults.default_cutoff_hours });
+      }
       const query = tour ? getSupabase().from('tours').update(payload).eq('id', tour.id) : getSupabase().from('tours').insert(payload);
       const { data: saved, error: saveError } = await query.select('id').single();
       if (saveError) throw saveError;
@@ -161,6 +167,7 @@ export default function TourEditor({ tour, initialData, categories, busy, onClos
           </>}
 
           {tab === 'details' && <>
+            {tour && <ProductOperations id={tour.id} />}
             <section className="tour-editor__section"><h4>Tarifas y visibilidad</h4><div className="tour-editor__field-grid"><label>Semiprivado (USD)<input type="number" min="0" step="0.01" value={data.price_semi ?? ''} onChange={(event) => set('price_semi', event.target.value === '' ? null : Number(event.target.value))} placeholder="No disponible" /></label><label>Privado (USD)<input type="number" min="0" step="0.01" value={data.price_private ?? ''} onChange={(event) => set('price_private', event.target.value === '' ? null : Number(event.target.value))} placeholder="No disponible" /></label></div><label className="tour-editor__featured"><span><AdminIcon name="star" size={16} />Destacar en la portada</span><input type="checkbox" role="switch" aria-label="Destacar en la portada" checked={data.featured} onChange={(event) => set('featured', event.target.checked)} /></label><p className="tour-editor__hint">Precio base 0: consultar. Tarifas vacías: modalidad no disponible.</p></section>
             <section className="tour-editor__section"><h4>Categorías</h4><label>Categoría principal<select value={data.primary_category_slug} onChange={(event) => set('primary_category_slug', event.target.value)}><option value="">Sin categoría</option>{categories.map((cat) => <option key={cat.slug} value={cat.slug}>{cat.label}</option>)}</select></label><div className="tour-editor__categories">{categories.map((cat) => <label key={cat.slug}><input type="checkbox" checked={data.category_slugs.includes(cat.slug)} onChange={() => set('category_slugs', data.category_slugs.includes(cat.slug) ? data.category_slugs.filter((slug) => slug !== cat.slug) : [...data.category_slugs, cat.slug])} />{cat.label}</label>)}</div></section>
             <section className="tour-editor__section"><h4>Información del tour</h4><label>URL del tour {slugLocked && <small>· protegida porque tiene reservas</small>}<input value={data.slug} disabled={slugLocked} onChange={(event) => set('slug', slugifyTour(event.target.value))} placeholder="salar-de-uyuni" /></label><div className="tour-editor__field-grid"><label>Etiqueta<input value={data.badge} onChange={(event) => set('badge', event.target.value)} placeholder="Más vendido" /></label><label>Estilo de etiqueta<select value={data.badge_variant ?? ''} onChange={(event) => set('badge_variant', (event.target.value || null) as TourFormData['badge_variant'])}><option value="">Sin estilo</option><option value="popular">Popular</option><option value="adventure">Aventura</option><option value="cultural">Cultural</option></select></label><label>Actividad<input value={data.activity_label} onChange={(event) => set('activity_label', event.target.value)} /></label><label>Partida y regreso<input value={data.start_end} onChange={(event) => set('start_end', event.target.value)} /></label><label>Mejor época<input value={data.best_season} onChange={(event) => set('best_season', event.target.value)} /></label><label>Altitud máxima<input value={data.max_altitude} onChange={(event) => set('max_altitude', event.target.value)} /></label></div></section>

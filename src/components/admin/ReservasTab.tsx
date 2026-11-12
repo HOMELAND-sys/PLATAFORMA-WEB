@@ -1,471 +1,61 @@
-'use client';
-
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿'use client';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import {
-  fetchAdminBookings,
-  updateReservationStatus,
-  type AdminBooking,
-} from '@/lib/api';
-import { getSupabase } from '@/lib/supabase';
-import { formatUsd } from '@/lib/pricing';
-import Icon from '@/components/ui/Icon';
-
-const STATUS_META: Record<string, { label: string; cls: string }> = {
-  pendiente_pago: { label: 'Pendiente de pago', cls: 'badge-status--amber' },
-  confirmada: { label: 'Confirmada', cls: 'badge-status--green' },
-  completada: { label: 'Completada', cls: 'badge-status--green' },
-  cancelada: { label: 'Cancelada', cls: 'badge-status--red' },
-};
-
-const STATUS_FILTERS = [
-  { id: 'todas', label: 'Todas' },
-  { id: 'pendiente_pago', label: 'Pendientes' },
-  { id: 'confirmada', label: 'Confirmadas' },
-  { id: 'completada', label: 'Completadas' },
-  { id: 'cancelada', label: 'Canceladas' },
-];
-
-const initialsOf = (name: string): string =>
-  (name || '?')
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
-const fmtDate = (d: string) =>
-  new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-
-const fmtDateTime = (d: string | null) =>
-  d
-    ? new Date(d).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    : '—';
-
+import { bookings } from '@/lib/admin/bookings';
+import { useAdminData } from '@/lib/admin/hooks';
+import { messageOf } from '@/lib/admin/core';
+import { downloadCsv, exportTable, openVoucher } from '@/lib/admin/exports';
+import { dateLabel, flag, initials, methodLabels, operatorDay, shiftDay, sourceLabels, statusLabels, usd, validDay } from '@/lib/admin/format';
+import { Field, LoadState, Metrics, Notice, Pill } from './AdminShared';
+import ManualBookingForm from './ManualBookingForm';
+import ReservationDetail from './ReservationDetail';
+import TicketScanner from './TicketScanner';
 export default function ReservasTab() {
-  const searchParams = useSearchParams();
-  const requestedSearch = searchParams.get('q') ?? '';
-  const requestedStatus = searchParams.get('status') ?? 'todas';
-  const requestedBooking = searchParams.get('booking');
-  const [bookings, setBookings] = useState<AdminBooking[] | null>(null);
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('todas');
-  const [tourFilter, setTourFilter] = useState('todos');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [selected, setSelected] = useState<AdminBooking | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [okMsg, setOkMsg] = useState('');
-  const [cancelMode, setCancelMode] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
-
-  const load = useCallback(() => {
-    fetchAdminBookings(getSupabase())
-      .then(setBookings)
-      .catch(() => setBookings([]));
-  }, []);
-
-  useEffect(load, [load]);
-
-  useEffect(() => {
-    setSearch(requestedSearch);
-    setStatus(STATUS_FILTERS.some((item) => item.id === requestedStatus) ? requestedStatus : 'todas');
-  }, [requestedSearch, requestedStatus]);
-
-  useEffect(() => {
-    if (requestedBooking && bookings) setSelected(bookings.find((booking) => booking.id === requestedBooking) ?? null);
-  }, [requestedBooking, bookings]);
-
-  const tourOptions = useMemo(() => {
-    if (!bookings) return [] as { slug: string; title: string }[];
-    const seen = new Map<string, string>();
-    for (const b of bookings) if (b.tour_slug) seen.set(b.tour_slug, b.tour_title);
-    return [...seen.entries()].map(([slug, title]) => ({ slug, title }));
-  }, [bookings]);
-
-  const filtered = useMemo(() => {
-    if (!bookings) return [];
-    const q = search.trim().toLowerCase();
-    return bookings.filter((b) => {
-      if (status !== 'todas' && b.status !== status) return false;
-      if (tourFilter !== 'todos' && b.tour_slug !== tourFilter) return false;
-      if (dateFrom && b.tour_date < dateFrom) return false;
-      if (dateTo && b.tour_date > dateTo) return false;
-      if (q) {
-        const hay = `${b.code} ${b.client_name} ${b.client_email} ${b.tour_title}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [bookings, search, status, tourFilter, dateFrom, dateTo]);
-
-  const changeStatus = async (next: 'confirmada' | 'completada' | 'cancelada') => {
-    if (!selected) return;
-    if (next === 'cancelada') {
-      if (!cancelReason.trim()) {
-        setError('La cancelación requiere un motivo.');
-        return;
-      }
-      if (!window.confirm(`¿Cancelar la reserva ${selected.code}? El cupo queda libre de inmediato.`)) return;
-    }
-    setBusy(true);
-    setError('');
-    setOkMsg('');
-    try {
-      await updateReservationStatus(getSupabase(), selected.id, next, cancelReason.trim() || undefined);
-      setOkMsg('Estado actualizado.');
-      setCancelMode(false);
-      setCancelReason('');
-      load();
-      const { data } = await getSupabase()
-        .from('reservations')
-        .select('*, tour:reservations_tour_id_fkey (slug, title), date_row:reservations_tour_date_id_fkey (date)')
-        .eq('id', selected.id)
-        .maybeSingle();
-      if (data) {
-        // Recarga el drawer con el estado nuevo (manteniendo pasajeros del fetch previo).
-        setSelected((prev) => (prev ? { ...prev, ...data, passengers: prev.passengers, client_name: prev.client_name, client_email: prev.client_email } : prev));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo actualizar el estado.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (bookings === null) {
-    return <p style={{ color: 'var(--ink-500)' }}>Cargando reservas…</p>;
+  const params=useSearchParams();
+  const list=useAdminData(bookings);
+  const [search,setSearch]=useState(params.get('q')||'');
+  const [status,setStatus]=useState(params.get('status')||'');
+  const [tour,setTour]=useState('');
+  const [from,setFrom]=useState(validDay(params.get('travel'))||'');
+  const [to,setTo]=useState(validDay(params.get('travel'))||'');
+  const [dateMode,setDateMode]=useState('travel');
+  const [payment,setPayment]=useState('');
+  const [voucher,setVoucher]=useState('');
+  const [source,setSource]=useState('');
+  const [sort,setSort]=useState('purchase');
+  const [selected,setSelected]=useState<string|null>(params.get('booking'));
+  const [description,setDescription]=useState(false);
+  const [manual,setManual]=useState(false);
+  const [scanner,setScanner]=useState(false);
+  const [error,setError]=useState('');
+  const [ok,setOk]=useState('');
+  const [page,setPage]=useState(1);
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{setSearch(params.get('q')||'');setStatus(params.get('status')||'');setSelected(params.get('booking'));const travel=validDay(params.get('travel'));if(travel){setFrom(travel);setTo(travel);setDateMode('travel');}},[params]);
+  useEffect(()=>setPage(1),[search,status,tour,from,to,dateMode,payment,voucher,source,sort]);
+  const filtered=useMemo(()=>{
+    const q=search.trim().toLowerCase();
+    return (list.data??[]).filter(b=>{
+      const day=dateMode==='travel'?b.date_row?.date||'':operatorDay(new Date(b.created_at));
+      return (params.get('alert')!=='stale'||b.status==='pendiente_pago'&&Date.parse(b.created_at)<Date.now()-86400000)&&(!q||`${b.code} ${b.client_name} ${b.client_email} ${b.passengers.map(p=>p.name).join(' ')} ${b.tour?.title}`.toLowerCase().includes(q))&&(!status||b.status===status)&&(!tour||b.tour_id===tour)&&(!from||day>=from)&&(!to||day<=to)&&(!source||b.source===source)&&(!payment||(payment==='paid'?Boolean(b.paid_at):payment==='pending'?!b.paid_at&&b.status!=='cancelada':b.refund_pending))&&(!voucher||(voucher==='sent'?Boolean(b.voucher_sent_at):!b.voucher_sent_at));
+    }).sort((a,b)=>sort==='travel'?`${a.date_row?.date} ${a.date_row?.start_time||''}`.localeCompare(`${b.date_row?.date} ${b.date_row?.start_time||''}`):b.created_at.localeCompare(a.created_at));
+  },[list.data,search,status,tour,from,to,dateMode,payment,voucher,source,sort,params]);
+  const tourOptions=[...new Map(list.data?.map(b=>[b.tour_id,b.tour?.title||'Tour'])).entries()];
+  const pages=Math.max(1,Math.ceil(filtered.length/20));
+  const currentPage=Math.min(page,pages);
+  const current=filtered.slice((currentPage-1)*20,currentPage*20);
+  const selectedBooking=list.data?.find(b=>b.id===selected);
+  async function voucherFor(id:string){const b=list.data?.find(x=>x.id===id);if(!b)return;setBusy(true);setError('');try{await openVoucher(b);setOk(`Voucher ${b.code} descargado.`);}catch(err){setError(messageOf(err));}finally{setBusy(false);}}
+  function exportRows(format:'csv'|'pdf') {
+    setError('');try{
+      const head=['Código','Viajero','Email','Teléfono','País','Tour','Viaje','Hora Bolivia','Pax','Total USD','Estado','Pago','Método','Canal','Voucher','Compra'];
+      const rows=filtered.map(b=>[b.code,b.client_name,b.client_email,b.client_phone,b.client_country,b.tour?.title||'',b.date_row?.date||'',b.date_row?.start_time?.slice(0,5)||'Sin hora',b.pax,Number(b.total),statusLabels[b.status],b.paid_at?'Pagado':'Pendiente',methodLabels[b.payment_method],sourceLabels[b.source],b.voucher_sent_at?'Enviado':'Sin enviar',b.created_at]);
+      const totals=['TOTAL ACTIVAS',`${filtered.length} reservas`,'','','','','','',filtered.filter(b=>b.status!=='cancelada').reduce((s,b)=>s+b.pax,0),filtered.filter(b=>b.status!=='cancelada').reduce((s,b)=>s+Number(b.total),0),'','','','','',''];
+      const notes=`Rango ${dateMode==='travel'?'de viaje':'de compra'}: ${from||'sin inicio'} a ${to||'sin fin'} · ${statusLabels[status]||'Todos los estados'} · ${sourceLabels[source]||'Todos los canales'} · búsqueda: ${search||'ninguna'} · pago: ${payment||'todos'} · voucher: ${voucher||'todos'} · producto: ${tourOptions.find(([id])=>id===tour)?.[1]||'todos'}`;
+      if(format==='csv')downloadCsv(`reservas-${operatorDay()}.csv`,[[notes],head,...rows,totals]);else exportTable('Reservas',head,[...rows,totals],`reservas-${operatorDay()}.pdf`,notes);
+      setOk(`${filtered.length} reservas exportadas con los filtros actuales.`);
+    }catch(err){setError(messageOf(err));}
   }
-
-  const totalFiltered = filtered.reduce((s, b) => s + (b.status !== 'cancelada' ? b.total : 0), 0);
-
-  return (
-    <>
-      <div className="admin-header">
-        <div>
-          <h1>Reservas</h1>
-          <p>
-            {filtered.length} {filtered.length === 1 ? 'reserva' : 'reservas'} ·{' '}
-            {formatUsd(totalFiltered)} en activas
-          </p>
-        </div>
-      </div>
-
-      <div className="admin-filters">
-        <input
-          type="search"
-          placeholder="Buscar por código, cliente o tour…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select value={tourFilter} onChange={(e) => setTourFilter(e.target.value)} title="Tour">
-          <option value="todos">Todos los tours</option>
-          {tourOptions.map((t) => (
-            <option key={t.slug} value={t.slug}>
-              {t.title}
-            </option>
-          ))}
-        </select>
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} title="Desde" />
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} title="Hasta" />
-      </div>
-
-      <div className="admin-seg" role="tablist" aria-label="Filtrar por estado">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            className={status === f.id ? 'is-active' : ''}
-            onClick={() => setStatus(f.id)}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-      <div style={{ height: 14 }}></div>
-
-      {error && <div className="admin-alert admin-alert--error">{error}</div>}
-      {okMsg && <div className="admin-alert admin-alert--ok">{okMsg}</div>}
-
-      <div className="admin-table-wrap">
-        <table className="admin-table admin-table--cards">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Cliente</th>
-              <th>Tour</th>
-              <th>Fecha</th>
-              <th>Pax</th>
-              <th>Total</th>
-              <th>Estado</th>
-              <th className="col-aux">Creada</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((b) => {
-              const meta = STATUS_META[b.status];
-              return (
-                <tr key={b.id} className="is-clickable" onClick={() => { setSelected(b); setError(''); setCancelMode(false); setCancelReason(''); }}>
-                  <td className="cell-strong cell-code" data-label="Código">{b.code}</td>
-                  <td data-label="Cliente">
-                    <span className="admin-entity">
-                      <span className="admin-avatar">{initialsOf(b.client_name)}</span>
-                      <span className="admin-entity__meta">
-                        {b.client_name || '—'}
-                        <span className="cell-sub">{b.client_email}</span>
-                      </span>
-                    </span>
-                  </td>
-                  <td data-label="Tour">{b.tour_title}</td>
-                  <td className="cell-date" data-label="Fecha">{fmtDate(b.tour_date)}</td>
-                  <td data-label="Pax">{b.pax}</td>
-                  <td className="cell-strong cell-date" data-label="Total">{formatUsd(b.total)}</td>
-                  <td data-label="Estado">
-                    <span className={`badge-status ${meta.cls}`}>
-                      <span className="dot"></span>
-                      {meta.label}
-                    </span>
-                  </td>
-                  <td className="cell-date col-aux" data-label="Creada">{fmtDateTime(b.created_at)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {filtered.length === 0 && (
-          <div className="admin-empty">
-            <strong>Sin resultados</strong>
-            Probá con otros filtros.
-          </div>
-        )}
-      </div>
-
-      {selected && (
-        <ReservationDrawer
-          booking={selected}
-          busy={busy}
-          cancelMode={cancelMode}
-          cancelReason={cancelReason}
-          onCancelReason={setCancelReason}
-          onToggleCancel={() => setCancelMode((v) => !v)}
-          onClose={() => setSelected(null)}
-          onChangeStatus={changeStatus}
-        />
-      )}
-    </>
-  );
-}
-
-function ReservationDrawer({
-  booking,
-  busy,
-  cancelMode,
-  cancelReason,
-  onCancelReason,
-  onToggleCancel,
-  onClose,
-  onChangeStatus,
-}: {
-  booking: AdminBooking;
-  busy: boolean;
-  cancelMode: boolean;
-  cancelReason: string;
-  onCancelReason: (v: string) => void;
-  onToggleCancel: () => void;
-  onClose: () => void;
-  onChangeStatus: (s: 'confirmada' | 'completada' | 'cancelada') => void;
-}) {
-  const meta = STATUS_META[booking.status];
-  const canCancel = booking.status === 'pendiente_pago' || booking.status === 'confirmada';
-
-  return (
-    <>
-      <div className="admin-scrim" onClick={onClose}></div>
-      <div className="admin-drawer" role="dialog" aria-label={`Reserva ${booking.code}`}>
-        <div className="admin-drawer__head">
-          <h3>Reserva {booking.code}</h3>
-          <button className="admin-side__logout" onClick={onClose} title="Cerrar">
-            <Icon name="close" size={18} />
-          </button>
-        </div>
-
-        <div className="admin-drawer__body">
-          <span className={`badge-status ${meta.cls}`}>
-            <span className="dot"></span>
-            {meta.label}
-          </span>
-
-          {booking.refund_pending && booking.status === 'cancelada' && (
-            <div className="admin-alert admin-alert--error">
-              <Icon name="warning" size={16} /> Reembolso manual pendiente: la reserva estaba confirmada y pagada.
-            </div>
-          )}
-          {booking.cancellation_reason && (
-            <div className="drawer-row">
-              <small>Motivo cancelación</small>
-              <strong>{booking.cancellation_reason}</strong>
-            </div>
-          )}
-
-          <div>
-            <div className="drawer-row">
-              <small>Cliente</small>
-              <strong>
-                {booking.client_name || '—'}
-                <br />
-                <span style={{ fontWeight: 400, color: 'var(--ink-500)' }}>{booking.client_email}</span>
-              </strong>
-            </div>
-            <div className="drawer-row">
-              <small>Tour</small>
-              <strong>{booking.tour_title}</strong>
-            </div>
-            <div className="drawer-row">
-              <small>Fecha del tour</small>
-              <strong>{fmtDate(booking.tour_date)}</strong>
-            </div>
-            <div className="drawer-row">
-              <small>Tipo</small>
-              <strong>
-                {booking.tour_type === 'group'
-                  ? 'Tour compartido'
-                  : booking.tour_type === 'semi'
-                    ? 'Tour semiprivado'
-                    : 'Tour privado'}{' '}
-                · {booking.pax} pax
-              </strong>
-            </div>
-            <div className="drawer-row">
-              <small>Modo de pago</small>
-              <strong>{booking.payment_method === 'qr' ? 'QR' : 'Enlace'}</strong>
-            </div>
-            <div className="drawer-row">
-              <small>Subtotal</small>
-              <strong>{formatUsd(booking.subtotal)}</strong>
-            </div>
-            {booking.group_discount > 0 && (
-              <div className="drawer-row">
-                <small>Desc. grupo</small>
-                <strong>-{formatUsd(booking.group_discount)}</strong>
-              </div>
-            )}
-            {booking.coupon_discount > 0 && (
-              <div className="drawer-row">
-                <small>Cupón {booking.coupon_code}</small>
-                <strong>-{formatUsd(booking.coupon_discount)}</strong>
-              </div>
-            )}
-            <div className="drawer-row">
-              <small>Total</small>
-              <strong>{formatUsd(booking.total)}</strong>
-            </div>
-            <div className="drawer-row">
-              <small>Creada</small>
-              <strong>{fmtDateTime(booking.created_at)}</strong>
-            </div>
-            {booking.paid_at && (
-              <div className="drawer-row">
-                <small>Paga­da (confirmada)</small>
-                <strong>{fmtDateTime(booking.paid_at)}</strong>
-              </div>
-            )}
-            {booking.completed_at && (
-              <div className="drawer-row">
-                <small>Completada</small>
-                <strong>{fmtDateTime(booking.completed_at)}</strong>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <h4 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: 'var(--ink-500)' }}>PASAJEROS</h4>
-            {booking.passengers.map((p) => (
-              <div className="drawer-row" key={p.id}>
-                <small>
-                  {p.position}. {p.is_lead ? 'Reservante' : 'Pasajero'}
-                </small>
-                <strong>
-                  {p.name}
-                  <br />
-                  <span style={{ fontWeight: 400, color: 'var(--ink-500)' }}>
-                    {p.doc} · {p.country} · {p.meal}
-                  </span>
-                </strong>
-              </div>
-            ))}
-          </div>
-
-          {booking.extras.length > 0 && (
-            <div>
-              <h4 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: 'var(--ink-500)' }}>EXTRAS</h4>
-              {booking.extras.map((e, i) => (
-                <div className="drawer-row" key={i}>
-                  <small>{e.kind === 'paid' ? 'Pago' : 'Gratuito'}</small>
-                  <strong>
-                    {e.name}
-                    {e.kind === 'paid' && ` · ${formatUsd(e.price)}`}
-                  </strong>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {cancelMode && canCancel && (
-          <div style={{ padding: '0 18px 12px' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Motivo de cancelación *</label>
-            <textarea
-              className="af-field"
-              style={{
-                border: '1px solid var(--border)',
-                borderRadius: 9,
-                padding: '10px 12px',
-                fontSize: '0.9rem',
-                fontFamily: 'inherit',
-                minHeight: 64,
-                marginTop: 6,
-              }}
-              value={cancelReason}
-              onChange={(e) => onCancelReason(e.target.value)}
-              placeholder="Ej: el cliente pidió mover la fecha"
-            />
-          </div>
-        )}
-
-        <div className="admin-drawer__foot">
-          {booking.status === 'pendiente_pago' && (
-            <>
-              <button className="btn btn--primary btn--sm" disabled={busy} onClick={() => onChangeStatus('confirmada')}>
-                Confirmar pago
-              </button>
-              <button className="btn btn--ghost btn--sm" disabled={busy} onClick={onToggleCancel}>
-                Cancelar reserva
-              </button>
-            </>
-          )}
-          {cancelMode && canCancel && (
-            <button
-              className="btn btn--sm"
-              style={{ background: 'var(--danger)', color: '#fff', borderColor: 'var(--danger)' }}
-              disabled={busy || !cancelReason.trim()}
-              onClick={() => onChangeStatus('cancelada')}
-            >
-              {busy ? '…' : 'Confirmar cancelación'}
-            </button>
-          )}
-          {booking.status === 'confirmada' && (
-            <>
-              <button className="btn btn--primary btn--sm" disabled={busy} onClick={() => onChangeStatus('completada')}>
-                Marcar completada
-              </button>
-              <button className="btn btn--ghost btn--sm" disabled={busy} onClick={onToggleCancel}>
-                Cancelar reserva
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </>
-  );
+  function shortcut(offset:number){const d=shiftDay(operatorDay(),offset);setFrom(d);setTo(d);setDateMode('travel');}
+  return <><div className="admin-header"><div><h1>Reservas</h1><p>{filtered.length} reservas · {usd(filtered.filter(b=>b.status!=='cancelada').reduce((s,b)=>s+Number(b.total),0))} en activas</p></div><div className="admin-header__actions"><button className="btn btn--ghost" disabled={!list.data||busy} onClick={()=>setScanner(true)}>Escanear tickets</button><button className="btn btn--primary" onClick={()=>setManual(true)}>Añadir reserva manual</button></div></div>{list.data&&<Metrics items={[{label:'Nuevas hoy',value:list.data.filter(b=>operatorDay(new Date(b.created_at))===operatorDay()).length},{label:'Pagos pendientes',value:list.data.filter(b=>b.status==='pendiente_pago').length},{label:'Viajes confirmados',value:list.data.filter(b=>b.status==='confirmada').length},{label:'Vouchers enviados',value:list.data.filter(b=>b.voucher_sent_at).length}]}/>}<div className="admin-card"><div className="ops-grid"><Field label="Buscar código, viajero o tour" wide><input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="HT-XXXXX, nombre o email"/></Field><Field label="Tour"><select value={tour} onChange={e=>setTour(e.target.value)}><option value="">Todos los tours</option>{tourOptions.map(([id,title])=><option key={id} value={id}>{title}</option>)}</select></Field><Field label="Estado de reserva"><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">Todos los estados</option>{Object.entries(statusLabels).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></Field><Field label="Filtrar fechas de"><select value={dateMode} onChange={e=>setDateMode(e.target.value)}><option value="travel">Viaje</option><option value="purchase">Compra</option></select></Field><Field label="Desde"><input type="date" value={from} max={to||undefined} onChange={e=>setFrom(e.target.value)}/></Field><Field label="Hasta"><input type="date" value={to} min={from||undefined} onChange={e=>setTo(e.target.value)}/></Field><Field label="Estado de pago"><select value={payment} onChange={e=>setPayment(e.target.value)}><option value="">Todos los pagos</option><option value="pending">Pendiente</option><option value="paid">Pagado</option><option value="refund">Reembolso pendiente</option></select></Field><Field label="Estado de voucher"><select value={voucher} onChange={e=>setVoucher(e.target.value)}><option value="">Todos</option><option value="sent">Enviado</option><option value="unsent">Sin enviar</option></select></Field><Field label="Canal"><select value={source} onChange={e=>setSource(e.target.value)}><option value="">Todos los canales</option>{Object.entries(sourceLabels).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></Field><Field label="Orden"><select value={sort} onChange={e=>setSort(e.target.value)}><option value="purchase">Fecha de compra (recientes primero)</option><option value="travel">Fecha y hora de viaje (ascendente)</option></select></Field></div><div className="ops-toolbar"><button className="btn btn--ghost btn--sm" onClick={()=>shortcut(0)}>Hoy</button><button className="btn btn--ghost btn--sm" onClick={()=>shortcut(1)}>Mañana</button><button className="btn btn--ghost btn--sm" onClick={()=>{setFrom('');setTo('');setSearch('');setTour('');setStatus('');setPayment('');setVoucher('');setSource('');}}>Limpiar filtros</button><button className="btn btn--ghost btn--sm" onClick={()=>void list.reload()}>Actualizar</button><button className="btn btn--ghost btn--sm" disabled={!filtered.length||list.loading||Boolean(list.error)} onClick={()=>exportRows('csv')}>Descargar reservas CSV</button><button className="btn btn--ghost btn--sm" disabled={!filtered.length||list.loading||Boolean(list.error)} onClick={()=>exportRows('pdf')}>Descargar PDF</button></div></div><Notice error={error} success={ok}/><LoadState emptyImage="bookings" emptyAction={{label:'Añadir reserva manual',onClick:()=>setManual(true)}} loading={list.loading} error={list.error} empty={!filtered.length} onRetry={()=>void list.reload()} label="Las reservas web y de oficina aparecerán aquí."/>{!list.loading&&!list.error&&current.map(b=><article key={b.id} className="ops-booking"><div><button className="btn btn--ghost btn--sm ops-booking__code" onClick={()=>{setSelected(b.id);setDescription(false);}}>{b.code}</button><div className="admin-entity"><span className="admin-avatar">{initials(b.client_name)}</span><span className="admin-entity__meta"><strong>{b.client_name}</strong><span className="cell-sub">{b.client_email||'Sin email'}</span><span className="cell-sub">{flag(b.client_country)} {b.client_country||'Sin país'}</span></span></div></div><div><strong>{b.tour?.title}</strong><p>{dateLabel(b.date_row?.date||'')} · {b.date_row?.start_time?.slice(0,5)||'Sin hora'} (Bolivia)</p><p>{b.pax} pax · {sourceLabels[b.source]}</p><Pill tone={b.status==='cancelada'?'red':b.status==='pendiente_pago'?'amber':'green'}>{statusLabels[b.status]}</Pill></div><div><strong className="ops-booking__price">{usd(b.total)}</strong><p><Pill tone={b.paid_at?'green':'amber'}>{b.paid_at?'Pagado':'Pago pendiente'}</Pill></p><p>{methodLabels[b.payment_method]}</p><small className="ops-muted">{b.voucher_sent_at?'Voucher enviado':'Voucher sin enviar'}{b.checked_in_at?' · Check-in realizado':''}</small></div><div className="ops-booking__actions"><button className="btn btn--ghost btn--sm" disabled={busy} onClick={()=>void voucherFor(b.id)}>Voucher</button><button className="btn btn--ghost btn--sm" onClick={()=>{setSelected(b.id);setDescription(true);}}>Descripción</button><button className="btn btn--primary btn--sm" onClick={()=>{setSelected(b.id);setDescription(false);}}>Ver reserva</button></div></article>)}{filtered.length>20&&<div className="ops-pagination"><button className="btn btn--ghost btn--sm" disabled={currentPage===1} onClick={()=>setPage(currentPage-1)}>Anterior</button><span>{currentPage} de {pages} · {filtered.length} reservas</span><button className="btn btn--ghost btn--sm" disabled={currentPage===pages} onClick={()=>setPage(currentPage+1)}>Siguiente</button></div>}{selectedBooking&&<ReservationDetail key={selectedBooking.id} booking={selectedBooking} description={description} onClose={()=>setSelected(null)} onSaved={list.reload}/ >}{manual&&<ManualBookingForm onClose={()=>setManual(false)} onSaved={id=>{setManual(false);setSelected(id);setOk('Reserva manual creada.');void list.reload();}}/>}{scanner&&list.data&&<TicketScanner onClose={()=>setScanner(false)} onSaved={list.reload}/>}</>;
 }

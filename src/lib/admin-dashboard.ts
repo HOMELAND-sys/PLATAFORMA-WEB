@@ -37,6 +37,7 @@ export const dashboardDate = (day: string) => new Date(`${day}T12:00:00Z`).toLoc
 export interface DashboardBooking extends Pick<ReservationRow,
   'id' | 'code' | 'tour_id' | 'pax' | 'group_discount' | 'coupon_discount' | 'total' | 'status' | 'created_at'
 > {
+  contact_name?: string | null;
   profile: { full_name: string } | null;
   tour: { title: string; image: string; destination: string } | null;
 }
@@ -48,7 +49,7 @@ async function fetchActivity(sb: SupabaseClient, range: DashboardRange, signal: 
   // Page every row so charts and comparisons do not silently stop at the API row limit.
   for (let offset = 0; ; offset += 500) {
     const { data, error } = await sb.from('reservations')
-      .select('id,code,tour_id,pax,group_discount,coupon_discount,total,status,created_at,profile:reservations_user_id_fkey(full_name),tour:reservations_tour_id_fkey(title,image,destination)')
+      .select('id,code,contact_name,tour_id,pax,group_discount,coupon_discount,total,status,created_at,profile:reservations_user_id_fkey(full_name),tour:reservations_tour_id_fkey(title,image,destination)')
       .gte('created_at', `${from}T00:00:00-04:00`)
       .lt('created_at', `${shiftDay(range.to, 1)}T00:00:00-04:00`)
       .order('created_at', { ascending: false }).order('id')
@@ -66,7 +67,7 @@ export async function fetchDashboardData(sb: SupabaseClient, range: DashboardRan
     sb.from('tours').select('id,image,destination').abortSignal(signal),
   ]);
   if (tours.error) throw tours.error;
-  return { overview, activity, tours: (tours.data ?? []) as DashboardTour[] };
+  return { overview: { ...overview, occupancy: overview.occupancy as (typeof overview.occupancy[number] & { id?: string; start_time?: string | null })[] }, activity, tours: (tours.data ?? []) as DashboardTour[] };
 }
 
 export type DashboardData = Awaited<ReturnType<typeof fetchDashboardData>>;
