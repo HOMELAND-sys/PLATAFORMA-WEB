@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase';
 import { dashboardDate, dashboardMoney, fetchDashboardData, operatorDay, type DashboardData, type DashboardRange } from '@/lib/admin-dashboard';
 import AdminIcon from './AdminIcon';
+import OperationalAlerts from './OperationalAlerts';
+import IllustratedEmptyState from './EmptyState';
 import { BOOKING_STATES, BookingChart, StatusChart } from './DashboardCharts';
 
 function Trend({ current, previous }: { current: number; previous: number }) {
@@ -14,7 +16,7 @@ function Trend({ current, previous }: { current: number; previous: number }) {
 }
 
 function EmptyState({ title, children }: { title: string; children: React.ReactNode }) {
-  return <div className="dash-empty"><AdminIcon name="tours" size={30} /><strong>{title}</strong><p>{children}</p></div>;
+  return <IllustratedEmptyState compact image="generic" title={title} text={children} action={{label:'Ver reservas',href:'/admin?tab=reservas'}}/>;
 }
 
 export default function DashboardTab({ range }: { range: DashboardRange }) {
@@ -70,6 +72,7 @@ export default function DashboardTab({ range }: { range: DashboardRange }) {
         <article className="dash-metric"><span className="dash-metric__icon dash-metric__icon--olive"><AdminIcon name="discount" size={26} /></span><div><h2>Descuentos de grupo</h2><strong>{dashboardMoney(metrics.discounted.reduce((sum, booking) => sum + Number(booking.group_discount), 0))}</strong><span className="dash-metric__note">{metrics.discounted.length} reservas · {metrics.discounted.reduce((sum, booking) => sum + booking.pax, 0)} viajeros</span></div></article>
       </div>
 
+      <OperationalAlerts />
       <div className="dash-grid">
         <section className="dash-card dash-card--timeline"><BookingChart activity={data.activity} range={range} /></section>
 
@@ -83,10 +86,10 @@ export default function DashboardTab({ range }: { range: DashboardRange }) {
         </section>
 
         <section className="dash-card dash-card--departures"><div className="dash-card__heading"><h2>Próximas salidas</h2><Link href="/admin?tab=disponibilidad">Ver todas</Link></div>
-          {departures.length === 0 ? <EmptyState title="Nuevos destinos por descubrir">Abre fechas para tus próximos tours.<Link href="/admin?tab=disponibilidad">Gestionar disponibilidad <AdminIcon name="arrow" size={15} /></Link></EmptyState> : <ul className="dash-departures">{departures.slice(0, 4).map((departure) => {
+          {departures.length === 0 ? <EmptyState title="Nuevos destinos por descubrir">Abre fechas para tus próximos tours.<Link href="/admin?tab=disponibilidad">Gestionar disponibilidad <AdminIcon name="arrow" size={15} /></Link></EmptyState> : <ul className="dash-departures">{departures.slice(0, 4).map((departure, index) => {
             const date = new Date(`${departure.date}T12:00:00Z`);
             const tour = tourMap.get(departure.tour_id);
-            return <li key={`${departure.tour_id}-${departure.date}`}><Link href={`/admin?tab=disponibilidad&tour=${departure.tour_id}`}><img src={tour?.image || '/assets/andes-mountains.jpg'} alt="" width="46" height="50" loading="lazy" /><time dateTime={departure.date}><span>{date.toLocaleDateString('es-BO', { month: 'short', timeZone: 'America/La_Paz' }).replace('.', '')}</span><strong>{date.getUTCDate()}</strong></time><div><strong>{departure.tour_title}</strong><small>{tour?.destination || 'Bolivia'}</small><span className={`dash-departures__pax${departure.free <= 0 ? ' is-full' : ''}`}>{departure.occupied} / {departure.capacity} viajeros <AdminIcon name="users" size={14} /></span></div></Link></li>;
+            return <li key={departure.id || `${departure.tour_id}-${departure.date}-${index}`}><Link href={`/admin?tab=disponibilidad&tour=${departure.tour_id}`}><img src={tour?.image || '/assets/andes-mountains.jpg'} alt="" width="46" height="50" loading="lazy" /><time dateTime={departure.date}><span>{date.toLocaleDateString('es-BO', { month: 'short', timeZone: 'America/La_Paz' }).replace('.', '')}</span><strong>{date.getUTCDate()}</strong></time><div><strong>{departure.tour_title}</strong><small>{departure.start_time?.slice(0,5)||'Sin hora'} (Bolivia)</small><small>{tour?.destination || 'Bolivia'}</small><span className={`dash-departures__pax${departure.free <= 0 ? ' is-full' : ''}`}>{departure.occupied} / {departure.capacity} viajeros <AdminIcon name="users" size={14} /></span></div></Link></li>;
           })}</ul>}
           <div className="dash-departures__footer"><i />Agenda de los próximos 7 días</div>
         </section>
@@ -95,7 +98,7 @@ export default function DashboardTab({ range }: { range: DashboardRange }) {
           {metrics.current.length === 0 ? <EmptyState title="Todo listo para tu primera reserva">Las reservas de este período aparecerán aquí.</EmptyState> : <div className="dash-recent-scroll"><table className="dash-recent-table"><thead><tr><th>Código</th><th>Viajero</th><th>Tour</th><th>Pax</th><th>Descuento</th><th>Total (USD)</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>{metrics.current.slice(0, 5).map((booking) => {
             const state = BOOKING_STATES.find((item) => item.id === booking.status)!;
             const discount = Number(booking.group_discount) + Number(booking.coupon_discount);
-            return <tr key={booking.id}><td><Link href={`/admin?tab=reservas&booking=${booking.id}`}>{booking.code}</Link></td><td>{booking.profile?.full_name || 'Sin nombre'}</td><td title={booking.tour?.title}>{booking.tour?.title || 'Tour no disponible'}</td><td>{booking.pax}</td><td>{discount ? dashboardMoney(discount) : '—'}</td><td><strong>{dashboardMoney(Number(booking.total))}</strong></td><td><span className={`badge-status badge-status--${state.badge}`}>{state.label === 'Pendientes' ? 'Pendiente de pago' : state.label === 'Confirmadas' ? 'Confirmada' : state.label === 'Completadas' ? 'Completada' : 'Cancelada'}</span></td><td>{new Date(booking.created_at).toLocaleString('es-BO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/La_Paz' })}</td></tr>;
+            return <tr key={booking.id}><td><Link href={`/admin?tab=reservas&booking=${booking.id}`}>{booking.code}</Link></td><td>{booking.contact_name || booking.profile?.full_name || 'Sin nombre'}</td><td title={booking.tour?.title}>{booking.tour?.title || 'Tour no disponible'}</td><td>{booking.pax}</td><td>{discount ? dashboardMoney(discount) : '—'}</td><td><strong>{dashboardMoney(Number(booking.total))}</strong></td><td><span className={`badge-status badge-status--${state.badge}`}>{state.label === 'Pendientes' ? 'Pendiente de pago' : state.label === 'Confirmadas' ? 'Confirmada' : state.label === 'Completadas' ? 'Completada' : 'Cancelada'}</span></td><td>{new Date(booking.created_at).toLocaleString('es-BO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/La_Paz' })}</td></tr>;
           })}</tbody></table></div>}
         </section>
       </div>

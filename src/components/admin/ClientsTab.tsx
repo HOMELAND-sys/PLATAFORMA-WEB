@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   fetchAdminClients,
   fetchClientBookings,
@@ -10,6 +11,8 @@ import {
 import { getSupabase } from '@/lib/supabase';
 import { formatUsd } from '@/lib/pricing';
 import Icon from '@/components/ui/Icon';
+import AgenciesTab from './AgenciesTab';
+import EmptyState from './EmptyState';
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   pendiente_pago: { label: 'Pendiente de pago', cls: 'badge-status--amber' },
@@ -34,9 +37,13 @@ const initialsOf = (name: string): string =>
     .join('')
     .toUpperCase();
 
-export default function ClientsTab() {
+function TravelersTab() {
+  const params=useSearchParams();
+  const historyRequest=useRef(0);
+  const [historyError,setHistoryError]=useState('');
   const [clients, setClients] = useState<AdminClientRow[] | null>(null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(params.get('q')||'');
+  useEffect(()=>setSearch(params.get('q')||''),[params]);
   const [selected, setSelected] = useState<AdminClientRow | null>(null);
   const [history, setHistory] = useState<ClientBooking[] | null>(null);
   const [error, setError] = useState('');
@@ -59,10 +66,11 @@ export default function ClientsTab() {
 
   const openDetail = (c: AdminClientRow) => {
     setSelected(c);
-    setHistory(null);
+    setHistory(null); setHistoryError('');
+    const request=++historyRequest.current;
     fetchClientBookings(getSupabase(), c.id)
-      .then(setHistory)
-      .catch(() => setHistory([]));
+      .then(rows=>{if(request===historyRequest.current)setHistory(rows);})
+      .catch(()=>{if(request===historyRequest.current){setHistoryError('No se pudo cargar el historial. Cierra la ficha y vuelve a abrirla.');setHistory([]);}});
   };
 
   if (clients === null && !error) {
@@ -123,10 +131,8 @@ export default function ClientsTab() {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="admin-empty">
-            <strong>Sin resultados</strong>
-            Todavía no hay cuentas que coincidan.
-          </div>
+          <EmptyState image="generic" title="Sin resultados" text="Todavía no hay cuentas que coincidan." action={{label:'Limpiar búsqueda',onClick:()=>setSearch('')}}/>
+
         )}
       </div>
 
@@ -134,8 +140,9 @@ export default function ClientsTab() {
         <ClientDrawer
           client={selected}
           history={history}
+          error={historyError}
           onClose={() => {
-            setSelected(null);
+            historyRequest.current++; setSelected(null);
             setHistory(null);
           }}
         />
@@ -147,10 +154,12 @@ export default function ClientsTab() {
 function ClientDrawer({
   client,
   history,
+  error,
   onClose,
 }: {
   client: AdminClientRow;
   history: ClientBooking[] | null;
+  error: string;
   onClose: () => void;
 }) {
   const spent = (history ?? []).reduce(
@@ -197,9 +206,10 @@ function ClientDrawer({
             <h4 style={{ margin: '0 0 8px', fontSize: '0.85rem', color: 'var(--ink-500)' }}>
               HISTORIAL DE RESERVAS
             </h4>
+            {error && <div className="admin-alert admin-alert--error" role="alert">{error}</div>}
             {history === null && <p className="af-hint">Cargando historial…</p>}
-            {history !== null && history.length === 0 && (
-              <p className="af-hint">Este cliente todavía no tiene reservas.</p>
+            {!error && history !== null && history.length === 0 && (
+              <EmptyState compact title="Sin reservas" text="Este cliente todavía no tiene reservas." action={{label:'Ver reservas',href:'/admin?tab=reservas'}}/>
             )}
             {history !== null && history.length > 0 && (
               <>
@@ -236,4 +246,9 @@ function ClientDrawer({
       </div>
     </>
   );
+}
+
+export default function ClientsTab() {
+  const [tab, setTab] = useState('travelers');
+  return <><div className="ops-tabs" aria-label="Tipo de cliente"><button className={tab==='travelers'?'is-active':''} onClick={()=>setTab('travelers')}>Viajeros</button><button className={tab==='agencies'?'is-active':''} onClick={()=>setTab('agencies')}>Agencias</button></div>{tab==='travelers'?<TravelersTab/>:<AgenciesTab/>}</>;
 }

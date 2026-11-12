@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { fetchPaymentSettings, upsertSetting, uploadToBucket, type PaymentSettings } from '@/lib/api';
+import { useCallback, useEffect, useState } from 'react';
+import { LoadState } from './AdminShared';
+import { messageOf } from '@/lib/admin/core';
+import { fetchPaymentSettings, uploadToBucket, type PaymentSettings } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 
 export default function PaymentTab() {
@@ -13,7 +15,8 @@ export default function PaymentTab() {
   const [error, setError] = useState('');
   const [okMsg, setOkMsg] = useState('');
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setError(''); setSettings(null);
     fetchPaymentSettings(getSupabase())
       .then((s) => {
         setSettings(s);
@@ -21,18 +24,19 @@ export default function PaymentTab() {
         setInstructions(s.instructions ?? '');
         setQrUrl(s.qrUrl ?? '');
       })
-      .catch(() => setSettings({ link: null, qrUrl: null, instructions: null }));
+      .catch((err) => setError(messageOf(err)));
   }, []);
+  useEffect(load, [load]);
 
   const save = async () => {
     setSaving(true);
     setError('');
     setOkMsg('');
     try {
+      if (link.trim() && !['http:', 'https:'].includes(new URL(link.trim()).protocol)) throw new Error('Usa un enlace de pago HTTP o HTTPS.');
       const sb = getSupabase();
-      await upsertSetting(sb, 'payment_link', link.trim() || null);
-      await upsertSetting(sb, 'payment_instructions', instructions.trim() || null);
-      await upsertSetting(sb, 'payment_qr_url', qrUrl.trim() || null);
+      const { error: saveError } = await sb.from('settings').upsert([{ key: 'payment_link', value: link.trim() || null }, { key: 'payment_instructions', value: instructions.trim() || null }, { key: 'payment_qr_url', value: qrUrl.trim() || null }], { onConflict: 'key' });
+      if (saveError) throw saveError;
       setOkMsg('Configuración guardada. Los nuevos vouchers ya la usan.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar.');
@@ -42,20 +46,22 @@ export default function PaymentTab() {
   };
 
   const uploadQr = async (file: File) => {
-    setError('');
+    setError(''); setSaving(true);
     try {
       const url = await uploadToBucket(getSupabase(), 'payment', `qr-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`, file);
       setQrUrl(url);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo subir el QR.');
-    }
+      setError(messageOf(e));
+    } finally { setSaving(false); }
   };
+
+  if (!settings) return <LoadState loading={!error} error={error} empty={false} onRetry={load} />;
 
   return (
     <>
       <div className="admin-header">
         <div>
-          <h1>Pago</h1>
+          <h2>Pago</h2>
           <p>
             Configuración global de pago (RF-08): enlace, QR e instrucciones. Aparecen en el voucher de
             cada reserva.
@@ -87,7 +93,7 @@ export default function PaymentTab() {
             <label>Imagen del QR <small>(se muestra en el voucher)</small></label>
             <div className="af-upload">
               {qrUrl && <img className="af-upload__preview" src={qrUrl} alt="QR de pago" />}
-              <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadQr(f); }} />
+              <input type="file" accept="image/*" disabled={saving} onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadQr(f); }} />
               {qrUrl && (
                 <button className="btn btn--ghost btn--sm" onClick={() => setQrUrl('')}>
                   Quitar QR

@@ -1,0 +1,22 @@
+﻿import { sb } from './core';
+import { slots } from './slots';
+import { operatorDay, shiftDay } from './format';
+export async function pendingCounts(){
+  const [bookings,pases,endosos]=await Promise.all([
+    sb().from('reservations').select('id',{count:'exact',head:true}).eq('status','pendiente_pago'),
+    sb().from('agency_transfers').select('id',{count:'exact',head:true}).eq('status','pendiente').eq('kind','pase'),
+    sb().from('agency_transfers').select('id',{count:'exact',head:true}).eq('status','pendiente').eq('kind','endoso'),
+  ]);
+  for(const result of [bookings,pases,endosos])if(result.error)throw result.error;
+  return {reservas:bookings.count??0,pases:pases.count??0,endosos:endosos.count??0};
+}
+export async function operationalAlerts(){
+  const tomorrow=shiftDay(operatorDay(),1);
+  const [old,tomorrowPending,departures]=await Promise.all([
+    sb().from('reservations').select('id',{count:'exact',head:true}).eq('status','pendiente_pago').lt('created_at',new Date(Date.now()-86400000).toISOString()),
+    sb().from('reservations').select('id,date_row:reservations_tour_date_id_fkey!inner(date)',{count:'exact',head:true}).eq('status','pendiente_pago').eq('date_row.date',tomorrow),
+    slots(operatorDay(),shiftDay(operatorDay(),6)),
+  ]);
+  if(old.error)throw old.error;if(tomorrowPending.error)throw tomorrowPending.error;
+  return {old:old.count??0,tomorrow:tomorrowPending.count??0,almostFull:departures.filter(s=>s.occupied/s.capacity>=.8).length};
+}

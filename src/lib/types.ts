@@ -117,3 +117,8 @@ export interface Category {
   emoji: string;
   image?: string;
 }
+// Tipos adicionales del back-office; no alteran los contratos del sitio público.
+export type BookingSource = 'web' | 'oficina' | 'whatsapp' | 'agencia' | 'gyg' | 'otro';
+export type AgencyCompanyType = 'operadora' | 'agencia' | 'hotel' | 'otro';
+export type TransferKind = 'pase' | 'endoso';
+export type SpecialOfferKind = 'limited' | 'early_bird' | 'last_minute';
