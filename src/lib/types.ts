@@ -66,6 +66,24 @@ export interface Tour {
   info: TourInfo;
   tourTypes: Record<TourType, number>;
   extras: TourExtra[];
+  // Migración 0011 — opcionales: pueden no existir aún en la base.
+  rating?: number | null;
+  reviewCount?: number | null;
+  languages?: string[] | null;
+  freeCancellationHours?: number | null;
+  payLater?: boolean | null;
+  pickupIncluded?: boolean | null;
+  meetingPoint?: string | null;
+  meetingLat?: number | null;
+  meetingLng?: number | null;
+  priceChild?: number | null;
+  childAgeMax?: number | null;
+  minPax?: number | null;
+  defaultStartTimes?: string[] | null;
+  defaultCutoffHours?: number | null;
+  code?: string | null;
+  /** Descuento % de una oferta especial vigente (special_offers). */
+  offerPct?: number;
 }
 
 export interface Review {

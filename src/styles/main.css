@@ -383,20 +383,8 @@ p { margin: 0 0 1em; }
 .card__price { display: flex; align-items: baseline; gap: 6px; margin-top: 12px; }
 .card__price small { color: var(--ink-500); font-size: 0.75rem; }
 .card__price strong { font-family: var(--font-display); font-size: 1.4rem; color: var(--green-900); }
-.card__cta {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--green-bg);
-  color: var(--white);
-  display: grid; place-items: center;
-  transition: all var(--t-fast);
-}
-.card:hover .card__cta { background: var(--accent-500); color: var(--green-900); }
 
-.tour-card { position: relative; }
+.tour-card { position: relative; display: flex; flex-direction: column; }
 .tour-card__media { position: relative; aspect-ratio: 4/3; overflow: hidden; }
 .tour-card__media img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--t-slow); }
 .tour-card:hover .tour-card__media img { transform: scale(1.06); }
@@ -423,6 +411,39 @@ p { margin: 0 0 1em; }
   transition: all var(--t-fast);
 }
 .tour-card__heart:hover { background: var(--white); transform: scale(1.1); }
+.tour-card__badge--offer { top: auto; bottom: 12px; background: var(--accent-500); color: var(--green-900); }
+.tour-card .card__body { display: flex; flex-direction: column; flex: 1; padding: 16px 18px 18px; }
+.tour-card__dest {
+  margin: 0 0 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+.tour-card .card__title {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+.tour-card .card__meta { font-size: 0.8rem; margin: 6px 0 10px; gap: 4px 12px; }
+.tour-card__rating { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; margin-bottom: 6px; }
+.tour-card__rating svg { color: var(--accent-500); }
+.tour-card__rating strong { color: var(--ink-900); }
+.tour-card__rating span { color: var(--ink-500); }
+.tour-card__cancel {
+  display: flex; align-items: center; gap: 6px;
+  margin: 0 0 6px;
+  font-size: 0.8rem; font-weight: 600;
+  color: var(--green-700);
+}
+.tour-card .card__price { margin-top: auto; padding-top: 10px; flex-wrap: wrap; }
+.tour-card .card__price s { color: var(--ink-400); font-size: 0.85rem; }
+.tour-card .card__price-per { color: var(--ink-500); font-size: 0.75rem; }
 
 /* ============================================
    Footer — Editorial style (Banjo-inspired)
@@ -439,6 +460,41 @@ p { margin: 0 0 1em; }
   width: auto;
   margin-bottom: 28px;
   display: block;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 30px 36px;
+  margin-bottom: 44px;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 160% at 88% 0%, rgba(117, 149, 62, 0.45) 0%, rgba(117, 149, 62, 0) 55%),
+    var(--green-900);
+  box-shadow: var(--shadow-md);
+}
+.site-footer .footer-brand .footer-logo { color: var(--white); height: 96px; margin-bottom: 0; }
+.footer-brand__text {
+  margin: 0;
+  max-width: 520px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  text-align: right;
+}
+.footer-brand__text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+@media (max-width: 768px) {
+  .footer-brand { flex-direction: column; align-items: flex-start; gap: 18px; padding: 26px 24px; }
+  .footer-brand__text { text-align: left; }
 }
 
 .footer-grid {
@@ -728,5 +784,6 @@ p { margin: 0 0 1em; }
 @media (max-width: 520px) {
   .footer-grid { grid-template-columns: 1fr; gap: 32px; justify-items: center; }
   .footer-bottom { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 20px; margin: 0 -20px; }
-  .header-actions .btn--primary { display: none; }
+  .header-actions .btn--primary,
+  .header-actions .btn--gold { display: none; }
 }

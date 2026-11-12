@@ -1,0 +1,1168 @@
+{
+  "sueltas": {
+    "folder": "sueltas",
+    "hero": "/assets/tours/sueltas/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/sueltas/01.webp",
+        "sm": "/assets/tours/sueltas/01-sm.webp",
+        "w": 3280,
+        "h": 1848,
+        "orientation": "landscape",
+        "source": "IMG_20250523_135913.jpg"
+      },
+      {
+        "file": "/assets/tours/sueltas/02.webp",
+        "sm": "/assets/tours/sueltas/02-sm.webp",
+        "w": 3456,
+        "h": 2304,
+        "orientation": "landscape",
+        "source": "IMG_9464.JPG"
+      }
+    ]
+  },
+  "canon-de-palca": {
+    "folder": "CAÑON DE PALCA",
+    "hero": "/assets/tours/canon-de-palca/04.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/canon-de-palca/01.webp",
+        "sm": "/assets/tours/canon-de-palca/01-sm.webp",
+        "w": 3992,
+        "h": 2242,
+        "orientation": "landscape",
+        "source": "1. 1765247378495.jpeg"
+      },
+      {
+        "file": "/assets/tours/canon-de-palca/02.webp",
+        "sm": "/assets/tours/canon-de-palca/02-sm.webp",
+        "w": 5760,
+        "h": 3840,
+        "orientation": "landscape",
+        "source": "2. 1765340647478.jpeg"
+      },
+      {
+        "file": "/assets/tours/canon-de-palca/03.webp",
+        "sm": "/assets/tours/canon-de-palca/03-sm.webp",
+        "w": 4928,
+        "h": 3288,
+        "orientation": "landscape",
+        "source": "AdobeStock_285653747.jpeg"
+      },
+      {
+        "file": "/assets/tours/canon-de-palca/04.webp",
+        "sm": "/assets/tours/canon-de-palca/04-sm.webp",
+        "w": 4928,
+        "h": 3288,
+        "orientation": "landscape",
+        "source": "AdobeStock_285653764.jpeg"
+      },
+      {
+        "file": "/assets/tours/canon-de-palca/05.webp",
+        "sm": "/assets/tours/canon-de-palca/05-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "AdobeStock_360943088.jpeg"
+      },
+      {
+        "file": "/assets/tours/canon-de-palca/06.webp",
+        "sm": "/assets/tours/canon-de-palca/06-sm.webp",
+        "w": 4288,
+        "h": 2848,
+        "orientation": "landscape",
+        "source": "AdobeStock_69824980.jpeg"
+      },
+      {
+        "file": "/assets/tours/canon-de-palca/07.webp",
+        "sm": "/assets/tours/canon-de-palca/07-sm.webp",
+        "w": 4288,
+        "h": 2848,
+        "orientation": "landscape",
+        "source": "AdobeStock_69824981.jpeg"
+      }
+    ]
+  },
+  "chacaltaya": {
+    "folder": "CHACALTAYA",
+    "hero": "/assets/tours/chacaltaya/03.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/chacaltaya/01.webp",
+        "sm": "/assets/tours/chacaltaya/01-sm.webp",
+        "w": 3456,
+        "h": 2071,
+        "orientation": "landscape",
+        "source": "1. AdobeStock_547305511.jpeg"
+      },
+      {
+        "file": "/assets/tours/chacaltaya/02.webp",
+        "sm": "/assets/tours/chacaltaya/02-sm.webp",
+        "w": 5464,
+        "h": 3070,
+        "orientation": "landscape",
+        "source": "2. AdobeStock_550896967.jpeg"
+      },
+      {
+        "file": "/assets/tours/chacaltaya/03.webp",
+        "sm": "/assets/tours/chacaltaya/03-sm.webp",
+        "w": 5184,
+        "h": 3888,
+        "orientation": "landscape",
+        "source": "lesly-derksen-6WMzjAQBpJM-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/chacaltaya/04.webp",
+        "sm": "/assets/tours/chacaltaya/04-sm.webp",
+        "w": 2944,
+        "h": 4502,
+        "orientation": "portrait",
+        "source": "toomas-tartes-iR2ebzCoQ8w-unsplash.jpg"
+      }
+    ]
+  },
+  "charquini": {
+    "folder": "CHARQUINI",
+    "hero": "/assets/tours/charquini/02.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/charquini/01.webp",
+        "sm": "/assets/tours/charquini/01-sm.webp",
+        "w": 2400,
+        "h": 1800,
+        "orientation": "landscape",
+        "source": "1_.png"
+      },
+      {
+        "file": "/assets/tours/charquini/02.webp",
+        "sm": "/assets/tours/charquini/02-sm.webp",
+        "w": 1800,
+        "h": 2400,
+        "orientation": "portrait",
+        "source": "2. 1000006130.png"
+      },
+      {
+        "file": "/assets/tours/charquini/03.webp",
+        "sm": "/assets/tours/charquini/03-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "CHARQUINI.png"
+      },
+      {
+        "file": "/assets/tours/charquini/04.webp",
+        "sm": "/assets/tours/charquini/04-sm.webp",
+        "w": 3280,
+        "h": 1848,
+        "orientation": "landscape",
+        "source": "IMG_20250523_140014.jpg"
+      }
+    ]
+  },
+  "condoriri": {
+    "folder": "CONDORIRI",
+    "hero": "/assets/tours/condoriri/03.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/condoriri/01.webp",
+        "sm": "/assets/tours/condoriri/01-sm.webp",
+        "w": 8256,
+        "h": 5504,
+        "orientation": "landscape",
+        "source": "1. 1765247378342.jpeg"
+      },
+      {
+        "file": "/assets/tours/condoriri/02.webp",
+        "sm": "/assets/tours/condoriri/02-sm.webp",
+        "w": 5184,
+        "h": 3456,
+        "orientation": "landscape",
+        "source": "2. 1765247378861.jpeg"
+      },
+      {
+        "file": "/assets/tours/condoriri/03.webp",
+        "sm": "/assets/tours/condoriri/03-sm.webp",
+        "w": 5000,
+        "h": 2109,
+        "orientation": "landscape",
+        "source": "AdobeStock_97971579.jpeg"
+      },
+      {
+        "file": "/assets/tours/condoriri/04.webp",
+        "sm": "/assets/tours/condoriri/04-sm.webp",
+        "w": 4480,
+        "h": 6720,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-cnqMN47Csrc-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/condoriri/05.webp",
+        "sm": "/assets/tours/condoriri/05-sm.webp",
+        "w": 4027,
+        "h": 3020,
+        "orientation": "landscape",
+        "source": "gabriel-ramos-n_QbW62mzM4-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/condoriri/06.webp",
+        "sm": "/assets/tours/condoriri/06-sm.webp",
+        "w": 4480,
+        "h": 6720,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-QuERmfN30ws-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/condoriri/07.webp",
+        "sm": "/assets/tours/condoriri/07-sm.webp",
+        "w": 4480,
+        "h": 6720,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-sPNsOWl3N6w-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/condoriri/08.webp",
+        "sm": "/assets/tours/condoriri/08-sm.webp",
+        "w": 3710,
+        "h": 5565,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-zbgtt0o3b0I-unsplash.jpg"
+      }
+    ]
+  },
+  "death-road": {
+    "folder": "DEATH ROAD",
+    "hero": "/assets/tours/death-road/02.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/death-road/01.webp",
+        "sm": "/assets/tours/death-road/01-sm.webp",
+        "w": 10366,
+        "h": 3874,
+        "orientation": "landscape",
+        "source": "1765340647322.jpeg"
+      },
+      {
+        "file": "/assets/tours/death-road/02.webp",
+        "sm": "/assets/tours/death-road/02-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "AdobeStock_97209042.jpeg"
+      },
+      {
+        "file": "/assets/tours/death-road/03.webp",
+        "sm": "/assets/tours/death-road/03-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "SAN JUANILLO.png"
+      }
+    ]
+  },
+  "lago-titicaca-copacabana": {
+    "folder": "LAGO TITICACA / COPACABANA",
+    "hero": "/assets/tours/lago-titicaca-copacabana/02.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/lago-titicaca-copacabana/01.webp",
+        "sm": "/assets/tours/lago-titicaca-copacabana/01-sm.webp",
+        "w": 5066,
+        "h": 3377,
+        "orientation": "landscape",
+        "source": "1765247378894.jpeg"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-copacabana/02.webp",
+        "sm": "/assets/tours/lago-titicaca-copacabana/02-sm.webp",
+        "w": 5572,
+        "h": 3715,
+        "orientation": "landscape",
+        "source": "1765337328414.jpeg"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-copacabana/03.webp",
+        "sm": "/assets/tours/lago-titicaca-copacabana/03-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "BASILICA DE COPACABANA.png"
+      }
+    ]
+  },
+  "lago-titicaca-isla-de-la-luna": {
+    "folder": "LAGO TITICACA / ISLA DE LA LUNA",
+    "hero": "/assets/tours/lago-titicaca-isla-de-la-luna/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/lago-titicaca-isla-de-la-luna/01.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-de-la-luna/01-sm.webp",
+        "w": 6016,
+        "h": 4016,
+        "orientation": "landscape",
+        "source": "AdobeStock_360667653.jpeg"
+      }
+    ]
+  },
+  "lago-titicaca-isla-del-sol-norte-y-sur": {
+    "folder": "LAGO TITICACA / ISLA DEL SOL NORTE Y SUR",
+    "hero": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/03.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/01.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/01-sm.webp",
+        "w": 5472,
+        "h": 3648,
+        "orientation": "landscape",
+        "source": "1. 1765337328335.jpeg"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/02.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/02-sm.webp",
+        "w": 4692,
+        "h": 2891,
+        "orientation": "landscape",
+        "source": "1765340647194.jpeg"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/03.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/03-sm.webp",
+        "w": 4288,
+        "h": 2848,
+        "orientation": "landscape",
+        "source": "1765340647659.jpeg"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/04.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/04-sm.webp",
+        "w": 3938,
+        "h": 2625,
+        "orientation": "landscape",
+        "source": "2. 1765247378559.jpeg"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/05.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/05-sm.webp",
+        "w": 3992,
+        "h": 2992,
+        "orientation": "landscape",
+        "source": "3. 1765340647265.jpeg"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/06.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/06-sm.webp",
+        "w": 4000,
+        "h": 3000,
+        "orientation": "landscape",
+        "source": "CANVA(1).png"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/07.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/07-sm.webp",
+        "w": 4000,
+        "h": 3000,
+        "orientation": "landscape",
+        "source": "CANVA(2).png"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/08.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/08-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "CANVA.png"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/09.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/09-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "ISLA DEL SOL.png"
+      },
+      {
+        "file": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/10.webp",
+        "sm": "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/10-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "YUMANI ISLA DEL SOL.png"
+      }
+    ]
+  },
+  "machu-picchu": {
+    "folder": "MACHU PICCHU",
+    "hero": "/assets/tours/machu-picchu/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/machu-picchu/01.webp",
+        "sm": "/assets/tours/machu-picchu/01-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "CIUDADELA MACHU PICCHU.png"
+      }
+    ]
+  },
+  "madidi-national-park": {
+    "folder": "MADIDI NATIONAL PARK",
+    "hero": "/assets/tours/madidi-national-park/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/madidi-national-park/01.webp",
+        "sm": "/assets/tours/madidi-national-park/01-sm.webp",
+        "w": 5592,
+        "h": 3728,
+        "orientation": "landscape",
+        "source": "1765337328628.jpeg"
+      },
+      {
+        "file": "/assets/tours/madidi-national-park/02.webp",
+        "sm": "/assets/tours/madidi-national-park/02-sm.webp",
+        "w": 7000,
+        "h": 4667,
+        "orientation": "landscape",
+        "source": "1765337328692.jpeg"
+      },
+      {
+        "file": "/assets/tours/madidi-national-park/03.webp",
+        "sm": "/assets/tours/madidi-national-park/03-sm.webp",
+        "w": 5616,
+        "h": 3744,
+        "orientation": "landscape",
+        "source": "1765337328877.jpeg"
+      },
+      {
+        "file": "/assets/tours/madidi-national-park/04.webp",
+        "sm": "/assets/tours/madidi-national-park/04-sm.webp",
+        "w": 4752,
+        "h": 3168,
+        "orientation": "landscape",
+        "source": "AdobeStock_151880455.jpeg"
+      }
+    ]
+  },
+  "mirador-alaxpacha": {
+    "folder": "MIRADOR ALAXPACHA",
+    "hero": "/assets/tours/mirador-alaxpacha/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/mirador-alaxpacha/01.webp",
+        "sm": "/assets/tours/mirador-alaxpacha/01-sm.webp",
+        "w": 4226,
+        "h": 2807,
+        "orientation": "landscape",
+        "source": "1. 1765247378521.jpeg"
+      },
+      {
+        "file": "/assets/tours/mirador-alaxpacha/02.webp",
+        "sm": "/assets/tours/mirador-alaxpacha/02-sm.webp",
+        "w": 5857,
+        "h": 3905,
+        "orientation": "landscape",
+        "source": "2. AdobeStock_576057166.jpeg"
+      }
+    ]
+  },
+  "pampas-de-yacuma": {
+    "folder": "PAMPAS DE YACUMA",
+    "hero": "/assets/tours/pampas-de-yacuma/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/pampas-de-yacuma/01.webp",
+        "sm": "/assets/tours/pampas-de-yacuma/01-sm.webp",
+        "w": 3680,
+        "h": 2445,
+        "orientation": "landscape",
+        "source": "1765337328930.jpeg"
+      },
+      {
+        "file": "/assets/tours/pampas-de-yacuma/02.webp",
+        "sm": "/assets/tours/pampas-de-yacuma/02-sm.webp",
+        "w": 5472,
+        "h": 3648,
+        "orientation": "landscape",
+        "source": "1765337328964.jpeg"
+      },
+      {
+        "file": "/assets/tours/pampas-de-yacuma/03.webp",
+        "sm": "/assets/tours/pampas-de-yacuma/03-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "PAMPAS DE YACUMA.png"
+      }
+    ]
+  },
+  "reserva-eduardo-avaroa": {
+    "folder": "RESERVA EDUARDO AVAROA",
+    "hero": "/assets/tours/reserva-eduardo-avaroa/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/01.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/01-sm.webp",
+        "w": 3945,
+        "h": 2575,
+        "orientation": "landscape",
+        "source": "1. 1765247378684.jpeg"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/02.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/02-sm.webp",
+        "w": 3767,
+        "h": 2000,
+        "orientation": "landscape",
+        "source": "1765337328543.jpeg"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/03.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/03-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "1765337328591.jpeg"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/04.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/04-sm.webp",
+        "w": 5760,
+        "h": 3840,
+        "orientation": "landscape",
+        "source": "1765340647034.jpeg"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/05.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/05-sm.webp",
+        "w": 4352,
+        "h": 3264,
+        "orientation": "landscape",
+        "source": "2. 1765340647231.jpeg"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/06.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/06-sm.webp",
+        "w": 4000,
+        "h": 3000,
+        "orientation": "landscape",
+        "source": "CANVA.png"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/07.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/07-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "DESIERTO DEL SILOLI.png"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/08.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/08-sm.webp",
+        "w": 4000,
+        "h": 6000,
+        "orientation": "portrait",
+        "source": "ignacio-campo-2OdQpHIjJ3I-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/09.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/09-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "LAGUNA HEDIONDA.png"
+      },
+      {
+        "file": "/assets/tours/reserva-eduardo-avaroa/10.webp",
+        "sm": "/assets/tours/reserva-eduardo-avaroa/10-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "matheus-oliveira-BzKt0v96EIo-unsplash.jpg"
+      }
+    ]
+  },
+  "sajama": {
+    "folder": "SAJAMA",
+    "hero": "/assets/tours/sajama/04.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/sajama/01.webp",
+        "sm": "/assets/tours/sajama/01-sm.webp",
+        "w": 5386,
+        "h": 4491,
+        "orientation": "landscape",
+        "source": "1. 1765247378609.jpeg"
+      },
+      {
+        "file": "/assets/tours/sajama/02.webp",
+        "sm": "/assets/tours/sajama/02-sm.webp",
+        "w": 6020,
+        "h": 4018,
+        "orientation": "landscape",
+        "source": "2. AdobeStock_484008450.jpeg"
+      },
+      {
+        "file": "/assets/tours/sajama/03.webp",
+        "sm": "/assets/tours/sajama/03-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "3. SAJAMA ATARDECER.png"
+      },
+      {
+        "file": "/assets/tours/sajama/04.webp",
+        "sm": "/assets/tours/sajama/04-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "AGUAS TERMALES SAJAMA.png"
+      },
+      {
+        "file": "/assets/tours/sajama/05.webp",
+        "sm": "/assets/tours/sajama/05-sm.webp",
+        "w": 3181,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "alain-bonnardeaux-Zd6h7n442Og-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/sajama/06.webp",
+        "sm": "/assets/tours/sajama/06-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "SAJAMA ATARDECER (2).png"
+      },
+      {
+        "file": "/assets/tours/sajama/07.webp",
+        "sm": "/assets/tours/sajama/07-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "SAJAMA NATIONAL PARK.png"
+      }
+    ]
+  },
+  "salar-de-uyuni": {
+    "folder": "SALAR DE UYUNI",
+    "hero": "/assets/tours/salar-de-uyuni/02.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/salar-de-uyuni/01.webp",
+        "sm": "/assets/tours/salar-de-uyuni/01-sm.webp",
+        "w": 9000,
+        "h": 6000,
+        "orientation": "landscape",
+        "source": "1. SALAR DE UYUNI.png"
+      },
+      {
+        "file": "/assets/tours/salar-de-uyuni/02.webp",
+        "sm": "/assets/tours/salar-de-uyuni/02-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "1765337328293.jpeg"
+      },
+      {
+        "file": "/assets/tours/salar-de-uyuni/03.webp",
+        "sm": "/assets/tours/salar-de-uyuni/03-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "ISLA INCAHUASI.png"
+      }
+    ]
+  },
+  "teleferico-la-paz": {
+    "folder": "TELEFERICO LA PAZ",
+    "hero": "/assets/tours/teleferico-la-paz/02.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/teleferico-la-paz/01.webp",
+        "sm": "/assets/tours/teleferico-la-paz/01-sm.webp",
+        "w": 5184,
+        "h": 3456,
+        "orientation": "landscape",
+        "source": "1. AdobeStock_261153088.jpeg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/02.webp",
+        "sm": "/assets/tours/teleferico-la-paz/02-sm.webp",
+        "w": 4912,
+        "h": 3264,
+        "orientation": "landscape",
+        "source": "2. 1765340647433.jpeg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/03.webp",
+        "sm": "/assets/tours/teleferico-la-paz/03-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "3. 1765247378261.jpeg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/04.webp",
+        "sm": "/assets/tours/teleferico-la-paz/04-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "4.TELEFERICO (2).png"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/05.webp",
+        "sm": "/assets/tours/teleferico-la-paz/05-sm.webp",
+        "w": 5472,
+        "h": 3648,
+        "orientation": "landscape",
+        "source": "AdobeStock_239755074.jpeg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/06.webp",
+        "sm": "/assets/tours/teleferico-la-paz/06-sm.webp",
+        "w": 4608,
+        "h": 3456,
+        "orientation": "landscape",
+        "source": "florian-delee-lTx2V4Dvbo8-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/07.webp",
+        "sm": "/assets/tours/teleferico-la-paz/07-sm.webp",
+        "w": 4000,
+        "h": 3000,
+        "orientation": "landscape",
+        "source": "florian-delee-yvqkBSWtemg-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/08.webp",
+        "sm": "/assets/tours/teleferico-la-paz/08-sm.webp",
+        "w": 4437,
+        "h": 6656,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-1-kyNZhQn8s-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/09.webp",
+        "sm": "/assets/tours/teleferico-la-paz/09-sm.webp",
+        "w": 4480,
+        "h": 6720,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-Cr2zdMdDa1U-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/10.webp",
+        "sm": "/assets/tours/teleferico-la-paz/10-sm.webp",
+        "w": 4480,
+        "h": 6720,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-FhV0nWxgx90-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/11.webp",
+        "sm": "/assets/tours/teleferico-la-paz/11-sm.webp",
+        "w": 5184,
+        "h": 3888,
+        "orientation": "landscape",
+        "source": "lesly-derksen-F2Q0AZbHcwM-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/12.webp",
+        "sm": "/assets/tours/teleferico-la-paz/12-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "MIRADOR KILLI KILLI.png"
+      },
+      {
+        "file": "/assets/tours/teleferico-la-paz/13.webp",
+        "sm": "/assets/tours/teleferico-la-paz/13-sm.webp",
+        "w": 3750,
+        "h": 2500,
+        "orientation": "landscape",
+        "source": "TELEFERICO.png"
+      }
+    ]
+  },
+  "tiwanaku": {
+    "folder": "TIWANAKU",
+    "hero": "/assets/tours/tiwanaku/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/tiwanaku/01.webp",
+        "sm": "/assets/tours/tiwanaku/01-sm.webp",
+        "w": 4500,
+        "h": 3000,
+        "orientation": "landscape",
+        "source": "1. AdobeStock_97582069.jpeg"
+      }
+    ]
+  },
+  "toro-toro": {
+    "folder": "TORO TORO",
+    "hero": "/assets/tours/toro-toro/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/toro-toro/01.webp",
+        "sm": "/assets/tours/toro-toro/01-sm.webp",
+        "w": 5760,
+        "h": 3840,
+        "orientation": "landscape",
+        "source": "1. AdobeStock_240001878.jpeg"
+      },
+      {
+        "file": "/assets/tours/toro-toro/02.webp",
+        "sm": "/assets/tours/toro-toro/02-sm.webp",
+        "w": 6016,
+        "h": 4016,
+        "orientation": "landscape",
+        "source": "1765340646923.jpeg"
+      }
+    ]
+  },
+  "valle-de-la-luna": {
+    "folder": "VALLE DE LA LUNA",
+    "hero": "/assets/tours/valle-de-la-luna/02.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/valle-de-la-luna/01.webp",
+        "sm": "/assets/tours/valle-de-la-luna/01-sm.webp",
+        "w": 5472,
+        "h": 3648,
+        "orientation": "landscape",
+        "source": "1. 1765247378724.jpeg"
+      },
+      {
+        "file": "/assets/tours/valle-de-la-luna/02.webp",
+        "sm": "/assets/tours/valle-de-la-luna/02-sm.webp",
+        "w": 5039,
+        "h": 3200,
+        "orientation": "landscape",
+        "source": "AdobeStock_254670478.jpeg"
+      },
+      {
+        "file": "/assets/tours/valle-de-la-luna/03.webp",
+        "sm": "/assets/tours/valle-de-la-luna/03-sm.webp",
+        "w": 3648,
+        "h": 2736,
+        "orientation": "landscape",
+        "source": "florian-delee-zqyWyLqOgyk-unsplash.jpg"
+      }
+    ]
+  },
+  "valle-de-la-luna-sec": {
+    "folder": "VALLE DE LA LUNA / SECUNDARIAS",
+    "hero": "/assets/tours/valle-de-la-luna-sec/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/valle-de-la-luna-sec/01.webp",
+        "sm": "/assets/tours/valle-de-la-luna-sec/01-sm.webp",
+        "w": 3456,
+        "h": 2304,
+        "orientation": "landscape",
+        "source": "IMG_0325.JPG"
+      },
+      {
+        "file": "/assets/tours/valle-de-la-luna-sec/02.webp",
+        "sm": "/assets/tours/valle-de-la-luna-sec/02-sm.webp",
+        "w": 2304,
+        "h": 3456,
+        "orientation": "portrait",
+        "source": "IMG_9520.JPG"
+      }
+    ]
+  },
+  "valle-de-las-animas": {
+    "folder": "VALLE DE LAS ANIMAS",
+    "hero": "/assets/tours/valle-de-las-animas/02.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/valle-de-las-animas/01.webp",
+        "sm": "/assets/tours/valle-de-las-animas/01-sm.webp",
+        "w": 7952,
+        "h": 5304,
+        "orientation": "landscape",
+        "source": "1. 1765340647581.jpeg"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas/02.webp",
+        "sm": "/assets/tours/valle-de-las-animas/02-sm.webp",
+        "w": 3008,
+        "h": 2000,
+        "orientation": "landscape",
+        "source": "AdobeStock_569649407.jpeg"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas/03.webp",
+        "sm": "/assets/tours/valle-de-las-animas/03-sm.webp",
+        "w": 4480,
+        "h": 6720,
+        "orientation": "portrait",
+        "source": "gabriel-ramos-w_IJvrp-HOI-unsplash.jpg"
+      }
+    ]
+  },
+  "valle-de-las-animas-sec": {
+    "folder": "VALLE DE LAS ANIMAS / SECUNDARIAS",
+    "hero": "/assets/tours/valle-de-las-animas-sec/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/valle-de-las-animas-sec/01.webp",
+        "sm": "/assets/tours/valle-de-las-animas-sec/01-sm.webp",
+        "w": 2252,
+        "h": 4000,
+        "orientation": "portrait",
+        "source": "1715108633497.jpg"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas-sec/02.webp",
+        "sm": "/assets/tours/valle-de-las-animas-sec/02-sm.webp",
+        "w": 3072,
+        "h": 4080,
+        "orientation": "portrait",
+        "source": "Alaxpacha 2024-122.jpg"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas-sec/03.webp",
+        "sm": "/assets/tours/valle-de-las-animas-sec/03-sm.webp",
+        "w": 4080,
+        "h": 3072,
+        "orientation": "landscape",
+        "source": "Alaxpacha 2024-131.jpg"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas-sec/04.webp",
+        "sm": "/assets/tours/valle-de-las-animas-sec/04-sm.webp",
+        "w": 3456,
+        "h": 2304,
+        "orientation": "landscape",
+        "source": "IMG_0392.JPG"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas-sec/05.webp",
+        "sm": "/assets/tours/valle-de-las-animas-sec/05-sm.webp",
+        "w": 3072,
+        "h": 4080,
+        "orientation": "portrait",
+        "source": "Valle animas 120424-58.jpg"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas-sec/06.webp",
+        "sm": "/assets/tours/valle-de-las-animas-sec/06-sm.webp",
+        "w": 2448,
+        "h": 3264,
+        "orientation": "portrait",
+        "source": "Valle animas 120424-61.jpg"
+      },
+      {
+        "file": "/assets/tours/valle-de-las-animas-sec/07.webp",
+        "sm": "/assets/tours/valle-de-las-animas-sec/07-sm.webp",
+        "w": 2448,
+        "h": 3264,
+        "orientation": "portrait",
+        "source": "Valle animas 120424-86.jpg"
+      }
+    ]
+  },
+  "varios": {
+    "folder": "VARIOS",
+    "hero": "/assets/tours/varios/01.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/varios/01.webp",
+        "sm": "/assets/tours/varios/01-sm.webp",
+        "w": 3024,
+        "h": 4032,
+        "orientation": "portrait",
+        "source": "ana-maria-alvarado-porras-wjPUh8myjqg-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/varios/02.webp",
+        "sm": "/assets/tours/varios/02-sm.webp",
+        "w": 5992,
+        "h": 3995,
+        "orientation": "landscape",
+        "source": "falco-negenman-U2g-XZFGFd0-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/varios/03.webp",
+        "sm": "/assets/tours/varios/03-sm.webp",
+        "w": 2736,
+        "h": 3648,
+        "orientation": "portrait",
+        "source": "henrique-sa-3S3ciA3pXBY-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/varios/04.webp",
+        "sm": "/assets/tours/varios/04-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "jack-prommel-8Gl03J49s5Q-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/varios/05.webp",
+        "sm": "/assets/tours/varios/05-sm.webp",
+        "w": 3024,
+        "h": 4032,
+        "orientation": "portrait",
+        "source": "jack-prommel-xLCwe8XKSrk-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/varios/06.webp",
+        "sm": "/assets/tours/varios/06-sm.webp",
+        "w": 4000,
+        "h": 6000,
+        "orientation": "portrait",
+        "source": "jack-prommel-Y2y513ACqe4-unsplash.jpg"
+      },
+      {
+        "file": "/assets/tours/varios/07.webp",
+        "sm": "/assets/tours/varios/07-sm.webp",
+        "w": 3393,
+        "h": 2666,
+        "orientation": "landscape",
+        "source": "matan-levanon-qchr30s1R4c-unsplash.jpg"
+      }
+    ]
+  },
+  "ventanani": {
+    "folder": "VENTANANI",
+    "hero": "/assets/tours/ventanani/04.webp",
+    "photos": [
+      {
+        "file": "/assets/tours/ventanani/01.webp",
+        "sm": "/assets/tours/ventanani/01-sm.webp",
+        "w": 5184,
+        "h": 3888,
+        "orientation": "landscape",
+        "source": "1768256478202.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/02.webp",
+        "sm": "/assets/tours/ventanani/02-sm.webp",
+        "w": 3888,
+        "h": 5184,
+        "orientation": "portrait",
+        "source": "1768256478263.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/03.webp",
+        "sm": "/assets/tours/ventanani/03-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "1768256478289.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/04.webp",
+        "sm": "/assets/tours/ventanani/04-sm.webp",
+        "w": 3888,
+        "h": 5184,
+        "orientation": "portrait",
+        "source": "1768256478399.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/05.webp",
+        "sm": "/assets/tours/ventanani/05-sm.webp",
+        "w": 3888,
+        "h": 5184,
+        "orientation": "portrait",
+        "source": "1768256478423.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/06.webp",
+        "sm": "/assets/tours/ventanani/06-sm.webp",
+        "w": 4000,
+        "h": 6000,
+        "orientation": "portrait",
+        "source": "1768256478457.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/07.webp",
+        "sm": "/assets/tours/ventanani/07-sm.webp",
+        "w": 4000,
+        "h": 6000,
+        "orientation": "portrait",
+        "source": "1768256478520.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/08.webp",
+        "sm": "/assets/tours/ventanani/08-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "1768256478567.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/09.webp",
+        "sm": "/assets/tours/ventanani/09-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "1768256478618.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/10.webp",
+        "sm": "/assets/tours/ventanani/10-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "1768256478703.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/11.webp",
+        "sm": "/assets/tours/ventanani/11-sm.webp",
+        "w": 4000,
+        "h": 6000,
+        "orientation": "portrait",
+        "source": "1768256478797.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/12.webp",
+        "sm": "/assets/tours/ventanani/12-sm.webp",
+        "w": 4000,
+        "h": 6000,
+        "orientation": "portrait",
+        "source": "1768256478847.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/13.webp",
+        "sm": "/assets/tours/ventanani/13-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "1768256478895.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/14.webp",
+        "sm": "/assets/tours/ventanani/14-sm.webp",
+        "w": 6000,
+        "h": 4000,
+        "orientation": "landscape",
+        "source": "1768256478938.JPG"
+      },
+      {
+        "file": "/assets/tours/ventanani/15.webp",
+        "sm": "/assets/tours/ventanani/15-sm.webp",
+        "w": 1800,
+        "h": 4000,
+        "orientation": "portrait",
+        "source": "1768256478985.jpg"
+      },
+      {
+        "file": "/assets/tours/ventanani/16.webp",
+        "sm": "/assets/tours/ventanani/16-sm.webp",
+        "w": 1472,
+        "h": 2733,
+        "orientation": "portrait",
+        "source": "1768256479010.jpg"
+      }
+    ]
+  },
+  "_home_hero_slides": [
+    "/assets/tours/salar-de-uyuni/02.webp",
+    "/assets/tours/reserva-eduardo-avaroa/01.webp",
+    "/assets/tours/sajama/04.webp",
+    "/assets/tours/lago-titicaca-isla-del-sol-norte-y-sur/03.webp",
+    "/assets/tours/condoriri/03.webp",
+    "/assets/tours/valle-de-las-animas/02.webp"
+  ]
+}

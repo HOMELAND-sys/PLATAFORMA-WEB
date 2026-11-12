@@ -63,6 +63,40 @@ export interface TourDateFree {
   capacity: number;
   occupied: number;
   free: number;
+  // Migración 0011 — opcionales (la vista puede no tenerlas aún).
+  start_time?: string | null;
+  blocked?: boolean | null;
+  bookable?: boolean | null;
+}
+
+// Columnas públicas añadidas por la migración 0011: todas opcionales,
+// porque la base puede no tenerlas todavía al desplegar el front.
+export interface TourPublicColumns {
+  rating: number | null;
+  review_count: number | null;
+  languages: string[] | null;
+  free_cancellation_hours: number | null;
+  pay_later: boolean | null;
+  pickup_included: boolean | null;
+  meeting_point: string | null;
+  meeting_lat: number | null;
+  meeting_lng: number | null;
+  price_child: number | null;
+  child_age_max: number | null;
+  min_pax: number | null;
+  default_start_times: string[] | null;
+  default_cutoff_hours: number | null;
+  code: string | null;
+}
+
+export interface SpecialOffer {
+  id: string;
+  tour_ids: string[] | null;
+  kind: string | null;
+  discount_pct: number | null;
+  activity_from: string | null;
+  activity_to: string | null;
+  active?: boolean | null;
 }
 
 export interface ReservationRow {
@@ -112,6 +146,7 @@ export interface PaymentSettings {
 // ---------------------------------------------------------------------------
 
 export function mapTour(row: TourRow, catSlugById: Map<string, string>): Tour {
+  const x = row as TourRow & Partial<TourPublicColumns>;
   const slugs = row.category_ids.map((id) => catSlugById.get(id)).filter(Boolean) as string[];
   const primary = (row.category_id && catSlugById.get(row.category_id)) || slugs[0] || 'uyuni';
   const prices = [row.price_group, row.price_semi, row.price_private].filter(
@@ -150,6 +185,21 @@ export function mapTour(row: TourRow, catSlugById: Map<string, string>): Tour {
       private: row.price_private ?? 0,
     },
     extras: row.extras,
+    rating: x.rating ?? undefined,
+    reviewCount: x.review_count ?? undefined,
+    languages: x.languages ?? undefined,
+    freeCancellationHours: x.free_cancellation_hours ?? undefined,
+    payLater: x.pay_later ?? undefined,
+    pickupIncluded: x.pickup_included ?? undefined,
+    meetingPoint: x.meeting_point ?? undefined,
+    meetingLat: x.meeting_lat ?? undefined,
+    meetingLng: x.meeting_lng ?? undefined,
+    priceChild: x.price_child ?? undefined,
+    childAgeMax: x.child_age_max ?? undefined,
+    minPax: x.min_pax ?? undefined,
+    defaultStartTimes: x.default_start_times ?? undefined,
+    defaultCutoffHours: x.default_cutoff_hours ?? undefined,
+    code: x.code ?? undefined,
   };
 }
 
@@ -168,26 +218,64 @@ export async function fetchCategories(sb: SupabaseClient): Promise<CategoryRow[]
 }
 
 export async function fetchActiveTours(sb: SupabaseClient): Promise<Tour[]> {
-  const [catsRes, toursRes] = await Promise.all([
+  const [catsRes, toursRes, offers] = await Promise.all([
     sb.from('categories').select('*'),
     sb.from('tours').select('*').eq('active', true).order('created_at'),
+    fetchActiveOffers(sb),
   ]);
   if (catsRes.error) throw catsRes.error;
   if (toursRes.error) throw toursRes.error;
   const catMap = buildCatSlugMap((catsRes.data ?? []) as CategoryRow[]);
-  return ((toursRes.data ?? []) as TourRow[]).map((row) => mapTour(row, catMap));
+  return ((toursRes.data ?? []) as TourRow[]).map((row) => {
+    const tour = mapTour(row, catMap);
+    const pct = offerPctForTour(offers, row.id);
+    return pct > 0 ? { ...tour, offerPct: pct } : tour;
+  });
 }
 
 export async function fetchActiveTourBySlug(sb: SupabaseClient, slug: string): Promise<Tour | null> {
-  const [catsRes, toursRes] = await Promise.all([
+  const [catsRes, toursRes, offers] = await Promise.all([
     sb.from('categories').select('*'),
     sb.from('tours').select('*').eq('slug', slug).eq('active', true).maybeSingle(),
+    fetchActiveOffers(sb),
   ]);
   if (catsRes.error) throw catsRes.error;
   if (toursRes.error) throw toursRes.error;
   const row = toursRes.data as TourRow | null;
   if (!row) return null;
-  return mapTour(row, buildCatSlugMap((catsRes.data ?? []) as CategoryRow[]));
+  const tour = mapTour(row, buildCatSlugMap((catsRes.data ?? []) as CategoryRow[]));
+  const pct = offerPctForTour(offers, row.id);
+  return pct > 0 ? { ...tour, offerPct: pct } : tour;
+}
+
+// Ofertas especiales vigentes (migración 0011). Si la tabla no existe aún
+// o falla la lectura, el catálogo sigue funcionando sin descuentos.
+export async function fetchActiveOffers(sb: SupabaseClient): Promise<SpecialOffer[]> {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data, error } = await sb.from('special_offers').select('*');
+  if (error) return [];
+  return ((data ?? []) as SpecialOffer[]).filter(
+    (o) =>
+      o.active !== false &&
+      Array.isArray(o.tour_ids) &&
+      typeof o.discount_pct === 'number' &&
+      o.discount_pct > 0 &&
+      (!o.activity_from || o.activity_from <= today) &&
+      (!o.activity_to || o.activity_to >= today),
+  );
+}
+
+export function offerPctForTour(offers: SpecialOffer[], tourId: string): number {
+  return offers
+    .filter((o) => o.tour_ids?.includes(tourId))
+    .reduce((max, o) => Math.max(max, o.discount_pct ?? 0), 0);
+}
+
+// Miniatura optimizada: /assets/tours/<destino>/NN.webp → NN-sm.webp.
+// Cualquier otra URL (Supabase storage, fotos antiguas) pasa intacta.
+export function tourThumb(url: string): string {
+  const m = url.match(/^(.*\/assets\/tours\/.+)\/(\d+)\.webp$/);
+  return m ? `${m[1]}/${m[2]}-sm.webp` : url;
 }
 
 // ---------------------------------------------------------------------------
@@ -200,7 +288,7 @@ export async function fetchTourAvailability(
 ): Promise<TourDateFree[]> {
   const { data, error } = await sb
     .from('v_tour_dates_free')
-    .select('id, tour_id, date, capacity, occupied, free')
+    .select('*')
     .eq('tour_id', tourId)
     .gte('date', new Date().toISOString().slice(0, 10))
     .order('date', { ascending: true });

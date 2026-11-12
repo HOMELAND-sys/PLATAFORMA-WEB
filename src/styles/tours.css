@@ -12,8 +12,13 @@
 .page-header::before {
   content: '';
   position: absolute; inset: 0;
-  background: url('/assets/uyuni-mirror.jpg') center/cover;
-  opacity: 0.16;
+  background: url('/assets/tours/condoriri/01.webp') center 38%/cover;
+  opacity: 0.5;
+}
+.page-header::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(117, 149, 62, 0.97) 0%, rgba(117, 149, 62, 0.86) 42%, rgba(117, 149, 62, 0.38) 100%);
 }
 .page-header > * { position: relative; z-index: 1; }
 .page-header h1 { color: var(--white); margin-bottom: 12px; }
@@ -96,7 +101,9 @@
 
 @media (max-width: 768px) {
   .toolbar { position: static; }
-  .toolbar__inner { flex-direction: column; align-items: stretch; }
+  .toolbar__inner { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
+  .cat-pills { flex: 0 0 auto; width: 100%; min-width: 0; }
+  .toolbar__side { width: 100%; justify-content: flex-end; }
   .divider-v { display: none; }
 }
 
@@ -154,15 +161,40 @@
 }
 .results-head span { color: var(--ink-500); font-size: 0.9rem; }
 
+.sort-select { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-600); font-size: 0.85rem; }
+.sort-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 0;
+  background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2339422c' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center / 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  padding: 8px 34px 8px 14px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-800);
+  cursor: pointer;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.sort-select select:hover { border-color: var(--green-400); }
+.sort-select select:focus-visible { outline: none; border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(117, 149, 62, 0.18); }
+@media (max-width: 768px) {
+  .results-head { flex-direction: column; align-items: stretch; gap: 12px; }
+  .sort-select { justify-content: space-between; }
+  .sort-select select { flex: 1; }
+}
+
 .tours-search-summary {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   margin-top: 18px;
   padding: 8px 14px 8px 16px;
   background: rgba(20, 26, 14, 0.08);
   border: 1px solid rgba(20, 26, 14, 0.18);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-lg);
   color: var(--ink-900);
   font-size: 0.9rem;
   backdrop-filter: blur(6px);
@@ -180,6 +212,32 @@
 }
 .tours-search-clear:hover { background: rgba(20, 26, 14, 0.12); border-color: var(--ink-900); }
 
+.tours-search-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(20, 26, 14, 0.18);
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.tours-search-chip button {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.tours-search-chip button:hover { background: rgba(20, 26, 14, 0.15); color: var(--ink-900); }
+
 /* Why travel sidebar card (compact) */
 .sidebar-why {
   background: var(--green-100);
@@ -190,7 +248,7 @@
 }
 .sidebar-why h3 { font-size: 1.1rem; margin-bottom: 12px; }
 .sidebar-why ul { list-style: none; padding: 0; margin: 0; }
-.sidebar-why li { display: flex; align-items: start; gap: 8px; padding: 6px 0; font-size: 0.9rem; }
+.sidebar-why li { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; font-size: 0.9rem; }
 .sidebar-why li::before { content: '✓'; color: var(--green-700); font-weight: 700; }
 
 /* Stats row */
