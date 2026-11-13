@@ -17,6 +17,7 @@ import { csvText } from '@/lib/admin/exports';
 import { messageOf } from '@/lib/admin/core';
 import { operatorDay, shiftDay } from '@/lib/admin/format';
 import { requireRange } from '@/lib/admin/validation';
+import { moneyNumber } from '@/lib/admin/money';
 
 type ReportType = 'ventas' | 'reservas' | 'clientes';
 
@@ -46,7 +47,7 @@ const LOGO_URL = '/assets/full_square_transparent_customcolor%20(2).png';
 function daysAgo(days: number): string { return shiftDay(operatorDay(), -days); }
 
 function usd(n: number): string {
-  return `US$ ${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `US$ ${moneyNumber(n, 2, 'en-US')}`;
 }
 
 function fmtDay(d: string): string {

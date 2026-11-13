@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { fetchDashboardOverview, type ReservationRow } from '@/lib/api';
 import { allRows } from '@/lib/admin/core';
 import { requireRange } from '@/lib/admin/validation';
+import { moneyNumber } from '@/lib/admin/money';
 
 export const DASHBOARD_PERIODS = [
   { id: '7d', label: 'Últimos 7 días', days: 7 },
@@ -76,5 +77,5 @@ export async function fetchDashboardData(sb: SupabaseClient, range: DashboardRan
 export type DashboardData = Awaited<ReturnType<typeof fetchDashboardData>>;
 
 export function dashboardMoney(amount: number): string {
-  return `US$ ${new Intl.NumberFormat('es-BO', { maximumFractionDigits: 0 }).format(amount)}`;
+  return `US$ ${moneyNumber(amount, 0)}`;
 }

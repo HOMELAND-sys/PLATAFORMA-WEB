@@ -104,3 +104,5 @@ module.exports=async function({test,load,lexicalSql,workspace,root,React,renderT
  test('0014: cascada de fechas compatible con guarda original y sin reservas',()=>{const schema=read('supabase/migrations/0001_schema.sql');assert.match(schema,/tour_id uuid not null references public\.tours \(id\) on delete cascade/);const guard=schema.match(/function public\.guard_tour_date_delete\(\)[\s\S]*?\$\$([\s\S]*?)\$\$;/)[1];assert.match(guard,/v_count > 0/);assert.match(guard,/status in \('pendiente_pago', 'confirmada'\)/);assert.match(guard,/return old/);});
  test('0014: pasajeros de ventas por tour y mes excluyen canceladas como el total',()=>{const fn=migration.match(/function public\.admin_report_sales\([\s\S]*?\$\$([\s\S]*?)\$\$;/)[1];assert.equal((fn.match(/sum\(r\.pax\) filter \(where r\.status <> 'cancelada'\)/g)||[]).length,2);assert.match(fn,/'pax', \(select coalesce\(sum\(pax\), 0\) from scoped where status <> 'cancelada'\)/);});
 };
+
+if (require.main === module) require('./checks.cjs');

@@ -80,8 +80,10 @@
 .tours-switch:disabled { opacity: .45; cursor: wait; }
 .tours-row-menu-trigger { display: grid; place-items: center; color: #8c9481; border-radius: 6px; height: 26px; width: 23px; padding: 0; }
 .tours-row-menu-trigger:hover { background: #eaf0e0; color: #536d40; }
-.tours-row-menu { position: fixed; z-index: 105; background: #fffffc; border: 1px solid #e5e8da; border-radius: 10px; box-shadow: 0 8px 28px #273c2020; padding: 6px; min-width: 178px; }
+.tours-row-menu { box-sizing: border-box; position: fixed; z-index: 105; background: #fffffc; border: 1px solid #e5e8da; border-radius: 10px; box-shadow: 0 8px 28px #273c2020; padding: 6px; min-width: min(178px, calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; font-family: var(--font-sans, Inter, sans-serif); }
 .tours-row-menu button, .tours-row-menu a { display: flex; align-items: center; gap: 9px; padding: 9px 10px; color: #667653; font-size: 11px; border-radius: 6px; text-decoration: none; width: 100%; text-align: left; }
+.tours-row-menu button { border: 0; background: transparent; cursor: pointer; font-family: inherit; }
+.tours-row-menu button:focus-visible, .tours-row-menu a:focus-visible { outline: 2px solid #75953e; outline-offset: -2px; }
 .tours-row-menu button:hover, .tours-row-menu a:hover { background: #f2f5ea; }
 .tours-row-menu .is-danger { color: #b3795e; border-top: 1px solid #eff0e8; margin-top: 3px; }
 .tours-empty { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; padding: 55px 20px; text-align: center; color: #8da17b; font-size: 12px; min-height: 250px; }

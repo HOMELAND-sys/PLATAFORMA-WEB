@@ -98,7 +98,7 @@ export default function ReservationDetail({ booking: b, onClose, onSaved, descri
 
     ['Descuento de grupo', usd(-b.group_discount)],
 
-    [`Cupón ${b.coupon_code || ''}`, usd(-b.coupon_discount)],
+    ...(Number(b.coupon_discount) > 0 ? [[`Cupón ${b.coupon_code || ''}`.trim(), usd(-b.coupon_discount)]] : []),
 
     ...(Math.abs(adjustment) > .001 ? [['Ajuste manual', usd(adjustment)]] : []),
 

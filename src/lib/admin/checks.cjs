@@ -99,5 +99,6 @@ function lexicalSql(sql){
  require('./check-round2.cjs')({test,load,lexicalSql,workspace,root,React,renderToStaticMarkup,renderData:(name,data,props)=>{hookMode='ready';hookData=data;hookCall=0;const C=load(path.join(root,'components/admin',name+'.tsx')).default;return renderToStaticMarkup(React.createElement(C,props));}});
  await require('./check-ht8a.cjs')({test,load,lexicalSql,workspace,root,React,renderToStaticMarkup,sbStub});
  await require('./check-ht8b.cjs')({test,load,lexicalSql,workspace,root,React,renderToStaticMarkup,sbStub,renderData:(name,data,props)=>{hookMode='ready';hookData=data;hookCall=0;const C=load(path.join(root,'components/admin',name+'.tsx')).default;return renderToStaticMarkup(React.createElement(C,props));}});
+ await require('./check-ht8c.cjs')({test,load,workspace,root,renderData:(name,data,props)=>{hookMode='ready';hookData=data;hookCall=0;const C=load(path.join(root,'components/admin',name+'.tsx')).default;return renderToStaticMarkup(React.createElement(C,props));}});
  console.log(`${passed} comprobaciones locales correctas. Sin SQL ejecutado ni acceso a credenciales.`);
 })().catch(error=>{console.error(error);process.exitCode=1;});
