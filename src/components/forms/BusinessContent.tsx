@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useContactForm } from '@/lib/use-contact-form';
+import FormCompanyContact from './FormCompanyContact';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import CalendarScheduler from '@/components/forms/CalendarScheduler';
 import Icon from '@/components/ui/Icon';
@@ -13,13 +14,7 @@ const STATES = [
 const COUNTRY_CODES = ['+591', '+54', '+34', '+1', '+52', '+56', '+51'];
 
 export default function BusinessContent() {
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const { submitted, busy, error, handleSubmit } = useContactForm('business');
 
   return (
     <div className="biz-page">
@@ -39,10 +34,12 @@ export default function BusinessContent() {
 
       <section className="form-page">
         <div className="container form-page__layout">
-          <form className="form-card" onSubmit={handleSubmit}>
+          <form className="form-card" onSubmit={handleSubmit} aria-busy={busy}>
+            <div aria-hidden="true" style={{ position: 'absolute', left: -10000 }}><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
+            {error && <div className="auth-alert auth-alert--error" role="alert">{error}</div>}
             {submitted && (
-              <div className="success-banner">
-                ✓ ¡Reunión agendada! Te enviaremos un email de confirmación.
+              <div className="success-banner" role="status">
+                ✓ Solicitud recibida. Te contactaremos para confirmar la reunión.
               </div>
             )}
             <h2>Formulario de aliado comercial</h2>
@@ -54,13 +51,13 @@ export default function BusinessContent() {
                 <label className="field__label">
                   Nombre <span className="req">*</span>
                 </label>
-                <input className="input" type="text" placeholder="Nombre" required />
+                <input className="input" name="first_name" aria-label="Nombre" type="text" placeholder="Nombre" required />
               </div>
               <div className="field">
                 <label className="field__label">
                   Apellido <span className="req">*</span>
                 </label>
-                <input className="input" type="text" placeholder="Apellido" required />
+                <input className="input" name="last_name" aria-label="Apellido" type="text" placeholder="Apellido" required />
               </div>
             </div>
             <div className="form-row">
@@ -69,19 +66,19 @@ export default function BusinessContent() {
                   Número de contacto <span className="req">*</span>
                 </label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <select className="select" style={{ width: 100 }}>
+                  <select name="phone_code" aria-label="Código de país" className="select" style={{ width: 100 }}>
                     {COUNTRY_CODES.map((c) => (
                       <option key={c}>{c}</option>
                     ))}
                   </select>
-                  <input className="input" type="tel" placeholder="712 34567" required />
+                  <input className="input" name="phone" aria-label="Número de contacto" type="tel" placeholder="712 34567" required />
                 </div>
               </div>
               <div className="field">
                 <label className="field__label">
                   Dirección de correo electrónico <span className="req">*</span>
                 </label>
-                <input className="input" type="email" placeholder="ejemplo@empresa.com" required />
+                <input className="input" name="email" aria-label="Correo electrónico" type="email" placeholder="ejemplo@empresa.com" required />
               </div>
             </div>
 
@@ -90,24 +87,24 @@ export default function BusinessContent() {
               <label className="field__label">
                 Empresa <span className="req">*</span>
               </label>
-              <input className="input" type="text" placeholder="Nombre de empresa" required />
+              <input className="input" name="company" aria-label="Empresa" type="text" placeholder="Nombre de empresa" required />
             </div>
             <div className="field" style={{ marginBottom: 16 }}>
               <label className="field__label">
                 Dirección <span className="req">*</span>
               </label>
-              <input className="input" type="text" placeholder="Av. Principal #123, Edificio Torre, Piso 4" required />
+              <input className="input" name="address" aria-label="Dirección" type="text" placeholder="Av. Principal #123, Edificio Torre, Piso 4" required />
             </div>
             <div className="form-row form-row--3">
               <div className="field">
                 <label className="field__label">
                   Ciudad <span className="req">*</span>
                 </label>
-                <input className="input" type="text" placeholder="Ciudad" required />
+                <input className="input" name="city" aria-label="Ciudad" type="text" placeholder="Ciudad" required />
               </div>
               <div className="field">
                 <label className="field__label">Estado / Provincia</label>
-                <select className="select">
+                <select name="province" aria-label="Estado o provincia" className="select">
                   {STATES.map((s) => (
                     <option key={s}>{s}</option>
                   ))}
@@ -115,14 +112,14 @@ export default function BusinessContent() {
               </div>
               <div className="field">
                 <label className="field__label">Código postal</label>
-                <input className="input" type="text" placeholder="0000" />
+                <input className="input" name="postal_code" aria-label="Código postal" type="text" placeholder="0000" />
               </div>
             </div>
             <div className="field" style={{ marginBottom: 16 }}>
               <label className="field__label">
                 País <span className="req">*</span>
               </label>
-              <input className="input" type="text" defaultValue="Bolivia" required />
+              <input className="input" name="country" aria-label="País" type="text" defaultValue="Bolivia" required />
             </div>
 
             <h4 className="form-section-title">Agendemos una reunión de negocios</h4>
@@ -132,7 +129,7 @@ export default function BusinessContent() {
             <div className="field" style={{ marginBottom: 16 }}>
               <label className="field__label">Cuéntanos brevemente</label>
               <textarea
-                className="textarea"
+                name="message" aria-label="Servicios de interés" maxLength={2000} className="textarea"
                 rows={5}
                 placeholder="Ej. Somos una agencia de viajes en Buenos Aires interesada en ofrecer tours a Bolivia a nuestros clientes. Buscamos tarifas especiales para grupos de 10+..."
               ></textarea>
@@ -145,8 +142,8 @@ export default function BusinessContent() {
               </span>
             </label>
 
-            <button type="submit" className="btn btn--primary btn--lg btn--block">
-              Agendar reunión
+            <button type="submit" className="btn btn--primary btn--lg btn--block" disabled={busy || submitted}>
+              {busy ? 'Enviando…' : submitted ? 'Solicitud enviada' : 'Solicitar reunión'}
               <Icon name="calendar" size={18} />
             </button>
           </form>
@@ -159,32 +156,7 @@ export default function BusinessContent() {
                 Agendemos una reunión para evaluar la alianza.
               </p>
 
-              <div className="aside-contact">
-                <p style={{ fontSize: '0.9rem', lineHeight: 1.7 }}>
-                  <a href="mailto:partners@homeland.tours" className="aside-link">
-                    partners@homeland.tours
-                  </a>
-                  <br />
-                  <a href="mailto:aliados@homeland.tours" className="aside-link">
-                    aliados@homeland.tours
-                  </a>
-                </p>
-
-                <h4 style={{ color: 'var(--white)', fontSize: '0.85rem', margin: '18px 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Equipo de alianzas
-                </h4>
-                <p style={{ fontSize: '0.92rem', color: 'var(--white)', fontWeight: 500, margin: '0 0 16px' }}>
-                  Lunes a viernes, 9:00 a 18:00.
-                </p>
-
-                <h4 style={{ color: 'var(--white)', fontSize: '0.85rem', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  WhatsApp B2B
-                </h4>
-                <p style={{ fontSize: '1.3rem', color: 'var(--accent-400)', fontWeight: 600, margin: 0 }}>
-                  <Icon name="whatsapp" size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />
-                  +591 760-12346
-                </p>
-              </div>
+              <FormCompanyContact />
 
               <div className="aside-divider"></div>
 

@@ -57,6 +57,8 @@ export default function CalendarScheduler() {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 32, alignItems: 'start', marginTop: 12 }}>
+      <input type="hidden" name="meeting_date" value={selectedDay ? `${selectedDay.getFullYear()}-${String(selectedDay.getMonth() + 1).padStart(2, '0')}-${String(selectedDay.getDate()).padStart(2, '0')}` : ''} />
+      <input type="hidden" name="meeting_time" value={selectedTime ?? ''} />
       <div className="biz-calendar">
         <div className="biz-cal__head">
           <button
@@ -106,7 +108,7 @@ export default function CalendarScheduler() {
 
       <div>
         <p style={{ fontSize: '0.92rem', color: 'var(--ink-700)', margin: '0 0 12px' }}>
-          Horarios disponibles ·{' '}
+          Horario de preferencia ·{' '}
           <span style={{ fontWeight: 600, color: 'var(--ink-900)' }}>{selectedLabel}</span>
           {selectedTime && (
             <span style={{ fontWeight: 600, color: 'var(--green-700)' }}> — {selectedTime} seleccionado</span>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useContactForm } from '@/lib/use-contact-form';
+import FormCompanyContact from './FormCompanyContact';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import Icon from '@/components/ui/Icon';
 
@@ -21,13 +22,7 @@ const PHONE_CODES = [
 ];
 
 export default function CustomizeContent() {
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const { submitted, busy, error, handleSubmit } = useContactForm('customize');
 
   return (
     <div className="form-page-wrap">
@@ -50,9 +45,11 @@ export default function CustomizeContent() {
 
       <section className="form-page">
         <div className="container form-page__layout">
-          <form className="form-card" onSubmit={handleSubmit}>
+          <form className="form-card" onSubmit={handleSubmit} aria-busy={busy}>
+            <div aria-hidden="true" style={{ position: 'absolute', left: -10000 }}><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
+            {error && <div className="auth-alert auth-alert--error" role="alert">{error}</div>}
             {submitted && (
-              <div className="success-banner">✓ ¡Gracias! Te contactaremos en menos de 24 horas.</div>
+              <div className="success-banner" role="status">✓ Consulta recibida. Nuestro equipo revisará tu viaje y se pondrá en contacto contigo.</div>
             )}
             <h2>¡Hablemos de tu próxima aventura!</h2>
             <p>
@@ -66,13 +63,13 @@ export default function CustomizeContent() {
                 <label className="field__label">
                   Nombre <span className="req">*</span>
                 </label>
-                <input className="input" type="text" placeholder="Ej. Juan" required />
+                <input className="input" name="first_name" aria-label="Nombre" type="text" placeholder="Ej. Juan" required />
               </div>
               <div className="field">
                 <label className="field__label">
                   Apellido <span className="req">*</span>
                 </label>
-                <input className="input" type="text" placeholder="Ej. Pérez" required />
+                <input className="input" name="last_name" aria-label="Apellido" type="text" placeholder="Ej. Pérez" required />
               </div>
             </div>
             <div className="form-row">
@@ -80,7 +77,7 @@ export default function CustomizeContent() {
                 <label className="field__label">
                   Elige tu país <span className="req">*</span>
                 </label>
-                <select className="select" required>
+                <select name="country" aria-label="País" className="select" required>
                   {COUNTRIES.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
@@ -90,7 +87,7 @@ export default function CustomizeContent() {
                 <label className="field__label">
                   Ciudad <span className="req">*</span>
                 </label>
-                <input className="input" type="text" placeholder="Ej. Buenos Aires" required />
+                <input className="input" name="city" aria-label="Ciudad" type="text" placeholder="Ej. Buenos Aires" required />
               </div>
             </div>
             <div className="form-row">
@@ -98,13 +95,13 @@ export default function CustomizeContent() {
                 <label className="field__label">
                   Número de pasajeros <span className="req">*</span>
                 </label>
-                <input className="input" type="number" min={1} max={20} placeholder="Ej. 2" required />
+                <input className="input" name="passengers" aria-label="Número de pasajeros" type="number" min={1} max={20} placeholder="Ej. 2" required />
               </div>
               <div className="field">
                 <label className="field__label">
                   Días de viaje <span className="req">*</span>
                 </label>
-                <input className="input" type="number" min={1} max={30} placeholder="Ej. 7" required />
+                <input className="input" name="days" aria-label="Días de viaje" type="number" min={1} max={30} placeholder="Ej. 7" required />
               </div>
             </div>
 
@@ -114,18 +111,18 @@ export default function CustomizeContent() {
                 <label className="field__label">
                   Fecha de inicio del viaje <span className="req">*</span>
                 </label>
-                <input className="input" type="date" required />
+                <input className="input" name="start_date" aria-label="Fecha de inicio" type="date" required />
               </div>
               <div className="field">
                 <label className="field__label">Fecha alternativa</label>
-                <input className="input" type="date" />
+                <input className="input" name="alternative_date" aria-label="Fecha alternativa" type="date" />
                 <div className="field__hint">Por si tu primera opción no está disponible</div>
               </div>
               <div className="field">
                 <label className="field__label">
                   Fecha de regreso del viaje <span className="req">*</span>
                 </label>
-                <input className="input" type="date" required />
+                <input className="input" name="end_date" aria-label="Fecha de regreso" type="date" required />
               </div>
             </div>
 
@@ -135,13 +132,13 @@ export default function CustomizeContent() {
                 <label className="field__label">
                   Correo electrónico <span className="req">*</span>
                 </label>
-                <input className="input" type="email" placeholder="tu@correo.com" required />
+                <input className="input" name="email" aria-label="Correo electrónico" type="email" placeholder="tu@correo.com" required />
               </div>
               <div className="field">
                 <label className="field__label">
                   Reconfirmar correo electrónico <span className="req">*</span>
                 </label>
-                <input className="input" type="email" placeholder="tu@correo.com" required />
+                <input className="input" name="confirm_email" aria-label="Reconfirmar correo electrónico" type="email" placeholder="tu@correo.com" required />
               </div>
             </div>
             <div className="form-row">
@@ -150,31 +147,31 @@ export default function CustomizeContent() {
                   Número de teléfono <span className="req">*</span>
                 </label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <select className="select" style={{ width: 110 }}>
+                  <select name="phone_code" aria-label="Código de país" className="select" style={{ width: 110 }}>
                     {PHONE_CODES.map((p) => (
-                      <option key={p.code}>
+                      <option key={p.code} value={p.code}>
                         {p.flag} {p.code}
                       </option>
                     ))}
                   </select>
-                  <input className="input" type="tel" placeholder="(591) 555-0123" required />
+                  <input className="input" name="phone" aria-label="Número de teléfono" type="tel" placeholder="Tu número de teléfono" required />
                 </div>
               </div>
               <div className="field">
                 <label className="field__label">Interés en viajar</label>
-                <input className="input" type="text" placeholder="Ej. Aventura, cultura, fotografía..." />
+                <input className="input" name="interests" aria-label="Intereses del viaje" type="text" placeholder="Ej. Aventura, cultura, fotografía..." />
               </div>
             </div>
 
             <h4 className="form-section-title">Alojamiento y servicios</h4>
             <div className="field" style={{ marginBottom: 16 }}>
               <label className="field__label">Categoría de hotel</label>
-              <input className="input" type="text" placeholder="Ej. Estándar 3 estrellas, B&B familiar..." />
+              <input className="input" name="hotel" aria-label="Categoría de hotel" type="text" placeholder="Ej. Estándar 3 estrellas, B&B familiar..." />
             </div>
             <div className="field" style={{ marginBottom: 16 }}>
               <label className="field__label">Mensaje adicional</label>
               <textarea
-                className="textarea"
+                name="message" aria-label="Mensaje adicional" maxLength={2000} className="textarea"
                 rows={5}
                 placeholder="Cuéntanos más sobre tu viaje soñado, expectativas, ocasión especial, etc."
               ></textarea>
@@ -183,10 +180,10 @@ export default function CustomizeContent() {
             <h4 className="form-section-title">Tipo de tour</h4>
             <div className="radio-pills" style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 24 }}>
               <span className="radio-pill">
-                <input type="radio" name="tourType" defaultChecked /> Excursiones compartidas
+                <input type="radio" name="tour_type" value="Compartido" aria-label="Excursiones compartidas" defaultChecked /> Excursiones compartidas
               </span>
               <span className="radio-pill">
-                <input type="radio" name="tourType" /> Tours privados
+                <input type="radio" name="tour_type" value="Privado" aria-label="Tours privados" /> Tours privados
               </span>
             </div>
 
@@ -197,8 +194,8 @@ export default function CustomizeContent() {
               </span>
             </label>
 
-            <button type="submit" className="btn btn--primary btn--lg btn--block">
-              Entregar
+            <button type="submit" className="btn btn--primary btn--lg btn--block" disabled={busy || submitted}>
+              {busy ? 'Enviando…' : submitted ? 'Consulta enviada' : 'Enviar consulta'}
               <Icon name="send" size={18} />
             </button>
           </form>
@@ -211,38 +208,13 @@ export default function CustomizeContent() {
                 algunas respuestas pueden tardar hasta 24 horas.
               </p>
 
-              <div className="aside-contact">
-                <p style={{ fontSize: '0.9rem', lineHeight: 1.7 }}>
-                  <a href="mailto:bookings@homeland.tours" className="aside-link">
-                    bookings@homeland.tours
-                  </a>
-                  <br />
-                  <a href="mailto:request@homeland.tours" className="aside-link">
-                    request@homeland.tours
-                  </a>
-                </p>
-
-                <h4 style={{ color: 'var(--white)', fontSize: '0.85rem', margin: '18px 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Nuestro horario de apertura
-                </h4>
-                <p style={{ fontSize: '0.92rem', color: 'var(--white)', fontWeight: 500, margin: '0 0 16px' }}>
-                  De lunes a sábado, de 7:00 a 22:00.
-                </p>
-
-                <h4 style={{ color: 'var(--white)', fontSize: '0.85rem', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  Envíanos un mensaje por WhatsApp
-                </h4>
-                <p style={{ fontSize: '1.3rem', color: 'var(--accent-400)', fontWeight: 600, margin: 0 }}>
-                  <Icon name="whatsapp" size={18} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />
-                  +591 760-12345
-                </p>
-              </div>
+              <FormCompanyContact />
 
               <div className="aside-divider"></div>
 
               <p style={{ fontSize: '0.85rem', color: 'var(--ink-300)', textAlign: 'center', margin: 0 }}>
                 <Icon name="lock" size={16} style={{ marginRight: 4 }} />
-                <strong style={{ color: 'var(--white)' }}>Pagos seguros con Zwap</strong>
+                <strong style={{ color: 'var(--white)' }}>Reserva segura y atención directa</strong>
               </p>
             </div>
           </aside>

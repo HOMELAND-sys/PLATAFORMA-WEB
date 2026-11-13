@@ -20,6 +20,7 @@ const SettingsTab = dynamic(() => import('./SettingsTab'), { loading: () => <p r
 const TransfersTab = dynamic(() => import('./TransfersTab'), { loading: () => <p role="status">Cargando registros…</p> });
 const OffersTab = dynamic(() => import('./OffersTab'), { loading: () => <p role="status">Cargando ofertas…</p> });
 const ReviewsTab = dynamic(() => import('./ReviewsTab'), { loading: () => <p role="status">Cargando reseñas…</p> });
+const ContactRequestsTab = dynamic(() => import('./ContactRequestsTab'), { loading: () => <p role="status">Cargando consultas…</p> });
 const NAV_ITEMS = [
 
   { id: 'dashboard', label: 'Resumen', icon: 'dashboard' },
@@ -33,6 +34,8 @@ const NAV_ITEMS = [
   { id: 'clientes', label: 'Clientes', icon: 'users' },
 
   { id: 'resenas', label: 'Reseñas', icon: 'star' },
+
+  { id: 'consultas', label: 'Consultas', icon: 'mail' },
 
   { id: 'pases', label: 'Reportes pases', icon: 'ticket' },
 
@@ -314,6 +317,7 @@ export default function AdminPanel() {
           {tab === 'ofertas' && <OffersTab />}
           {tab === 'clientes' && <ClientsTab />}
           {tab === 'resenas' && <ReviewsTab />}
+          {tab === 'consultas' && <ContactRequestsTab />}
           {tab === 'reportes' && <ReportsTab />}
         </main>
       </div>
