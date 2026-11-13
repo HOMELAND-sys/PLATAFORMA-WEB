@@ -31,10 +31,15 @@ import {
 gsap.registerPlugin(useGSAP, DrawSVGPlugin, MorphSVGPlugin, ScrollTrigger);
 
 export default function ConfirmationContent() {
-  const { result, hydrated } = useBooking();
+  const { result, hydrated, selection, clearCart } = useBooking();
   const searchParams = useSearchParams();
   const { session, loading: authLoading } = useAuth();
   const code = (searchParams.get('code') ?? result?.code ?? '').toUpperCase();
+
+  // La reserva ya existe: el carrito del header no debe seguir mostrando viajeros.
+  useEffect(() => {
+    if (hydrated && result && selection) clearCart();
+  }, [hydrated, result, selection, clearCart]);
 
   const [booking, setBooking] = useState<MyBooking | null>(null);
   const [settings, setSettings] = useState<PaymentSettings | null>(null);

@@ -22,6 +22,8 @@ interface BookingContextValue {
   setSelection: (sel: BookingSelection | null) => void;
   setResult: (res: BookingResult | null) => void;
   clear: () => void;
+  /** Vacía el carrito tras una reserva confirmada, conservando el resultado. */
+  clearCart: () => void;
 }
 
 const BookingContext = createContext<BookingContextValue | undefined>(undefined);
@@ -72,6 +74,11 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     [selection, persist],
   );
 
+  const clearCart = useCallback(() => {
+    setSelectionState(null);
+    persist(null, result);
+  }, [result, persist]);
+
   const clear = useCallback(() => {
     setSelectionState(null);
     setResultState(null);
@@ -83,7 +90,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <BookingContext.Provider value={{ selection, result, hydrated, setSelection, setResult, clear }}>
+    <BookingContext.Provider value={{ selection, result, hydrated, setSelection, setResult, clear, clearCart }}>
       {children}
     </BookingContext.Provider>
   );

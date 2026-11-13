@@ -306,7 +306,7 @@ export default function VoucherHero({ status, code, firstName }: VoucherHeroProp
         ? `Todo listo${hi}. Muestra este voucher en el punto de encuentro y prepárate para el Altiplano.`
         : status === 'completada'
           ? `Esperamos que la experiencia haya sido inolvidable${hi}. ¡Te esperamos en tu próxima aventura!`
-          : `Gracias${hi}. Guardamos tu lugar — completá el pago para confirmarlo. Tu voucher queda siempre en “Mis reservas”.`;
+          : `Gracias${hi}. Guardamos tu lugar — completa el pago para confirmarlo. Tu voucher queda siempre en “Mis reservas”.`;
 
   return (
     <section className={`vh${cancelled ? ' vh--cancelled' : ''}`} ref={root}>

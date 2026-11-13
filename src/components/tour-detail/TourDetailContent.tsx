@@ -361,7 +361,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                   <div>
                     <span className="about-row__label">Grupo</span>
                     <span className="about-row__value">
-                      {tour.minPax ? `Desde ${tour.minPax} personas` : tour.typeLabel}
+                      {tour.minPax ? `Desde ${tour.minPax} ${tour.minPax === 1 ? 'persona' : 'personas'}` : tour.typeLabel}
                     </span>
                   </div>
                 </div>
