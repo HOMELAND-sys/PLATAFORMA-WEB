@@ -257,3 +257,5 @@ module.exports = async function ({ test, load, lexicalSql, workspace, root, Reac
     }
   });
 };
+
+if (require.main === module) require('./checks.cjs');

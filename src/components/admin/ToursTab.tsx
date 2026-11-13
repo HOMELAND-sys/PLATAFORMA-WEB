@@ -1,12 +1,15 @@
 'use client';
 
 import { useConfirm } from './ConfirmDialog';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createCategory, type AdminTour, type CategoryRow } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
-import { DIFFICULTY_LABELS, slugifyTour, tourMoney } from '@/lib/tour-form';
+import { DIFFICULTY_LABELS, slugifyTour } from '@/lib/tour-form';
+import { adminTourMoney as tourMoney } from '@/lib/admin/money';
+import { changeTourVisibility, tourMenuFocusIndex, tourMenuPosition } from '@/lib/admin/tour-actions';
 import AdminIcon from './AdminIcon';
 import TourEditor from './TourEditor';
 import EmptyState from './EmptyState';
@@ -57,7 +60,7 @@ export default function ToursTab() {
   const [menu, setMenu] = useState<{
     id: string;
     top: number;
-    right: number;
+    left: number;
   } | null>(null);
   const [showCatForm, setShowCatForm] = useState(false);
   const [catLabel, setCatLabel] = useState('');
@@ -65,6 +68,15 @@ export default function ToursTab() {
   const [savingCat, setSavingCat] = useState(false);
   const mounted = useRef(true);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const menuFocusLast = useRef(false);
+  const menuId = useId();
+  const closeMenu = useCallback((restoreFocus = true) => {
+    setMenu(null);
+    if (restoreFocus && menuTriggerRef.current?.isConnected) {
+      menuTriggerRef.current.focus({ preventScroll: true });
+    }
+  }, []);
   const load = useCallback(async () => {
     setError('');
     try {
@@ -95,31 +107,83 @@ export default function ToursTab() {
   useEffect(() => {
     setPage(1);
   }, [search, status, destination, duration, difficulty, category, minPrice, maxPrice, bookingFilter, pageSize]);
-  useEffect(() => {
-    if (!menu)
-      return;
-    menuRef.current?.querySelector<HTMLElement>('button, a')?.focus();
-    const close = () => setMenu(null);
+  useLayoutEffect(() => {
+    if (!menu) return;
+    const position = () => {
+      const trigger = menuTriggerRef.current;
+      const element = menuRef.current;
+      if (!trigger?.isConnected) {
+        closeMenu(false);
+        return;
+      }
+      if (!element) return;
+      const anchor = trigger.getBoundingClientRect();
+      const bounds = element.getBoundingClientRect();
+      const next = tourMenuPosition(anchor, bounds, { width: window.innerWidth, height: window.innerHeight });
+      setMenu(current => current && current.id === menu.id
+        ? current.top === next.top && current.left === next.left ? current : { ...current, ...next }
+        : current);
+    };
+    position();
+    const items = menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)');
+    const first = menuFocusLast.current ? items?.[items.length - 1] : items?.[0];
+    first?.focus({ preventScroll: true });
     const outside = (event: PointerEvent) => {
-      const target = event.target as HTMLElement;
-      if (!menuRef.current?.contains(target) && !target.closest('[data-tour-menu-trigger]'))
-        close();
+      if (!(event.target instanceof Node)) return;
+      if (!menuRef.current?.contains(event.target) && !menuTriggerRef.current?.contains(event.target)) closeMenu(false);
     };
     const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape')
-        close();
+      if (event.key === 'Escape' && !event.defaultPrevented) {
+        event.preventDefault();
+        closeMenu();
+      }
+    };
+    const scroll = (event: Event) => {
+      if (event.target instanceof Node && menuRef.current?.contains(event.target)) return;
+      position();
     };
     document.addEventListener('pointerdown', outside);
     window.addEventListener('keydown', escape);
-    window.addEventListener('resize', close);
-    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', position);
+    window.addEventListener('scroll', scroll, true);
     return () => {
       document.removeEventListener('pointerdown', outside);
       window.removeEventListener('keydown', escape);
-      window.removeEventListener('resize', close);
-      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', position);
+      window.removeEventListener('scroll', scroll, true);
     };
-  }, [menu?.id]);
+  }, [menu?.id, closeMenu]);
+  const openMenu = (id: string, trigger: HTMLButtonElement, last = false) => {
+    menuTriggerRef.current = trigger;
+    menuFocusLast.current = last;
+    if (menu?.id === id) {
+      const items = menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)');
+      (last ? items?.[items.length - 1] : items?.[0])?.focus({ preventScroll: true });
+    } else {
+      setMenu({ id, top: 0, left: 0 });
+    }
+  };
+  const menuKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMenu();
+      return;
+    }
+    if (event.key === 'Tab') {
+      closeMenu();
+      return;
+    }
+    const items = Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? []);
+    const next = tourMenuFocusIndex(event.key, items.indexOf(document.activeElement as HTMLElement), items.length);
+    if (next !== null) {
+      event.preventDefault();
+      items[next]?.focus({ preventScroll: true });
+    } else if (event.key === ' ' && event.target instanceof HTMLAnchorElement) {
+      event.preventDefault();
+      event.target.click();
+    }
+  };
   const categoryNames = useMemo(() => new Map(categories.map((cat) => [cat.slug, cat.label])), [categories]);
   const destinations = useMemo(() => [...new Set(tours?.map((tour) => tour.destination).filter(Boolean))].sort(), [tours]);
   const durations = useMemo(() => [...new Set(tours?.map((tour) => tour.duration).filter(Boolean))].sort(), [tours]);
@@ -182,29 +246,32 @@ export default function ToursTab() {
     setEditingId('new');
     setMenu(null);
   };
-  const toggleTour = async (tour: AdminTour, field: 'active' | 'featured') => {
-    if (busyIds.has(tour.id))
-      return;
-    setBusyIds((previous) => new Set(previous).add(tour.id));
-    setError('');
-    setOkMsg('');
+  const toggleTour = async (tour: AdminTour, field: 'active' | 'featured'): Promise<'saved' | 'cancelled' | 'failed'> => {
+    if (busyIds.has(tour.id)) return 'cancelled';
+    const apply = async () => {
+      setBusyIds(previous => new Set(previous).add(tour.id));
+      setError('');
+      setOkMsg('');
+      try {
+        const { error: updateError } = await getSupabase().from('tours').update({ [field]: !tour[field] }).eq('id', tour.id).select('id').single();
+        if (updateError) throw updateError;
+        setTours(rows => rows?.map(row => row.id === tour.id ? { ...row, [field]: !tour[field] } : row) ?? []);
+        setOkMsg(field === 'active' ? (tour.active ? 'Tour desactivado.' : 'Tour activado.') : (tour.featured ? 'Tour retirado de destacados.' : 'Tour añadido a destacados.'));
+        window.dispatchEvent(new Event('admin-data-changed'));
+      } finally {
+        setBusyIds(previous => {
+          const next = new Set(previous);
+          next.delete(tour.id);
+          return next;
+        });
+      }
+    };
     try {
-      const { error: updateError } = await getSupabase().from('tours').update({ [field]: !tour[field] }).eq('id', tour.id).select('id').single();
-      if (updateError)
-        throw updateError;
-      setTours((rows) => rows?.map((row) => row.id === tour.id ? { ...row, [field]: !tour[field] } : row) ?? []);
-      setOkMsg(field === 'active' ? (tour.active ? 'Tour desactivado.' : 'Tour activado.') : (tour.featured ? 'Tour retirado de destacados.' : 'Tour añadido a destacados.'));
-      window.dispatchEvent(new Event('admin-data-changed'));
-      return true;
+      const accepted = field === 'active' ? await changeTourVisibility(tour, confirm, apply) : (await apply(), true);
+      return accepted ? 'saved' : 'cancelled';
     } catch (err) {
       setError(errorMessage(err));
-      return false;
-    } finally {
-      setBusyIds((previous) => {
-        const next = new Set(previous);
-        next.delete(tour.id);
-        return next;
-      });
+      return 'failed';
     }
   };
   const remove = async (tour: AdminTour) => {
@@ -212,18 +279,7 @@ export default function ToursTab() {
       return;
     setMenu(null);
     if (tour.reservation_count > 0) {
-      if (tour.active)
-        await confirm({
-
-          title: 'Retirar tour del catálogo',
-
-          message: '“' + tour.title + '” tiene reservas y se conservará en el historial. ¿Desactivar este tour?',
-
-          confirmLabel: 'Desactivar tour',
-
-          onConfirm: () => toggleTour(tour, 'active'),
-
-        });
+      if (tour.active) await toggleTour(tour, 'active');
       return;
     }
     await confirm({
@@ -607,10 +663,19 @@ export default function ToursTab() {
                   aria-label={`Acciones de ${tour.title}`}
                   aria-expanded={menu?.id === tour.id}
                   aria-haspopup="menu"
-                  onClick={(event) => {
+                  id={menuId + '-' + tour.id}
+                  aria-controls={menu?.id === tour.id ? menuId : undefined}
+                  onClick={event => {
                     event.stopPropagation();
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    setMenu((previous) => previous?.id === tour.id ? null : { id: tour.id, top: Math.min(rect.bottom + 5, window.innerHeight - 240), right: Math.max(12, window.innerWidth - rect.right) });
+                    if (menu?.id === tour.id) closeMenu();
+                    else openMenu(tour.id, event.currentTarget);
+                  }}
+                  onKeyDown={event => {
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      openMenu(tour.id, event.currentTarget, event.key === 'ArrowUp');
+                    }
                   }}
                 >
                   <AdminIcon name="more" size={17} />
@@ -679,7 +744,7 @@ export default function ToursTab() {
         onClose={closeEditor}
         onDuplicate={duplicate}
         onToggleActive={async () => {
-          if (editingTour && !await toggleTour(editingTour, 'active'))
+          if (editingTour && await toggleTour(editingTour, 'active') === 'failed')
             throw new Error('No se pudo cambiar el estado. Revisa la conexión y vuelve a intentarlo.');
         }}
         onSaved={async (id) => {
@@ -691,21 +756,30 @@ export default function ToursTab() {
           setOkMsg('Los cambios del tour se guardaron.');
         }}
       />}
-    {menu && menuTour
-      && <div
+    {menu && menuTour && createPortal(
+      <div
+        id={menuId}
         className="tours-row-menu"
         ref={menuRef}
         role="menu"
-        aria-label={`Acciones de ${menuTour.title}`}
-        style={{ top: menu.top, right: menu.right }}
+        aria-labelledby={menuId + '-' + menuTour.id}
+        style={{ top: menu.top, left: menu.left }}
+        onKeyDown={menuKeyDown}
       >
-        <button role="menuitem" onClick={() => openTour(menuTour.id)}><AdminIcon name="document" size={15} />Editar tour</button>
-        <button role="menuitem" onClick={() => duplicate(makeAdminTourForm(menuTour))}><AdminIcon name="copy" size={15} />Duplicar</button>
-        <Link role="menuitem" href={`/admin?tab=disponibilidad&tour=${menuTour.id}`}><AdminIcon name="calendar" size={15} />Gestionar salidas</Link>
+        <button role="menuitem" tabIndex={-1} onClick={() => openTour(menuTour.id)}>
+          <AdminIcon name="document" size={15} />Editar tour
+        </button>
+        <button role="menuitem" tabIndex={-1} onClick={() => duplicate(makeAdminTourForm(menuTour))}>
+          <AdminIcon name="copy" size={15} />Duplicar
+        </button>
+        <Link role="menuitem" tabIndex={-1} href={'/admin?tab=disponibilidad&tour=' + menuTour.id} onClick={() => setMenu(null)}>
+          <AdminIcon name="calendar" size={15} />Gestionar salidas
+        </Link>
         <button
           role="menuitem"
+          tabIndex={-1}
           onClick={() => {
-            setMenu(null);
+            closeMenu();
             void toggleTour(menuTour, 'active');
           }}
           disabled={busyIds.has(menuTour.id)}
@@ -713,14 +787,12 @@ export default function ToursTab() {
           <AdminIcon name="power" size={15} />
           {menuTour.active ? 'Desactivar' : 'Activar'}
         </button>
-        <button
-          role="menuitem"
-          className="is-danger"
-          onClick={() => void remove(menuTour)}
-        >
+        <button role="menuitem" tabIndex={-1} className="is-danger" onClick={() => void remove(menuTour)}>
           <AdminIcon name="trash" size={15} />
           {menuTour.reservation_count ? 'Retirar del catálogo' : 'Eliminar tour'}
         </button>
-      </div>}
+      </div>,
+      document.body,
+    )}
   </div>;
 }

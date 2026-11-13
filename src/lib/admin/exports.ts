@@ -42,7 +42,7 @@ export async function openVoucher(booking: Booking) {
   y=(doc as unknown as {lastAutoTable:{finalY:number}}).lastAutoTable.finalY+10;
   if(y>185){doc.addPage();y=20;}
   const adjustment=Number(booking.total)-(Number(booking.subtotal)-Number(booking.group_discount)-Number(booking.coupon_discount)-Number(booking.offer_discount??0));
-  autoTable(doc,{startY:y,body:[['Subtotal',usd(booking.subtotal)],['Oferta especial',usd(-Number(booking.offer_discount??0))],['Descuento grupo',usd(-booking.group_discount)],['Cupón',usd(-booking.coupon_discount)],...(Math.abs(adjustment)>.001?[['Ajuste manual',usd(adjustment)]]:[]),['Total USD',usd(booking.total)],['Equivalente BOB',`Bs. ${Math.round(Number(booking.total)*EXCHANGE_RATE_BOB)} (1 USD = ${EXCHANGE_RATE_BOB} BOB)`]],styles:{fontSize:9}});
+  autoTable(doc,{startY:y,body:[['Subtotal',usd(booking.subtotal)],['Oferta especial',usd(-Number(booking.offer_discount??0))],['Descuento grupo',usd(-booking.group_discount)],...(Number(booking.coupon_discount)>0?[[booking.coupon_code?'Cupón '+booking.coupon_code:'Cupón',usd(-booking.coupon_discount)]]:[]),...(Math.abs(adjustment)>.001?[['Ajuste manual',usd(adjustment)]]:[]),['Total USD',usd(booking.total)],['Equivalente BOB',`Bs. ${Math.round(Number(booking.total)*EXCHANGE_RATE_BOB)} (1 USD = ${EXCHANGE_RATE_BOB} BOB)`]],styles:{fontSize:9}});
   y=(doc as unknown as {lastAutoTable:{finalY:number}}).lastAutoTable.finalY+8;
   if(y>210){doc.addPage();y=20;}
   doc.addImage(qr,'PNG',14,y,38,38);doc.setFontSize(10);doc.text(booking.code,57,y+10);doc.text('Presenta este QR en el punto de encuentro.',57,y+18);

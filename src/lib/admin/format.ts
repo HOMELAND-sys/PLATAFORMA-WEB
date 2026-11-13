@@ -1,5 +1,6 @@
 ﻿import { operatorDay } from '@/lib/admin-dashboard';
 export { operatorDay, shiftDay } from '@/lib/admin-dashboard';
+import { moneyNumber } from './money';
 export function dateLabel(day: string, long = false): string {
   if (!day) return 'Sin fecha';
   const label = new Date(`${day}T12:00:00Z`).toLocaleDateString('es-BO', {
@@ -16,8 +17,8 @@ export function participantSummary(adults: number, children: number): string {
   return `${adults} ${adults === 1 ? 'adulto' : 'adultos'} · ${children} ${children === 1 ? 'niño' : 'niños'}`;
 }
 export const timeLabel = (d: string | null) => d ? new Date(d).toLocaleString('es-BO', { timeZone: 'America/La_Paz', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
-export const usd = (n: number) => `US$ ${Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-export const bob = (n: number) => `Bs. ${Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export const usd = (n: number) => `US$ ${moneyNumber(n)}`;
+export const bob = (n: number) => `Bs. ${moneyNumber(n)}`;
 export const initials = (n: string) => n.trim().split(/\s+/).slice(0,2).map(x => x[0]).join('').toUpperCase();
 export const flag = (n: string) => {
   const countries: Record<string,string> = { bolivia:'BO',perú:'PE',peru:'PE',chile:'CL',argentina:'AR',brasil:'BR',brazil:'BR',españa:'ES',spain:'ES',francia:'FR',france:'FR',alemania:'DE',germany:'DE','estados unidos':'US',usa:'US','united states':'US','reino unido':'GB',uk:'GB',colombia:'CO',ecuador:'EC',méxico:'MX',mexico:'MX' };
