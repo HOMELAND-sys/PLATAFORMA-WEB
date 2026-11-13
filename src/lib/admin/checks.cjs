@@ -66,7 +66,9 @@ function lexicalSql(sql){
  test('Contrato SQL: limites, franjas, RLS y ofertas atomicas',()=>{assert.match(sql,/coalesce\(start_time, time '00:00'\)/);assert.match(sql,/v_slot\.blocked/);assert.match(sql,/cutoff_passed/);assert.match(sql,/for update/);assert.match(sql,/America\/La_Paz/);assert.match(sql,/reservations_offer_seats after insert/);for(const table of ['agencies','agency_transfers','special_offers'])assert.ok(sql.includes('alter table public.'+table+' enable row level security'));});
  // Renderizado real de componentes en servidor, con hooks de datos controlados.
  // No sustituye la inspeccion de CSS en un navegador ni pruebas contra Supabase.
- const React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+ const React=require('react'),renderStatic=require('react-dom/server').renderToStaticMarkup;
+ const {ConfirmProvider}=load(path.join(root,'components/admin/ConfirmDialog.tsx'));
+ const renderToStaticMarkup=element=>renderStatic(React.createElement(ConfirmProvider,null,element));
  const components=[['AvailabilityTab',[[],[]]],['ReservasTab',[[]]],['AgenciesTab',[[]]],['TransfersTab',[{rows:[],partners:[]}],{kind:'pase'}],['OffersTab',[{rows:[],tours:[]}]],['OperationalAlerts',[{old:0,tomorrow:0,almostFull:0}]]];
  for(const [name,data,props] of components){const C=load(path.join(root,'components/admin',name+'.tsx')).default;
   for(const mode of ['loading','error','ready'])test('Render '+name+' / '+mode,()=>{hookMode=mode;hookData=data;hookCall=0;const html=renderToStaticMarkup(React.createElement(C,props||{}));assert.ok(html.length>0);if(mode==='loading')assert.match(html,/Cargando/);if(mode==='error')assert.match(html,/Error local de prueba/);if(mode==='ready')assert.match(html,/Sin resultados/);});
@@ -95,5 +97,7 @@ function lexicalSql(sql){
  ];
  for(const [name,data,props,expected] of filled)test('Render con datos y formularios: '+name,()=>{hookMode='ready';hookData=data;hookCall=0;const C=load(path.join(root,'components/admin',name+'.tsx')).default;assert.match(renderToStaticMarkup(React.createElement(C,props)),expected);});
  require('./check-round2.cjs')({test,load,lexicalSql,workspace,root,React,renderToStaticMarkup,renderData:(name,data,props)=>{hookMode='ready';hookData=data;hookCall=0;const C=load(path.join(root,'components/admin',name+'.tsx')).default;return renderToStaticMarkup(React.createElement(C,props));}});
+ await require('./check-ht8a.cjs')({test,load,lexicalSql,workspace,root,React,renderToStaticMarkup,sbStub});
+ await require('./check-ht8b.cjs')({test,load,lexicalSql,workspace,root,React,renderToStaticMarkup,sbStub,renderData:(name,data,props)=>{hookMode='ready';hookData=data;hookCall=0;const C=load(path.join(root,'components/admin',name+'.tsx')).default;return renderToStaticMarkup(React.createElement(C,props));}});
  console.log(`${passed} comprobaciones locales correctas. Sin SQL ejecutado ni acceso a credenciales.`);
 })().catch(error=>{console.error(error);process.exitCode=1;});

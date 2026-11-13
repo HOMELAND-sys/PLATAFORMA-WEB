@@ -99,8 +99,8 @@
 .tours-pagination > label { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
 .tours-pagination select { width: 57px; height: 30px; border: 1px solid #e7e8dd; border-radius: 7px; padding-inline: 8px; background: #fff; color: #79876b; font-size: 9px; }
 
-/* Docked editor */
-.tours-manager--editing { display: grid; grid-template-columns: minmax(0, 1fr) var(--tour-editor-width); align-items: start; gap: 24px; margin-right: calc(-1 * var(--tours-edge)); }
+/* Editor de tours */
+.tours-manager--editing { display: block; }
 .admin-layout:has(.tours-manager) .admin-topbar { position: sticky; top: 0; z-index: 45; }
 .admin-main:has(.tours-manager--editing) { max-width: none; padding-bottom: 0; }
 .tour-editor { position: sticky; top: 72px; margin-top: -20px; height: calc(100dvh - 72px); min-height: 0; background: #fcfbf8; border-left: 1px solid #eae9e0; display: flex; flex-direction: column; padding: 18px 16px 0; color: #6c775f; overflow: hidden; }
@@ -371,3 +371,82 @@
   .tour-discount-icon { padding: 3px; }
   .tour-discount-icon > svg { width: 15px; height: 15px; }
 }
+
+/* CC-HT8A: espacio de trabajo amplio; las acciones quedan fuera del área desplazable. */
+.tours-manager--editing { margin-right: 0; }
+.tour-editor-backdrop { display: block; position: fixed; inset: 0; z-index: 80; border: 0; background: #24391c99; backdrop-filter: blur(2px); padding: 0; }
+.tour-editor { box-sizing: border-box; position: fixed; inset: 0 0 0 auto; z-index: 81; width: min(1180px, 92vw); max-width: 100vw; height: 100dvh; margin: 0; padding: 24px 28px 0; box-shadow: -14px 0 55px #20361630; }
+.tour-editor__heading { margin-bottom: 22px; }
+.tour-editor__heading h2 { font-size: 25px; }
+.tour-editor__heading > button { min-width: 40px; min-height: 40px; }
+.tour-editor__body { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; gap: 28px; padding-bottom: 28px; }
+.tour-editor__media, .tour-editor__fields { min-width: 0; }
+.tour-editor__identity { flex-direction: column; align-items: stretch; gap: 16px; }
+.tour-editor__cover { width: 100%; height: auto; aspect-ratio: 3 / 2; border-radius: 12px; }
+.tour-editor__identity h3 { font-size: 22px; line-height: 1.4; overflow-wrap: anywhere; }
+.tour-editor__identity > div > small { font-size: 11px; overflow-wrap: anywhere; }
+.tour-editor__status { padding: 7px 12px; }
+.tour-editor__status select { font-size: 12px !important; }
+.tour-editor label, .tour-editor .tour-editor__basics > label { font-size: 12px; line-height: 1.5; gap: 7px; }
+.tour-editor input:not([type='checkbox']):not([type='file']), .tour-editor select, .tour-editor textarea { font-size: 14px; padding: 9px 11px; }
+.tour-editor input:not([type='checkbox']):not([type='file']), .tour-editor select, .tour-editor .tour-editor__basics input, .tour-editor .tour-editor__basics select { height: 42px !important; }
+.tour-editor textarea { min-height: 85px; }
+.tour-editor__basics { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px; gap: 16px; margin-bottom: 20px; }
+.tour-editor__basics > label:first-of-type { grid-column: 1 / -1; }
+.tour-editor__tabs { gap: 4px; padding: 0; margin-bottom: 18px; }
+.tour-editor__tabs > button { font-size: 12px; padding: 12px 6px; line-height: 1.5; }
+.tour-editor__section, .tour-editor__gallery { padding: 16px; margin-top: 16px; margin-bottom: 18px; }
+.tour-editor h4 { font-size: 14px; margin-bottom: 12px; }
+.tour-editor h4 > small, .tour-editor label > small { font-size: 11px; }
+.tour-editor__field-grid { gap: 16px; }
+.tour-editor__hint, .tour-editor__upload-status { font-size: 12px; }
+.tour-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-height: none; overflow: visible; }
+.tour-gallery__upload { grid-column: 1 / -1; grid-row: auto; min-height: 112px; padding: 18px; }
+.tour-gallery__upload strong, .tour-gallery__upload > span { font-size: 12px; }
+.tour-gallery__upload small { font-size: 10px; }
+.tour-gallery__remove { width: 25px; height: 25px; }
+.tour-gallery__main { font-size: 10px; padding: 3px 5px; bottom: 33px; }
+.tour-gallery__order { display: flex; justify-content: space-between; gap: 6px; padding-top: 4px; }
+.tour-gallery__order button { display: grid; place-items: center; min-height: 26px; width: 42%; background: #edf2e1; border-radius: 5px; }
+.tour-gallery__order button:disabled { opacity: .35; }
+.tour-gallery__image[draggable='true'] { cursor: grab; }
+.tour-editor__inclusions { padding: 16px; gap: 18px; }
+.tour-line-list > div { gap: 6px; }
+.tour-editor .tour-line-list input { font-size: 13px; }
+.tour-editor__add, .tour-line-list .tour-editor__add, .tour-editor__remove-item { font-size: 12px; padding: 10px 2px; }
+.tour-editor__discounts { padding: 14px; }
+.tour-editor__discounts h4 { font-size: 14px; }
+.tour-editor__discounts > div, .tour-editor__discounts strong { font-size: 12px; padding-block: 7px; }
+.tour-editor__extra > summary, .tour-editor__day > summary { font-size: 13px; }
+.tour-editor__extra, .tour-editor__day, .tour-editor__extra-item { padding: 14px; }
+.tour-editor__categories > label { font-size: 12px; padding: 7px 10px; }
+.tour-editor__categories input { width: 15px; height: 15px; }
+.tour-editor__footer { margin-inline: -28px; padding: 12px 28px max(18px, env(safe-area-inset-bottom)); }
+.tour-editor__footer > div { gap: 12px; }
+.tour-editor__save-state { font-size: 11px; margin-bottom: 10px; }
+.tour-editor__footer button, .tour-editor__footer .tour-editor__save { font-size: 13px; min-height: 42px; padding: 10px 16px; }
+.tour-editor__footer button:not(.tour-editor__save) > span { display: inline; }
+.tour-editor__footer .tour-editor__save { flex: none; margin-left: auto; background: #75953e; border-color: #75953e; }
+@media (max-width: 1199px) {
+  .tour-editor { width: min(900px, 94vw); }
+  .tour-editor__body { grid-template-columns: minmax(0, 1fr); }
+  .tour-editor__cover { max-height: 360px; }
+}
+@media (max-width: 660px) {
+  .tour-editor { width: 100vw; padding: 16px 16px 0; }
+  .tour-editor__heading h2 { font-size: 22px; }
+  .tour-editor input:not([type='checkbox']):not([type='file']), .tour-editor select, .tour-editor textarea { font-size: 16px; }
+  .tour-editor__body { gap: 20px; }
+  .tour-editor__basics { padding: 12px; gap: 12px; }
+  .tour-editor__tabs { overflow-x: auto; }
+  .tour-editor__tabs > button { flex: 0 0 auto; font-size: 12px; }
+  .tour-editor__inclusions { grid-template-columns: minmax(0, 1fr); }
+  .tour-editor__field-grid { grid-template-columns: minmax(0, 1fr); }
+  .tour-editor__footer { margin-inline: -16px; padding-inline: 16px; }
+  .tour-editor__footer > div { gap: 7px; }
+  .tour-editor__footer button { padding-inline: 10px; }
+  .tour-editor__footer button:not(.tour-editor__save) > span { display: none; }
+  .tour-editor__footer .tour-editor__save { flex: 1; font-size: 12px; }
+}
+
+.tour-editor .ops-check { flex-direction: row; align-items: center; gap: 8px; }

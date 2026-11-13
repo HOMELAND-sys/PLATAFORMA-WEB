@@ -1,25 +1,143 @@
-﻿'use client';
-import { useEffect, useState, type FormEvent } from 'react';
-import { sb, messageOf } from '@/lib/admin/core';
-import { useAdminData } from '@/lib/admin/hooks';
-import { Field, LoadState, Notice } from './AdminShared';
-interface Operation {
-  code:string|null;rating:number|null;review_count:number;languages:string[];
-  free_cancellation_hours:number;pay_later:boolean;pickup_included:boolean;
-  meeting_point:string;meeting_lat:number|null;meeting_lng:number|null;
-  price_child:number|null;child_age_max:number;min_pax:number;
-  default_start_times:string[];default_cutoff_hours:number;
+'use client';
+
+import type { AdminTourForm } from '@/lib/admin/tour-editor';
+import { Field } from './AdminShared';
+interface Props {
+  data: AdminTourForm;
+  onChange: <K extends keyof AdminTourForm>(key: K, value: AdminTourForm[K]) => void;
 }
-export default function ProductOperations({id}:{id:string}){
-  const load=useAdminData(async()=>{const {data,error}=await sb().from('tours').select('code,rating,review_count,languages,free_cancellation_hours,pay_later,pickup_included,meeting_point,meeting_lat,meeting_lng,price_child,child_age_max,min_pax,default_start_times,default_cutoff_hours').eq('id',id).single();if(error)throw error;return data as Operation;},[id]);
-  const [form,setForm]=useState<Operation|null>(null);
-  const [times,setTimes]=useState('');
-  const [languages,setLanguages]=useState('');
-  const [busy,setBusy]=useState(false);
-  const [error,setError]=useState('');
-  const [ok,setOk]=useState('');
-  useEffect(()=>{if(load.data){setForm(load.data);setTimes(load.data.default_start_times.join(', '));setLanguages(load.data.languages.join(', '));}},[load.data]);
-  const set=<K extends keyof Operation>(key:K,value:Operation[K])=>setForm(old=>old?{...old,[key]:value}:old);
-  async function save(e:FormEvent){e.preventDefault();if(!form)return;setBusy(true);setError('');setOk('');try{const hours=[...new Set(times.split(/[\s,;]+/).filter(Boolean))];if(hours.some(t=>!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)))throw new Error('Las horas deben tener formato HH:MM.');const langs=languages.split(',').map(x=>x.trim()).filter(Boolean);if(!langs.length)throw new Error('Registra al menos un idioma.');const {error}=await sb().from('tours').update({...form,code:form.code?.trim()||null,languages:langs,default_start_times:hours}).eq('id',id).select('id').single();if(error)throw error;setOk('Datos operativos guardados.');}catch(err){setError(messageOf(err));}finally{setBusy(false);}}
-  return <section className="tour-editor__section"><h4>Operación y políticas del producto</h4><LoadState loading={load.loading} error={load.error} empty={false} onRetry={()=>void load.reload()}/>{form&&!load.error&&<form onSubmit={save}><Notice error={error} success={ok}/><div className="ops-grid"><Field label="Código corto"><input value={form.code??''} onChange={e=>set('code',e.target.value)} placeholder="SAJ-01"/></Field><Field label="Mínimo de participantes"><input required type="number" min={1} max={8} value={form.min_pax} onChange={e=>set('min_pax',Number(e.target.value))}/></Field><Field label="Tarifa niño (USD)"><input type="number" min={0} max={99999999.99} step="0.01" value={form.price_child??''} onChange={e=>set('price_child',e.target.value===''?null:Number(e.target.value))}/></Field><Field label="Edad máxima niño"><input required type="number" min={0} max={17} value={form.child_age_max} onChange={e=>set('child_age_max',Number(e.target.value))}/></Field><Field label="Límite de reserva (horas)"><input required type="number" min={0} max={8760} value={form.default_cutoff_hours} onChange={e=>set('default_cutoff_hours',Number(e.target.value))}/></Field><Field label="Cancelación gratis (horas)"><input required type="number" min={0} max={8760} value={form.free_cancellation_hours} onChange={e=>set('free_cancellation_hours',Number(e.target.value))}/></Field><Field label="Horas por defecto" wide><input value={times} onChange={e=>setTimes(e.target.value)} placeholder="08:00, 14:30"/></Field><Field label="Idiomas (separados por comas)" wide><input required value={languages} onChange={e=>setLanguages(e.target.value)}/></Field><Field label="Punto de encuentro" wide><textarea value={form.meeting_point} onChange={e=>set('meeting_point',e.target.value)}/></Field><Field label="Latitud"><input type="number" min={-90} max={90} step="0.000001" value={form.meeting_lat??''} onChange={e=>set('meeting_lat',e.target.value===''?null:Number(e.target.value))}/></Field><Field label="Longitud"><input type="number" min={-180} max={180} step="0.000001" value={form.meeting_lng??''} onChange={e=>set('meeting_lng',e.target.value===''?null:Number(e.target.value))}/></Field><Field label="Valoración"><input type="number" min={0} max={5} step="0.1" value={form.rating??''} onChange={e=>set('rating',e.target.value===''?null:Number(e.target.value))}/></Field><Field label="Nº de reseñas"><input required type="number" min={0} value={form.review_count} onChange={e=>set('review_count',Number(e.target.value))}/></Field></div><div className="ops-toolbar"><label className="ops-check"><input type="checkbox" checked={form.pay_later} onChange={e=>set('pay_later',e.target.checked)}/>Pago posterior</label><label className="ops-check"><input type="checkbox" checked={form.pickup_included} onChange={e=>set('pickup_included',e.target.checked)}/>Recogida incluida</label></div><button className="btn btn--primary btn--sm" disabled={busy}>{busy?'Guardando…':'Guardar operación y políticas'}</button></form>}</section>;
+
+export default function ProductOperations({ data, onChange: set }: Props) {
+  return <>
+    <section className="tour-editor__section">
+      <h4>Precios</h4>
+      <div className="tour-editor__field-grid">
+        {(['price_group', 'price_semi', 'price_private', 'price_child'] as const).map((key, index) => <Field key={key} label={['Grupo (USD)', 'Semiprivado (USD)', 'Privado (USD)', 'Niño (USD)'][index]}>
+          <input
+            type="number"
+            min={0}
+            max={99999999.99}
+            step="0.01"
+            value={data[key] ?? ''}
+            placeholder="No disponible"
+            onChange={e => set(key, e.target.value === '' ? null : Number(e.target.value))}
+          />
+        </Field>)}
+      </div>
+      <p className="tour-editor__hint">Precio base 0: consultar. Tarifas vacías: modalidad no disponible.</p>
+    </section>
+    <section className="tour-editor__section">
+      <h4>Participantes</h4>
+      <div className="tour-editor__field-grid">
+        <Field label="Mínimo de participantes">
+          <input
+            required
+            type="number"
+            min={1}
+            max={8}
+            step={1}
+            value={Number.isNaN(data.min_pax) ? '' : data.min_pax}
+            onChange={e => set('min_pax', e.target.value === '' ? NaN : Number(e.target.value))}
+          />
+        </Field>
+        <Field label="Edad máxima del niño">
+          <input
+            required
+            type="number"
+            min={0}
+            max={17}
+            step={1}
+            value={Number.isNaN(data.child_age_max) ? '' : data.child_age_max}
+            onChange={e => set('child_age_max', e.target.value === '' ? NaN : Number(e.target.value))}
+          />
+        </Field>
+      </div>
+    </section>
+    <section className="tour-editor__section">
+      <h4>Horarios y hora límite</h4>
+      <div className="tour-editor__field-grid">
+        <Field label="Horas por defecto (HH:MM)">
+          <input
+            value={data.default_start_times.join(',')}
+            onChange={e => set('default_start_times', e.target.value.split(','))}
+            placeholder="08:00,14:30"
+          />
+        </Field>
+        <Field label="Límite de reserva (horas)">
+          <input
+            required
+            type="number"
+            min={0}
+            max={8760}
+            step={1}
+            value={Number.isNaN(data.default_cutoff_hours) ? '' : data.default_cutoff_hours}
+            onChange={e => set('default_cutoff_hours', e.target.value === '' ? NaN : Number(e.target.value))}
+          />
+        </Field>
+      </div>
+    </section>
+    <section className="tour-editor__section">
+      <h4>Políticas</h4>
+      <div className="tour-editor__field-grid">
+        <Field label="Cancelación gratis (horas)">
+          <input
+            required
+            type="number"
+            min={0}
+            max={8760}
+            step={1}
+            value={Number.isNaN(data.free_cancellation_hours) ? '' : data.free_cancellation_hours}
+            onChange={e => set('free_cancellation_hours', e.target.value === '' ? NaN : Number(e.target.value))}
+          />
+        </Field>
+        <Field label="Idiomas (separados por comas)">
+          <input value={data.languages.join(',')} onChange={e => set('languages', e.target.value.split(','))} />
+        </Field>
+      </div>
+      <div className="ops-toolbar">
+        <label className="ops-check"><input
+          type="checkbox"
+          checked={data.pay_later}
+          onChange={e => set('pay_later', e.target.checked)}
+        />Pago posterior</label>
+        <label className="ops-check"><input
+          type="checkbox"
+          checked={data.pickup_included}
+          onChange={e => set('pickup_included', e.target.checked)}
+        />Recogida incluida</label>
+      </div>
+    </section>
+    <section className="tour-editor__section">
+      <h4>Punto de encuentro</h4>
+      <Field label="Dirección e indicaciones">
+        <textarea
+          rows={3}
+          value={data.meeting_point}
+          onChange={e => set('meeting_point', e.target.value)}
+        />
+      </Field>
+      <div className="tour-editor__field-grid">
+        <Field label="Latitud">
+          <input
+            type="number"
+            min={-90}
+            max={90}
+            step="0.000001"
+            value={data.meeting_lat ?? ''}
+            onChange={e => set('meeting_lat', e.target.value === '' ? null : Number(e.target.value))}
+          />
+        </Field>
+        <Field label="Longitud">
+          <input
+            type="number"
+            min={-180}
+            max={180}
+            step="0.000001"
+            value={data.meeting_lng ?? ''}
+            onChange={e => set('meeting_lng', e.target.value === '' ? null : Number(e.target.value))}
+          />
+        </Field>
+      </div>
+    </section>
+  </>;
 }

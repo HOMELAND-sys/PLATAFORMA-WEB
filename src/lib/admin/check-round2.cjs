@@ -2,7 +2,7 @@
 module.exports=function({test,load,lexicalSql,workspace,root,React,renderToStaticMarkup,renderData}){
  const fs=require('fs'),path=require('path'),assert=require('node:assert/strict'),ts=require('typescript');
  const sql=fs.readFileSync(path.join(workspace,'supabase/migrations/0011_producto_completo.sql'),'utf8');
- const catalog=fs.readFileSync(path.join(workspace,'supabase/migrations/0013_catalogo_real.sql'),'utf8');
+ const catalog=fs.readFileSync(path.join(workspace,'supabase/migrations/0013_catalogo_real.sql'),'utf8').replace(/\r\n/g,'\n');
  const fn=name=>{const match=sql.match(new RegExp('create or replace function public\\.'+name+'\\(([\\s\\S]*?)\\)\\s*returns[\\s\\S]*?\\$\\$([\\s\\S]*?)\\$\\$;','i'));assert.ok(match,'Funcion no encontrada: '+name);return {args:match[1],body:match[2]};};
  const strings=value=>[...value.matchAll(/'((?:[^']|'')*)'/g)].map(m=>m[1].replace(/''/g,"'"));
  // Divide expresiones SQL respetando cadenas, arrays y parentesis anidados.
@@ -39,7 +39,7 @@ module.exports=function({test,load,lexicalSql,workspace,root,React,renderToStati
   const body=fn('create_booking').body;assert.match(body,/if p_tour_date_id is null then[\s\S]*order by td\.id for update/);assert.match(body,/f\.bookable and f\.free>=p_pax/);assert.match(body,/order by td\.start_time nulls first,td\.id limit 1/);assert.doesNotMatch(body,/slot_required/);assert.match(sql,/notify pgrst, 'reload schema'/);
  });
  test('0013: delimitadores, transaccion e idempotencia sin tocar migraciones previas',()=>{lexicalSql(catalog);assert.match(catalog,/\bbegin;/);assert.match(catalog,/commit;\s*$/);assert.match(catalog,/on conflict \(slug\) do nothing/);assert.match(catalog,/where t\.slug=m\.slug/);assert.match(catalog,/where not exists\(select 1 from public\.tours existing/);assert.ok(!catalog.includes('\ufeff'));});
- const manifest=JSON.parse(fs.readFileSync(path.resolve(workspace,'../Homeland_Tours-web/public/assets/tours/manifest.json'),'utf8').replace(/^\ufeff/,''));
+ const manifest=JSON.parse(fs.readFileSync(path.join(workspace,'public/assets/tours/manifest.json'),'utf8').replace(/^\ufeff/,''));
  const photos=new Set(Object.values(manifest).flatMap(value=>value?.photos?.map(p=>p.file)??[]));
  const media=stagedRows('media'),drafts=stagedRows('staged');
  test('0013: todas las rutas de fotos existen en el manifest autorizado',()=>{const paths=[...new Set([...catalog.matchAll(/\/assets\/tours\/[a-z0-9-]+\/\d+\.webp/g)].map(m=>m[0]))];assert.equal(paths.length,90);for(const file of paths)assert.ok(photos.has(file),file);});
@@ -66,3 +66,4 @@ module.exports=function({test,load,lexicalSql,workspace,root,React,renderToStati
   ['AvailabilityTab',[[],[]],{},'availability'],['ReservasTab',[[]],{},'bookings'],['AgenciesTab',[[]],{},'agencies'],['TransfersTab',[{rows:[],partners:[]}],{kind:'pase'},'transfers'],['TransfersTab',[{rows:[],partners:[]}],{kind:'endoso'},'transfers'],['OffersTab',[{rows:[],tours:[]}],{},'offers'],['TicketScanner',[],{onClose(){},onSaved:async()=>{}},'scanner']
  ])test('Ilustracion de modulo: '+name+(props.kind?' '+props.kind:''),()=>{assert.ok(renderData(name,data,props).includes('/assets/admin/empty/'+image+'.webp'));});
 };
+if(require.main===module)require('./checks.cjs');

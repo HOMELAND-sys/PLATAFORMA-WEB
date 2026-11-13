@@ -1,14 +1,145 @@
-﻿'use client';
+'use client';
+
 import { useState, type FormEvent } from 'react';
 import type { Agency, AgencyInput } from '@/lib/admin/types';
 import { messageOf, saveRow } from '@/lib/admin/core';
 import { Field, Modal, Notice } from './AdminShared';
-export const companyTypes:Record<string,string>={operadora:'Operadora de turismo',agencia:'Agencia de viajes',hotel:'Hotel',otro:'Otro'};
-export default function AgencyForm({ agency,onClose,onSaved }: { agency:Agency|null;onClose:()=>void;onSaved:()=>void }) {
-  const [form,setForm]=useState<AgencyInput>(agency?{company:agency.company,contact:agency.contact,phone:agency.phone,other_contacts:agency.other_contacts,address:agency.address,company_type:agency.company_type,email:agency.email,notes:agency.notes,active:agency.active}:{company:'',contact:'',phone:'',other_contacts:[],address:'',company_type:'agencia',email:'',notes:'',active:true});
-  const [busy,setBusy]=useState(false);
-  const [error,setError]=useState('');
-  const set=<K extends keyof AgencyInput>(key:K,value:AgencyInput[K])=>setForm(old=>({...old,[key]:value}));
-  async function save(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{if(!form.company.trim())throw new Error('Empresa obligatoria.');await saveRow('agencies',{...form,company:form.company.trim()},agency?.id);onSaved();}catch(err){setError(messageOf(err));}finally{setBusy(false);}}
-  return <Modal title={agency?'Editar agencia':'Añadir agencia'} onClose={()=>{if(!busy)onClose();}}><form onSubmit={save}><Notice error={error}/><fieldset className="ops-fieldset" disabled={busy}><div className="ops-grid"><Field label="Empresa" wide><input required maxLength={180} value={form.company} onChange={e=>set('company',e.target.value)}/></Field><Field label="Contacto"><input value={form.contact} onChange={e=>set('contact',e.target.value)}/></Field><Field label="Nº de contacto"><input type="tel" value={form.phone} onChange={e=>set('phone',e.target.value)}/></Field><Field label="Tipo de empresa"><select value={form.company_type} onChange={e=>set('company_type',e.target.value as AgencyInput['company_type'])}>{Object.entries(companyTypes).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></Field><Field label="Email"><input type="email" value={form.email} onChange={e=>set('email',e.target.value)}/></Field><Field label="Dirección" wide><input value={form.address} onChange={e=>set('address',e.target.value)}/></Field><Field label="Notas" wide><textarea value={form.notes} onChange={e=>set('notes',e.target.value)}/></Field></div><h3>Otros contactos</h3>{form.other_contacts.map((c,i)=><div className="admin-card" key={i}><div className="ops-grid">{(['name','phone','email'] as const).map((k,n)=><Field key={k} label={['Nombre','Teléfono','Email'][n]}><input type={k==='email'?'email':k==='phone'?'tel':'text'} value={c[k]??''} onChange={e=>set('other_contacts',form.other_contacts.map((v,j)=>i===j?{...v,[k]:e.target.value}:v))}/></Field>)}</div><div className="ops-toolbar"><button type="button" className="btn btn--ghost btn--sm" onClick={()=>set('other_contacts',form.other_contacts.filter((_,j)=>j!==i))}>Quitar contacto</button></div></div>)}<div className="ops-toolbar"><button type="button" className="btn btn--ghost btn--sm" onClick={()=>set('other_contacts',[...form.other_contacts,{name:'',phone:'',email:''}])}>Añadir contacto</button><label className="ops-check"><input type="checkbox" checked={form.active} onChange={e=>set('active',e.target.checked)}/>Agencia activa</label></div><div className="ops-actions"><button className="btn btn--primary" disabled={busy}>{busy?'Guardando…':'Guardar agencia'}</button><button type="button" className="btn btn--ghost" disabled={busy} onClick={onClose}>Cancelar</button></div></fieldset></form></Modal>;
+export const companyTypes: Record<string, string> = { operadora: 'Operadora de turismo', agencia: 'Agencia de viajes', hotel: 'Hotel', otro: 'Otro' };
+
+export default function AgencyForm({ agency, onClose, onSaved }: {
+  agency: Agency | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState<AgencyInput>(agency ? {
+    company: agency.company,
+    contact: agency.contact,
+    phone: agency.phone,
+    other_contacts: agency.other_contacts,
+    address: agency.address,
+    company_type: agency.company_type,
+    email: agency.email,
+    notes: agency.notes,
+    active: agency.active
+  } : {
+    company: '',
+    contact: '',
+    phone: '',
+    other_contacts: [],
+    address: '',
+    company_type: 'agencia',
+    email: '',
+    notes: '',
+    active: true
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const set = <K extends keyof AgencyInput>(key: K, value: AgencyInput[K]) => setForm(old => ({ ...old, [key]: value }));
+  async function save(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      if (!form.company.trim())
+        throw new Error('Empresa obligatoria.');
+      await saveRow('agencies', { ...form, company: form.company.trim() }, agency?.id);
+      onSaved();
+    } catch (err) {
+      setError(messageOf(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return <Modal title={agency ? 'Editar agencia' : 'Añadir agencia'} onClose={() => {
+    if (!busy)
+      onClose();
+  }}>
+    <form onSubmit={save}>
+      <Notice error={error} />
+      <fieldset className="ops-fieldset" disabled={busy}>
+        <div className="ops-grid">
+          <Field label="Empresa" wide>
+            <input
+              required
+              maxLength={180}
+              value={form.company}
+              onChange={e => set('company', e.target.value)}
+            />
+          </Field>
+          <Field label="Contacto">
+            <input value={form.contact} onChange={e => set('contact', e.target.value)} />
+          </Field>
+          <Field label="Nº de contacto">
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={e => set('phone', e.target.value)}
+            />
+          </Field>
+          <Field label="Tipo de empresa">
+            <select value={form.company_type} onChange={e => set('company_type', e.target.value as AgencyInput['company_type'])}>
+              {Object.entries(companyTypes).map(([k, v]) => <option key={k} value={k}>
+                {v}
+              </option>)}
+            </select>
+          </Field>
+          <Field label="Email">
+            <input
+              type="email"
+              value={form.email}
+              onChange={e => set('email', e.target.value)}
+            />
+          </Field>
+          <Field label="Dirección" wide>
+            <input value={form.address} onChange={e => set('address', e.target.value)} />
+          </Field>
+          <Field label="Notas" wide>
+            <textarea value={form.notes} onChange={e => set('notes', e.target.value)} />
+          </Field>
+        </div>
+        <h3>Otros contactos</h3>
+        {form.other_contacts.map((c, i) => <div className="admin-card" key={i}>
+          <div className="ops-grid">
+            {(['name', 'phone', 'email'] as const).map((k, n) => <Field key={k} label={['Nombre', 'Teléfono', 'Email'][n]}>
+              <input
+                type={k === 'email' ? 'email' : k === 'phone' ? 'tel' : 'text'}
+                value={c[k] ?? ''}
+                onChange={e => set('other_contacts', form.other_contacts.map((v, j) => i === j ? { ...v, [k]: e.target.value } : v))}
+              />
+            </Field>)}
+          </div>
+          <div className="ops-toolbar">
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={() => set('other_contacts', form.other_contacts.filter((_, j) => j !== i))}
+            >Quitar contacto</button>
+          </div>
+        </div>)}
+        <div className="ops-toolbar">
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            onClick={() => set('other_contacts', [...form.other_contacts, { name: '', phone: '', email: '' }])}
+          >Añadir contacto</button>
+          <label className="ops-check"><input
+            type="checkbox"
+            checked={form.active}
+            onChange={e => set('active', e.target.checked)}
+          />Agencia activa</label>
+        </div>
+        <div className="ops-actions">
+          <button className="btn btn--primary" disabled={busy}>
+            {busy ? 'Guardando…' : 'Guardar agencia'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            disabled={busy}
+            onClick={onClose}
+          >Cancelar</button>
+        </div>
+      </fieldset>
+    </form>
+  </Modal>;
 }

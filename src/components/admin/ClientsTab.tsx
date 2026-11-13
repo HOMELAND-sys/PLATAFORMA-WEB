@@ -3,12 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  fetchAdminClients,
-  fetchClientBookings,
   type AdminClientRow,
   type ClientBooking,
 } from '@/lib/api';
-import { getSupabase } from '@/lib/supabase';
+import { clients as fetchClients, clientBookings } from '@/lib/admin/clients';
+import { messageOf } from '@/lib/admin/core';
 import { formatUsd } from '@/lib/pricing';
 import Icon from '@/components/ui/Icon';
 import AgenciesTab from './AgenciesTab';
@@ -22,11 +21,11 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 };
 
 const fmtDate = (d: string) =>
-  new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  new Date(`${d}T12:00:00Z`).toLocaleDateString('es-ES', { timeZone: 'America/La_Paz', day: '2-digit', month: 'short', year: 'numeric' });
 
 const fmtDateTime = (d: string | null) =>
   d
-    ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+    ? new Date(d).toLocaleDateString('es-ES', { timeZone: 'America/La_Paz', day: '2-digit', month: 'short', year: 'numeric' })
     : '—';
 
 const initialsOf = (name: string): string =>
@@ -47,15 +46,20 @@ function TravelersTab() {
   const [selected, setSelected] = useState<AdminClientRow | null>(null);
   const [history, setHistory] = useState<ClientBooking[] | null>(null);
   const [error, setError] = useState('');
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
-    fetchAdminClients(getSupabase())
-      .then(setClients)
+    let active = true;
+    setClients(null); setError('');
+    fetchClients()
+      .then(rows => { if (active) setClients(rows); })
       .catch((e) => {
-        setError(e instanceof Error ? e.message : 'No se pudieron cargar los clientes.');
+        if (!active) return;
+        setError(messageOf(e));
         setClients([]);
       });
-  }, []);
+    return () => { active = false; historyRequest.current++; };
+  }, [revision]);
 
   const filtered = useMemo(() => {
     if (!clients) return [];
@@ -68,7 +72,7 @@ function TravelersTab() {
     setSelected(c);
     setHistory(null); setHistoryError('');
     const request=++historyRequest.current;
-    fetchClientBookings(getSupabase(), c.id)
+    clientBookings(c.id)
       .then(rows=>{if(request===historyRequest.current)setHistory(rows);})
       .catch(()=>{if(request===historyRequest.current){setHistoryError('No se pudo cargar el historial. Cierra la ficha y vuelve a abrirla.');setHistory([]);}});
   };
@@ -97,7 +101,7 @@ function TravelersTab() {
         />
       </div>
 
-      {error && <div className="admin-alert admin-alert--error">{error}</div>}
+      {error && <div className="admin-alert admin-alert--error" role="alert">{error} <button className="btn btn--ghost btn--sm" onClick={() => setRevision(value => value + 1)}>Reintentar</button></div>}
 
       <div className="admin-table-wrap">
         <table className="admin-table admin-table--cards">
@@ -112,7 +116,7 @@ function TravelersTab() {
           </thead>
           <tbody>
             {filtered.map((c) => (
-              <tr key={c.id} className="is-clickable" onClick={() => openDetail(c)}>
+              <tr key={c.id} className="is-clickable" tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openDetail(c); } }} onClick={() => openDetail(c)}>
                 <td className="cell-strong" data-label="Cliente">
                   <span className="admin-entity">
                     <span className="admin-avatar">{initialsOf(c.full_name)}</span>
@@ -130,7 +134,7 @@ function TravelersTab() {
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && (
+        {!error && filtered.length === 0 && (
           <EmptyState image="generic" title="Sin resultados" text="Todavía no hay cuentas que coincidan." action={{label:'Limpiar búsqueda',onClick:()=>setSearch('')}}/>
 
         )}
@@ -163,7 +167,7 @@ function ClientDrawer({
   onClose: () => void;
 }) {
   const spent = (history ?? []).reduce(
-    (s, b) => s + (b.status === 'confirmada' || b.status === 'completada' ? b.total : 0),
+    (s, b) => s + (b.status === 'confirmada' || b.status === 'completada' ? Number(b.total) : 0),
     0,
   );
 

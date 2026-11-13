@@ -1,16 +1,139 @@
-﻿'use client';
+'use client';
+
 import { useState } from 'react';
 import type { Slot, Product } from '@/lib/admin/types';
 import { updateSlots } from '@/lib/admin/slots';
 import { Field, Pill } from './AdminShared';
 export const slotState = (s: Slot) => s.blocked ? 'Bloqueada' : s.free <= 0 ? 'Agotada' : s.bookable ? 'Reservable' : 'No se puede reservar';
-export default function SlotRow({ slot, product, checked, onSelect, onSaved, onError }: { slot: Slot; product?: Product; checked: boolean; onSelect: () => void; onSaved: () => Promise<void>; onError: (err: unknown) => void }) {
-  const [edit, setEdit] = useState<'capacity'|'cutoff'|null>(null);
+
+export default function SlotRow({ slot, product, checked, onSelect, onSaved, onError }: {
+  slot: Slot;
+  product?: Product;
+  checked: boolean;
+  onSelect: () => void;
+  onSaved: () => Promise<void>;
+  onError: (err: unknown) => void;
+}) {
+  const [edit, setEdit] = useState<'capacity' | 'cutoff' | null>(null);
   const [value, setValue] = useState('');
   const [busy, setBusy] = useState(false);
-  async function change(patch: { blocked?: boolean; capacity?: number; cutoff?: number }) {
+  async function change(patch: {
+    blocked?: boolean;
+    capacity?: number;
+    cutoff?: number;
+  }) {
+    if (busy)
+      return;
     setBusy(true);
-    try { await updateSlots([slot.id],patch); setEdit(null); await onSaved(); } catch (err) { onError(err); } finally { setBusy(false); }
+    try {
+      await updateSlots([slot.id], patch);
+      setEdit(null);
+      await onSaved();
+    } catch (err) {
+      onError(err);
+    } finally {
+      setBusy(false);
+    }
   }
-  return <article className="ops-slot"><label className="ops-check"><input type="checkbox" checked={checked} onChange={onSelect} aria-label={`Seleccionar ${product?.title} ${slot.start_time?.slice(0,5) ?? 'sin hora'}`}/></label><div><strong>{slot.start_time?.slice(0,5) ?? 'Sin hora'}</strong><small>{product?.code || 'Sin código'}</small><strong>{product?.title || 'Producto'}</strong><small>{slot.occupied} participantes reservados</small><Pill tone={slot.bookable?'green':slot.blocked?'gray':'amber'}>{slotState(slot)}</Pill></div><div className="ops-slot__capacity"><span className="ops-muted">Disponibilidad <b>{slot.free} / {slot.capacity}</b> participantes</span><div className="ops-meter"><span style={{width:`${Math.min(100,slot.occupied/slot.capacity*100)}%`}}/></div>{edit==='capacity' ? <form className="ops-inline" onSubmit={e=>{e.preventDefault();void change({capacity:Number(value)});}}><Field label="Cupo total"><input required type="number" min={Math.max(1,slot.occupied)} value={value} onChange={e=>setValue(e.target.value)}/></Field><button disabled={busy} className="btn btn--primary btn--sm">Guardar</button><button type="button" className="btn btn--ghost btn--sm" disabled={busy} onClick={()=>setEdit(null)}>Cancelar</button></form>:<button className="btn btn--ghost btn--sm" disabled={busy} onClick={()=>{setValue(String(slot.capacity));setEdit('capacity');}}>Editar cupo</button>}</div><div className="ops-slot__controls"><label className="ops-check"><input type="checkbox" role="switch" checked={slot.blocked} disabled={busy} onChange={e=>void change({blocked:e.target.checked})}/>Bloquear</label>{edit==='cutoff'?<form className="ops-inline" onSubmit={e=>{e.preventDefault();void change({cutoff:Number(value)});}}><Field label="Límite (horas)"><input required type="number" min={0} value={value} onChange={e=>setValue(e.target.value)}/></Field><button disabled={busy} className="btn btn--primary btn--sm">Guardar</button><button type="button" className="btn btn--ghost btn--sm" onClick={()=>setEdit(null)} disabled={busy}>Cancelar</button></form>:<><small>Hora límite {slot.cutoff_hours} horas</small><button className="btn btn--ghost btn--sm" disabled={busy} onClick={()=>{setValue(String(slot.cutoff_hours));setEdit('cutoff');}}>Actualizar límite</button></>}</div></article>;
+  return <article className="ops-slot">
+    <label className="ops-check">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onSelect}
+        aria-label={`Seleccionar ${product?.title} ${slot.start_time?.slice(0, 5) ?? 'sin hora'}`}
+      />
+    </label>
+    <div>
+      <strong>
+        {slot.start_time?.slice(0, 5) ?? 'Sin hora'}
+      </strong>
+      <small>
+        {product?.code || 'Sin código'}
+      </small>
+      <strong>
+        {product?.title || 'Producto'}
+      </strong>
+      <small>{slot.occupied} participantes reservados</small>
+      <Pill tone={slot.bookable ? 'green' : slot.blocked ? 'gray' : 'amber'}>
+        {slotState(slot)}
+      </Pill>
+    </div>
+    <div className="ops-slot__capacity">
+      <span className="ops-muted">Disponibilidad <b>{slot.free} / {slot.capacity}</b> participantes</span>
+      <div className="ops-meter">
+        <span style={{ width: `${Math.min(100, slot.occupied / slot.capacity * 100)}%` }} />
+      </div>
+      {edit === 'capacity' ? <form className="ops-inline" onSubmit={e => {
+        e.preventDefault();
+        void change({ capacity: Number(value) });
+      }}>
+        <Field label="Cupo total">
+          <input
+            required
+            type="number"
+            min={Math.max(1, slot.occupied)}
+            value={value}
+            onChange={e => setValue(e.target.value)}
+          />
+        </Field>
+        <button disabled={busy} className="btn btn--primary btn--sm">Guardar</button>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          disabled={busy}
+          onClick={() => setEdit(null)}
+        >Cancelar</button>
+      </form> : <button
+        className="btn btn--ghost btn--sm"
+        disabled={busy}
+        onClick={() => {
+          setValue(String(slot.capacity));
+          setEdit('capacity');
+        }}
+      >Editar cupo</button>}
+    </div>
+    <div className="ops-slot__controls">
+      <label className="ops-check"><input
+        type="checkbox"
+        role="switch"
+        checked={slot.blocked}
+        disabled={busy}
+        onChange={e => void change({ blocked: e.target.checked })}
+      />Bloquear</label>
+      {edit === 'cutoff' ? <form className="ops-inline" onSubmit={e => {
+        e.preventDefault();
+        void change({ cutoff: Number(value) });
+      }}>
+        <Field label="Límite (horas)">
+          <input
+            required
+            type="number"
+            min={0}
+            max={8760}
+            step={1}
+            value={value}
+            onChange={e => setValue(e.target.value)}
+          />
+        </Field>
+        <button disabled={busy} className="btn btn--primary btn--sm">Guardar</button>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          onClick={() => setEdit(null)}
+          disabled={busy}
+        >Cancelar</button>
+      </form> : <>
+        <small>Hora límite {slot.cutoff_hours} horas</small>
+        <button
+          className="btn btn--ghost btn--sm"
+          disabled={busy}
+          onClick={() => {
+            setValue(String(slot.cutoff_hours));
+            setEdit('cutoff');
+          }}
+        >Actualizar límite</button>
+      </>}
+    </div>
+  </article>;
 }
