@@ -57,7 +57,7 @@ function ResetForm() {
       await getSupabase().auth.signOut();
       setDone(true);
     } catch {
-      setError('No hay conexión con el servidor. Revisá tu internet e intentá de nuevo.');
+      setError('No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.');
     } finally {
       setBusy(false);
     }
@@ -83,7 +83,7 @@ function ResetForm() {
                   <Icon name="check-circle" size={20} />
                   <span>
                     <strong style={{ display: 'block', marginBottom: 4 }}>Contraseña actualizada</strong>
-                    Ya podés iniciar sesión con tu contraseña nueva.
+                    Ya puedes iniciar sesión con tu contraseña nueva.
                   </span>
                 </div>
                 <Link className="btn btn--primary btn--block" href={`/login?next=${encodeURIComponent(next)}`}>
@@ -95,7 +95,7 @@ function ResetForm() {
                 <div className="auth-alert auth-alert--error" style={{ marginBottom: 16 }}>
                   <Icon name="alert" size={20} />
                   <span>
-                    Este enlace de recuperación no es válido o ya venció (duración: 24 h). Pedí uno
+                    Este enlace de recuperación no es válido o ya venció (duración: 24 h). Pide uno
                     nuevo desde <a href={`/forgot?next=${encodeURIComponent(next)}`}>“¿Olvidaste tu contraseña?”</a>.
                   </span>
                 </div>
@@ -103,7 +103,7 @@ function ResetForm() {
             ) : session ? (
               <>
                 <h1>
-                  Elegí una contraseña <em>nueva</em>
+                  Elige una contraseña <em>nueva</em>
                 </h1>
                 <p>Debe tener al menos 8 caracteres.</p>
 

@@ -47,7 +47,7 @@ export default function SummaryCard({
   const applyCoupon = async () => {
     const code = input.trim().toUpperCase();
     if (!code) {
-      setMessage({ text: 'Ingresá un código de cupón.', ok: false });
+      setMessage({ text: 'Ingresa un código de cupón.', ok: false });
       return;
     }
     setChecking(true);
@@ -60,7 +60,7 @@ export default function SummaryCard({
         setMessage({ text: '✕ El cupón no existe, no está activo o venció.', ok: false });
       }
     } catch {
-      setMessage({ text: '✕ No pudimos validar el cupón. Volvé a intentarlo.', ok: false });
+      setMessage({ text: '✕ No pudimos validar el cupón. Vuelve a intentarlo.', ok: false });
     } finally {
       setChecking(false);
     }
@@ -115,7 +115,7 @@ export default function SummaryCard({
       <div className="summary-coupon">
         <label className="summary-coupon__label">
           <Icon name="tag" size={15} />
-          ¿Tenés un cupón?
+          ¿Tienes un cupón?
         </label>
         <div className="summary-coupon__form">
           <input

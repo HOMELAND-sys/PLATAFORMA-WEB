@@ -116,7 +116,7 @@ export default function MyBookingsPage() {
       await cancelBooking(getSupabase(), b.id, reason || 'Cancelada por el cliente');
       load();
     } catch {
-      setError('No pudimos cancelar la reserva. Volvé a intentarlo.');
+      setError('No pudimos cancelar la reserva. Vuelve a intentarlo.');
     } finally {
       setCancellingId(null);
     }
@@ -145,7 +145,7 @@ export default function MyBookingsPage() {
             <p style={{ textAlign: 'center', color: 'var(--ink-500)', padding: '40px 0' }}>Cargando tus reservas…</p>
           ) : bookings.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '48px 0' }}>
-              <p style={{ color: 'var(--ink-500)', marginBottom: 16 }}>Todavía no tenés reservas.</p>
+              <p style={{ color: 'var(--ink-500)', marginBottom: 16 }}>Todavía no tienes reservas.</p>
               <Link className="btn btn--primary" href="/tours">
                 Explorar tours
               </Link>
@@ -206,7 +206,7 @@ export default function MyBookingsPage() {
               rows={3}
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Contanos brevemente por qué cancelás…"
+              placeholder="Cuéntanos brevemente por qué cancelas…"
             />
             <div className="cancel-modal__actions">
               <button type="button" className="btn btn--ghost" onClick={() => setCancelTarget(null)}>

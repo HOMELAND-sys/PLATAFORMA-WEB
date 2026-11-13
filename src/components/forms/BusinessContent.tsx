@@ -6,7 +6,7 @@ import CalendarScheduler from '@/components/forms/CalendarScheduler';
 import Icon from '@/components/ui/Icon';
 
 const STATES = [
-  'Seleccioná', 'La Paz', 'Cochabamba', 'Santa Cruz', 'Oruro',
+  'Selecciona', 'La Paz', 'Cochabamba', 'Santa Cruz', 'Oruro',
   'Potosí', 'Chuquisaca', 'Tarija', 'Beni', 'Pando', 'Otro',
 ];
 
@@ -130,7 +130,7 @@ export default function BusinessContent() {
 
             <h4 className="form-section-title">¿Qué servicios te interesan u ofrecer?</h4>
             <div className="field" style={{ marginBottom: 16 }}>
-              <label className="field__label">Contanos brevemente</label>
+              <label className="field__label">Cuéntanos brevemente</label>
               <textarea
                 className="textarea"
                 rows={5}
@@ -155,7 +155,7 @@ export default function BusinessContent() {
             <div className="aside-card">
               <h3>Alianzas comerciales</h3>
               <p>
-                ¿Tenés una agencia, operador turístico o empresa interesada en ofrecer Bolivia a tus clientes?
+                ¿Tienes una agencia, operador turístico o empresa interesada en ofrecer Bolivia a tus clientes?
                 Agendemos una reunión para evaluar la alianza.
               </p>
 
@@ -189,7 +189,7 @@ export default function BusinessContent() {
               <div className="aside-divider"></div>
 
               <h4 style={{ color: 'var(--white)', fontSize: '0.95rem', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                ¿Qué tipo de alianza buscás?
+                ¿Qué tipo de alianza buscas?
               </h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.88rem', color: 'var(--ink-200)', lineHeight: 1.8 }}>
                 <li className="icon-inline"><Icon name="check" size={15} /> Agencias de viaje (B2B)</li>

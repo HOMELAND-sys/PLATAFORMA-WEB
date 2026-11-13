@@ -134,31 +134,31 @@ export function safeNext(raw: string | null, fallback = '/bookings'): string {
 export function authErrorMessage(message: string, fallback: string): string {
   const m = message.toLowerCase();
   if (/rate limit|too many|over_request|429/.test(m)) {
-    return 'Demasiados intentos seguidos. Esperá unos minutos e intentá de nuevo.';
+    return 'Demasiados intentos seguidos. Espera unos minutos e intenta de nuevo.';
   }
   if (/weak password|password should be at least|password.*at least \d/.test(m)) {
-    return 'La contraseña es demasiado débil: usá al menos 8 caracteres combinando letras y números.';
+    return 'La contraseña es demasiado débil: usa al menos 8 caracteres combinando letras y números.';
   }
   if (/different from the old|same as the old|new password should be different/.test(m)) {
     return 'La contraseña nueva debe ser distinta de la anterior.';
   }
   if (/invalid email|unable to validate email|email address.*invalid|invalid.*email address/.test(m)) {
-    return 'El correo electrónico no es válido. Revisalo e intentá de nuevo.';
+    return 'El correo electrónico no es válido. Revísalo e intenta de nuevo.';
   }
   if (/signups not allowed|signup.*disabled|signups are disabled/.test(m)) {
-    return 'El registro de cuentas nuevas está deshabilitado por el momento. Escribinos por WhatsApp y te ayudamos.';
+    return 'El registro de cuentas nuevas está deshabilitado por el momento. Escríbenos por WhatsApp y te ayudamos.';
   }
   if (/already registered|already been registered|already exists|user already/.test(m)) {
-    return 'Ya existe una cuenta con este email. Iniciá sesión o recuperá tu contraseña.';
+    return 'Ya existe una cuenta con este email. Inicia sesión o recupera tu contraseña.';
   }
   if (/email not confirmed|not confirmed|confirmation pending|verify your email|email.*not.*verified/.test(m)) {
-    return 'Tu cuenta todavía no está confirmada. Revisá tu correo (y la carpeta de spam) y abrí el enlace de verificación.';
+    return 'Tu cuenta todavía no está confirmada. Revisa tu correo (y la carpeta de spam) y abre el enlace de verificación.';
   }
   if (/session_not_found|auth session missing|invalid claim|token.*expired|expired.*token|invalid token|refresh_token/.test(m)) {
-    return 'Tu enlace o sesión venció. Pedí uno nuevo e intentá de nuevo.';
+    return 'Tu enlace o sesión venció. Pide uno nuevo e intenta de nuevo.';
   }
   if (/failed to fetch|network|load failed/.test(m)) {
-    return 'No hay conexión con el servidor. Revisá tu internet e intentá de nuevo.';
+    return 'No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.';
   }
   return fallback;
 }

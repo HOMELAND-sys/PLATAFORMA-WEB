@@ -394,6 +394,8 @@ export interface CreateBookingArgs {
   tourDateId?: string | null;
   offerId?: string | null;
   children?: number;
+  contactName?: string | null;
+  contactPhone?: string | null;
 }
 
 export interface CreatedBooking {
@@ -416,6 +418,7 @@ export type BookingErrorCode =
   | 'not_authenticated'
   | 'invalid_pax'
   | 'invalid_passengers'
+  | 'invalid_contact'
   | 'unknown';
 
 export function bookingErrorInfo(message: string): { code: BookingErrorCode; detail: string } {
@@ -434,6 +437,7 @@ export function bookingErrorInfo(message: string): { code: BookingErrorCode; det
     'not_authenticated',
     'invalid_pax',
     'invalid_passengers',
+    'invalid_contact',
   ];
   const code = known.find((k) => message.startsWith(k)) ?? 'unknown';
   const detail = message.replace(/^[a-z_]+:?\s*/, '');
@@ -456,6 +460,8 @@ export async function createBooking(
     p_tour_date_id: args.tourDateId ?? null,
     p_offer_id: args.offerId ?? null,
     p_children: args.children ?? 0,
+    p_contact_name: args.contactName ?? null,
+    p_contact_phone: args.contactPhone ?? null,
   });
   if (error) {
     // PostgREST devuelve un objeto plano (no Error): sin normalizar, el
@@ -580,7 +586,7 @@ export async function fetchBookingByCode(sb: SupabaseClient, code: string): Prom
   const { data, error } = await sb
     .from('reservations')
     .select(
-      '*, tour:reservations_tour_id_fkey (slug, title, image, duration, start_end, destination, max_altitude, difficulty, info, included), date_row:reservations_tour_date_id_fkey (date), passengers:booking_passengers_reservations_id_fkey (*)',
+      '*, tour:reservations_tour_id_fkey (slug, title, image, duration, start_end, destination, max_altitude, difficulty, info, included), date_row:reservations_tour_date_id_fkey (date, start_time), passengers:booking_passengers_reservations_id_fkey (*)',
     )
     .eq('code', code)
     .maybeSingle();
@@ -598,7 +604,7 @@ export async function fetchBookingByCode(sb: SupabaseClient, code: string): Prom
       info: Partial<TourInfo> | null;
       included: string[] | null;
     } | null;
-    date_row: { date: string } | null;
+    date_row: { date: string; start_time: string | null } | null;
     passengers: PassengerRow[];
   }) | null;
   if (!r || !r.tour) return null;
@@ -608,6 +614,7 @@ export async function fetchBookingByCode(sb: SupabaseClient, code: string): Prom
     tour_title: r.tour.title,
     tour_image: r.tour.image,
     tour_date: r.date_row?.date ?? '',
+    tour_start_time: r.date_row?.start_time ?? null,
     tour_duration: r.tour.duration,
     tour_start_end: r.tour.start_end,
     tour_destination: r.tour.destination,

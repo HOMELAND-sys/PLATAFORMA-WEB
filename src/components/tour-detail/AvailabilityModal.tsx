@@ -83,7 +83,7 @@ export default function AvailabilityModal({
             {tour.title}
           </p>
           <h2 className="am-head__title" id="availTitle">
-            Reservá tu aventura
+            Reserva tu aventura
           </h2>
         </header>
 
@@ -260,7 +260,7 @@ export default function AvailabilityModal({
                 {pax >= GROUP_DISCOUNT_MAX_PAX
                   ? `¡Descuento máximo! ${getGroupDiscountLabel(pax)} por reservar ${pax} viajeros.`
                   : getGroupDiscountRate(pax) === getGroupDiscountRate(pax + 1)
-                    ? `¡${getGroupDiscountLabel(pax)} por grupo ya aplicado! Sumá más viajeros para mantener el descuento.`
+                    ? `¡${getGroupDiscountLabel(pax)} por grupo ya aplicado! Suma más viajeros para mantener el descuento.`
                     : `¡${getGroupDiscountLabel(pax)} por grupo! Subí a ${pax + 1} para llegar a ${getGroupDiscountLabel(pax + 1)}.`}
               </span>
             </div>
@@ -268,7 +268,7 @@ export default function AvailabilityModal({
 
           {!canAdd && (
             <p className="am-warning" role="alert">
-              Cupo insuficiente para {pax} viajeros en esta salida. Quitá viajeros o cambiá de horario.
+              Cupo insuficiente para {pax} viajeros en esta salida. Quita viajeros o cambia de horario.
             </p>
           )}
           <button className="am-cta" onClick={onAddToCart} disabled={!canAdd}>

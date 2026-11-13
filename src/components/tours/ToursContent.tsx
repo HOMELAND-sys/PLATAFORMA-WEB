@@ -254,7 +254,7 @@ export default function ToursContent() {
           {filtered.length === 0 && (
             <p style={{ textAlign: 'center', color: 'var(--ink-500)', padding: '40px 0' }}>
               {query
-                ? `No encontramos tours para "${query}". Probá con otro destino o limpiá los filtros.`
+                ? `No encontramos tours para "${query}". Prueba con otro destino o limpia los filtros.`
                 : 'No hay tours que coincidan con los filtros seleccionados.'}
             </p>
           )}
