@@ -176,7 +176,7 @@ export default function BusinessContent() {
 
               <p style={{ fontSize: '0.85rem', color: 'var(--ink-300)', textAlign: 'center', margin: 0 }}>
                 <Icon name="card" size={16} style={{ marginRight: 4 }} />
-                <strong style={{ color: 'var(--white)' }}>Pagos con Zwap</strong>
+                <strong style={{ color: 'var(--white)' }}>Atención directa de la operadora</strong>
               </p>
             </div>
           </aside>

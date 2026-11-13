@@ -261,8 +261,8 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
               <p>
                 {settings?.instructions ||
                   (hasPayment
-                    ? 'Pagá con el QR o el enlace. Apenas lo registremos, tu voucher cambia a “Confirmada” y te avisamos por email.'
-                    : 'El operador aún no configuró el pago en línea. Escríbenos por WhatsApp y lo coordinamos al instante.')}
+                    ? 'Paga con el QR o el enlace. Cuando nuestro equipo registre el pago, tu reserva aparecerá como “Confirmada”.'
+                    : 'El pago en línea aún no está habilitado. Tu reserva queda pendiente hasta que coordinemos el pago.')}
               </p>
               <div className="pay-card__actions">
                 {settings?.link && (
