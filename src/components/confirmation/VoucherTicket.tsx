@@ -17,7 +17,7 @@ import Icon from '@/components/ui/Icon';
 import type { MyBooking } from '@/lib/api';
 import { onIntroReveal, prefersReducedMotion } from '@/lib/intro';
 import {
-  AGUAYO,
+  BRAND,
   CONDOR_PATH,
   CORDILLERA,
   ILLIMANI,
@@ -48,6 +48,7 @@ import {
   meetingTime,
   money,
   parseRoute,
+  paxSplit,
   priceBreakdown,
   seededRandom,
   voucherUrl,
@@ -98,7 +99,7 @@ const STUB_STARS = (() => {
 
 const noopSubscribe = () => () => undefined;
 
-const COLORS = [AGUAYO.teal, AGUAYO.orange, AGUAYO.magenta, AGUAYO.green, AGUAYO.red, AGUAYO.navy];
+const COLORS = [BRAND.deep, BRAND.forest, BRAND.moss, BRAND.olive, BRAND.green, BRAND.ink];
 const SYMBOL_VIEWBOX = '22.5 14.5 44 42';
 
 interface VoucherTicketProps {
@@ -217,7 +218,7 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
       tl.from(q('.vt__photo'), { scale: 1.25, duration: 3, ease: 'power2.out' }, 0.3)
         .from(q('.vt__head-ridge path'), { morphSVG: HEAD_RIDGE_FLAT, duration: 1.3, ease: 'expo.out' }, 0.7)
         .from(q('.vt__head-top > *, .vt__eyebrow, .vt__title, .vt__chip'), { y: 18, autoAlpha: 0, duration: 0.8, stagger: 0.06 }, 0.45)
-        .from(q('.vt__aguayo'), { scaleX: 0, transformOrigin: '0% 50%', duration: 1.1, ease: 'power2.inOut' }, 0.75);
+        .from(q('.vt__band'), { scaleX: 0, transformOrigin: '0% 50%', duration: 1.1, ease: 'power2.inOut' }, 0.75);
 
       /* Ruta: colinas, trazo punteado que se dibuja, pines y el 4x4 */
       tl.from(q('.vt__route-hills'), { opacity: 0, y: 10, duration: 0.8 }, 0.9)
@@ -395,7 +396,7 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
               ))}
             </svg>
 
-            <AguayoBand id={b.code} />
+            <BrandBand id={b.code} />
 
             <header className="vt__head">
               <div className="vt__photo" style={{ backgroundImage: `url('${b.tour_image || '/assets/uyuni-mirror.jpg'}')` }} />
@@ -407,7 +408,7 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
               <div className="vt__head-top">
                 <HomelandLogo height={42} className="vt__logo" />
                 <div className="vt__doc">
-                  <small>Travel voucher</small>
+                  <small>Voucher de viaje</small>
                   <strong>Nº {b.code}</strong>
                 </div>
               </div>
@@ -515,9 +516,7 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
               </div>
               <div className="vt__fact">
                 <small>Pasajeros</small>
-                <strong>
-                  {b.pax} adulto{b.pax === 1 ? '' : 's'}
-                </strong>
+                <strong>{paxSplit(b)}</strong>
                 <span>Tour {TOUR_TYPE_LABEL[b.tour_type]?.toLowerCase() ?? ''}</span>
               </div>
               <div className="vt__fact">
@@ -681,8 +680,8 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
                 ))}
                 <defs>
                   <radialGradient id={`stub-glow-${uid}`}>
-                    <stop offset="0" stopColor="#f3d27a" stopOpacity="0.45" />
-                    <stop offset="1" stopColor="#e3b23c" stopOpacity="0" />
+                    <stop offset="0" stopColor="#eaeee2" stopOpacity="0.5" />
+                    <stop offset="1" stopColor="#9ab26e" stopOpacity="0" />
                   </radialGradient>
                 </defs>
                 <circle className="vt__stub-glow" cx="214" cy="128" r="58" fill={`url(#stub-glow-${uid})`} />
@@ -714,22 +713,25 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
   );
 }
 
-/* Cinta de aguayo (tejido andino) como patrón SVG repetido. */
-function AguayoBand({ id }: { id: string }) {
-  const pid = `aguayo-${id.replace(/\W/g, '')}`;
+/* Cinta de marca: el símbolo Homeland repetido sobre la gama de verdes. */
+function BrandBand({ id }: { id: string }) {
+  const pid = `brand-band-${id.replace(/\W/g, '')}`;
   return (
-    <svg className="vt__aguayo" aria-hidden="true">
+    <svg className="vt__band" aria-hidden="true">
       <defs>
         <pattern id={pid} width="28" height="14" patternUnits="userSpaceOnUse">
-          <rect width="28" height="14" fill={AGUAYO.navy} />
-          <rect width="28" height="1.6" fill={AGUAYO.red} />
-          <rect y="1.6" width="28" height="1.3" fill={AGUAYO.gold} />
-          <rect y="11.1" width="28" height="1.3" fill={AGUAYO.gold} />
-          <rect y="12.4" width="28" height="1.6" fill={AGUAYO.red} />
-          <path d="M14 3.6L20.2 7L14 10.4L7.8 7Z" fill={AGUAYO.orange} />
-          <path d="M14 5.4L17 7L14 8.6L11 7Z" fill={AGUAYO.cream} />
-          <path d="M0 5L2.8 7L0 9ZM28 5L25.2 7L28 9Z" fill={AGUAYO.teal} />
-          <circle cx="14" cy="7" r="0.8" fill={AGUAYO.magenta} />
+          <rect width="28" height="14" fill={BRAND.deep} />
+          <rect width="28" height="1.6" fill={BRAND.green} />
+          <rect y="12.4" width="28" height="1.6" fill={BRAND.green} />
+          <rect y="1.6" width="28" height="0.7" fill={BRAND.sage} />
+          <rect y="11.7" width="28" height="0.7" fill={BRAND.sage} />
+          <g transform="translate(3.32 -1.52) scale(0.24)" fill={BRAND.sage}>
+            <path d={LOGO_SYMBOL.outer} />
+            <path d={LOGO_SYMBOL.inner} />
+            <path d={LOGO_SYMBOL.h} />
+          </g>
+          <circle cx="3.5" cy="7" r="0.9" fill={BRAND.green} />
+          <circle cx="24.5" cy="7" r="0.9" fill={BRAND.green} />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill={`url(#${pid})`} />

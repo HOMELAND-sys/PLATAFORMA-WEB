@@ -661,13 +661,6 @@
 }
 .ta-review__dash { color: var(--ink-500); margin: 0 2px; }
 .ta-review__text { color: var(--ink-700); }
-.ta-review__more {
-  color: #2974ba;
-  text-decoration: none;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.ta-review__more:hover { text-decoration: underline; }
 
 .ta-review__verified {
   position: absolute;

@@ -4,13 +4,13 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, safeNext, authErrorMessage } from '@/context/AuthContext';
 import { getSupabase } from '@/lib/supabase';
 import Icon from '@/components/ui/Icon';
 
 function ResetForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/login';
+  const next = safeNext(searchParams.get('next'), '/login');
   const { session, loading } = useAuth();
 
   const [password, setPassword] = useState('');
@@ -18,21 +18,21 @@ function ResetForm() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [linkChecked, setLinkChecked] = useState(false);
 
   useEffect(() => {
-    // Si llegó por el enlace del email, el cliente ya canjeó el código y tiene sesión.
-    if (!loading && !session) {
-      // Espera un tick: onAuthStateChange puede tardar un instante en canjear el token de la URL.
-      const t = setTimeout(() => {
-        getSupabase()
-          .auth.getSession()
-          .then(({ data }) => {
-            if (!data.session) setDone(false);
-          });
-      }, 800);
-      return () => clearTimeout(t);
-    }
-    return undefined;
+    // Si llegó por el enlace del email, el cliente canjea el código y crea sesión.
+    if (loading || session) return undefined;
+    // Margen para que onAuthStateChange canjee el token de la URL antes de marcar el enlace como inválido.
+    const t = setTimeout(() => {
+      getSupabase()
+        .auth.getSession()
+        .then(({ data }) => {
+          if (!data.session) setLinkChecked(true);
+        })
+        .catch(() => setLinkChecked(true));
+    }, 800);
+    return () => clearTimeout(t);
   }, [loading, session]);
 
   const submit = async (e: React.FormEvent) => {
@@ -51,11 +51,13 @@ function ResetForm() {
     try {
       const { error: updateError } = await getSupabase().auth.updateUser({ password });
       if (updateError) {
-        setError(updateError.message);
+        setError(authErrorMessage(updateError.message, 'No se pudo actualizar la contraseña. Intentá de nuevo.'));
         return;
       }
       await getSupabase().auth.signOut();
       setDone(true);
+    } catch {
+      setError('No hay conexión con el servidor. Revisá tu internet e intentá de nuevo.');
     } finally {
       setBusy(false);
     }
@@ -65,7 +67,7 @@ function ResetForm() {
     <>
       <section className="page-header page-header--tight">
         <div className="container">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Nueva contraseña' }]} />
+          <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Nueva contraseña' }]} />
           <h1>
             Nueva <em>contraseña</em>
           </h1>
@@ -88,7 +90,7 @@ function ResetForm() {
                   Iniciar sesión
                 </Link>
               </>
-            ) : !loading && !session ? (
+            ) : !loading && !session && linkChecked ? (
               <>
                 <div className="auth-alert auth-alert--error" style={{ marginBottom: 16 }}>
                   <Icon name="alert" size={20} />
@@ -98,7 +100,7 @@ function ResetForm() {
                   </span>
                 </div>
               </>
-            ) : (
+            ) : session ? (
               <>
                 <h1>
                   Elegí una contraseña <em>nueva</em>
@@ -148,6 +150,10 @@ function ResetForm() {
                   </button>
                 </form>
               </>
+            ) : (
+              <p style={{ color: 'var(--ink-500)', fontSize: '0.9rem' }}>
+                Verificando tu enlace de recuperación…
+              </p>
             )}
           </div>
         </div>

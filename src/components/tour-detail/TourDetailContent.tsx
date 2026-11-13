@@ -7,9 +7,9 @@ import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import Icon from '@/components/ui/Icon';
 import TourCard from '@/components/ui/TourCard';
 import AvailabilityModal from '@/components/tour-detail/AvailabilityModal';
-import { calcAvailabilityTotal, GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
+import { GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
 import { useBooking } from '@/context/BookingContext';
-import { fetchTourAvailability } from '@/lib/api';
+import { clientTotals, fetchTourAvailability, offerAppliesToSelection } from '@/lib/api';
 import type { TourDateFree } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import { reviews as staticReviews } from '@/data/reviews';
@@ -21,7 +21,7 @@ function fmtRating(n: number) {
 
 export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mightLike: Tour[] }) {
   const router = useRouter();
-  const { setSelection } = useBooking();
+  const { setSelection, selection, hydrated } = useBooking();
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [date, setDate] = useState('');
@@ -29,12 +29,14 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [startTime, setStartTime] = useState('');
+  const [tourDateId, setTourDateId] = useState<string | null>(null);
   const [extraIds, setExtraIds] = useState<string[]>([]);
   const [availability, setAvailability] = useState<TourDateFree[] | null>(null);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [allReviews, setAllReviews] = useState(false);
   const asideRef = useRef<HTMLElement>(null);
+  const restoredRef = useRef<string | null>(null);
 
   const pax = adults + children;
   const gallery = tour.gallery.length > 0 ? tour.gallery : [tour.image];
@@ -60,16 +62,25 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
     };
   }, [lightbox]);
 
+  // Al entrar (o volver desde /booking) restaura la selección guardada del
+  // mismo tour: viajeros, tipo, extras, fecha y franja. Solo una vez por slug.
   useEffect(() => {
+    if (!hydrated) return;
+    if (restoredRef.current === tour.slug) return;
+    restoredRef.current = tour.slug;
     setModalOpen(false);
     setLightbox(null);
-    setDate('');
-    setAdults(2);
-    setChildren(0);
-    setStartTime(tour.defaultStartTimes?.[0] ?? '');
     setSaved(false);
     setAllReviews(false);
-  }, [tour.slug, tour.defaultStartTimes]);
+    const saved = selection && selection.tourSlug === tour.slug ? selection : null;
+    setTourType(saved?.tourType ?? 'group');
+    setAdults(saved?.adults ?? 2);
+    setChildren(saved?.children ?? 0);
+    setExtraIds(saved?.extras ?? []);
+    setDate(saved?.date ?? '');
+    setTourDateId(saved?.tourDateId ?? null);
+    setStartTime(saved?.startTime ?? tour.defaultStartTimes?.[0] ?? '');
+  }, [hydrated, tour.slug, tour.defaultStartTimes, selection]);
 
   // Disponibilidad real (RF-05): fechas abiertas con cupo libre.
   useEffect(() => {
@@ -88,20 +99,87 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
     };
   }, [tour.id]);
 
-  const total = useMemo(
-    () => calcAvailabilityTotal(tour, tourType, pax, extraIds),
-    [tour, tourType, pax, extraIds],
+  // Franjas reservables agrupadas por fecha (bookable y con cupo libre).
+  const slotsByDate = useMemo(() => {
+    const m = new Map<string, TourDateFree[]>();
+    for (const s of availability ?? []) {
+      if (s.bookable === false || s.blocked || s.free <= 0) continue;
+      const arr = m.get(s.date) ?? [];
+      arr.push(s);
+      m.set(s.date, arr);
+    }
+    for (const arr of m.values()) {
+      arr.sort((a, b) => (a.start_time ?? '').localeCompare(b.start_time ?? ''));
+    }
+    return m;
+  }, [availability]);
+
+  const dateOptions = useMemo(
+    () =>
+      [...slotsByDate.entries()]
+        .map(([d, slots]) => ({ date: d, maxFree: Math.max(...slots.map((s) => s.free)) }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    [slotsByDate],
   );
 
-  const offerPct = tour.offerPct ?? 0;
+  const selectedSlots = date ? (slotsByDate.get(date) ?? []) : [];
+  const bookableSlots = selectedSlots.filter((s) => s.free >= pax);
+
+  // Mantiene la franja elegida válida ante cambios de fecha o de viajeros.
+  // Espera la carga de disponibilidad para no borrar la franja restaurada.
+  useEffect(() => {
+    if (availability === null) return;
+    if (!date) {
+      setTourDateId(null);
+      return;
+    }
+    const slots = slotsByDate.get(date) ?? [];
+    const current = slots.find((s) => s.id === tourDateId);
+    if (current && current.free >= pax) return;
+    const pick = slots.find((s) => s.free >= pax) ?? null;
+    setTourDateId(pick?.id ?? null);
+    setStartTime(pick?.start_time ? pick.start_time.slice(0, 5) : '');
+  }, [availability, date, pax, slotsByDate, tourDateId]);
+
+  const handleDateChange = (d: string) => {
+    setDate(d);
+    const pick = (slotsByDate.get(d) ?? []).find((s) => s.free >= pax) ?? null;
+    setTourDateId(pick?.id ?? null);
+    setStartTime(pick?.start_time ? pick.start_time.slice(0, 5) : '');
+  };
+
+  // La oferta solo se muestra/aplica si cumple las condiciones de la RPC
+  // (vigencia, día, franja, anticipación y cupos promocionales) para la
+  // selección actual; si no, no se envía p_offer_id ni se descuenta.
+  const applicableOffer = useMemo(() => {
+    const o = tour.offer;
+    if (!o || !date || !tourDateId) return null;
+    const slot = (slotsByDate.get(date) ?? []).find((s) => s.id === tourDateId);
+    if (!slot) return null;
+    return offerAppliesToSelection(o, {
+      tourId: tour.id,
+      date,
+      startTime: slot.start_time ?? null,
+      pax,
+    })
+      ? o
+      : null;
+  }, [tour.offer, tour.id, date, tourDateId, slotsByDate, pax]);
+
+  const offerPct = applicableOffer?.discount_pct ?? 0;
   const hasOffer = offerPct > 0;
   const finalPrice = hasOffer ? Math.round(tour.price * (1 - offerPct / 100)) : tour.price;
+
+  // Totales con el mismo cálculo que la RPC create_booking (grupo → oferta → cupón).
+  const totals = useMemo(
+    () => clientTotals(tour, tourType, pax, extraIds, 0, offerPct),
+    [tour, tourType, pax, extraIds, offerPct],
+  );
   const rating = typeof tour.rating === 'number' ? tour.rating : null;
   const reviewCount =
     typeof tour.reviewCount === 'number' && tour.reviewCount > 0 ? tour.reviewCount : null;
   const languages = (tour.languages ?? []).filter(Boolean);
   const freeCancelHours = tour.freeCancellationHours ?? 0;
-  const startTimes = (tour.defaultStartTimes ?? []).filter(Boolean);
   const mosaicThumbs = gallery.slice(1, 5);
   const extraPhotos = gallery.length - 5;
   const hasMap = typeof tour.meetingLat === 'number' && typeof tour.meetingLng === 'number';
@@ -120,25 +198,25 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
       date,
       pax,
       extras: extraIds,
-      perPerson: total.perPerson,
-      extrasTotal: total.extrasTotal,
-      subtotal: total.subtotal,
+      perPerson: totals.perPerson,
+      extrasTotal: totals.extrasTotal,
+      subtotal: totals.subtotal,
+      tourDateId,
+      offerId: applicableOffer?.id ?? null,
+      offerPct,
+      adults,
+      children,
+      startTime: startTime || null,
     });
-    router.push('/booking');
+    router.push(`/booking?slug=${encodeURIComponent(tour.slug)}`);
   };
 
   const toggleExtra = (id: string) => {
     setExtraIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const handlePaxFromModal = (n: number) => {
-    const c = Math.min(children, Math.max(0, n - 1));
-    setChildren(c);
-    setAdults(n - c);
-  };
-
   const openAvailability = () => {
-    if (date) setModalOpen(true);
+    if (date && tourDateId) setModalOpen(true);
     else asideRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -163,8 +241,8 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
         <div className="container">
           <Breadcrumbs
             items={[
-              { label: 'Home', href: '/' },
-              { label: 'Tours & Packages', href: '/tours' },
+              { label: 'Inicio', href: '/' },
+              { label: 'Tours', href: '/tours' },
               { label: tour.title },
             ]}
           />
@@ -317,7 +395,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
             </div>
 
             <div className="detail-section">
-              <h2>Highlights</h2>
+              <h2>Destacados</h2>
               <ul className="highlights-list">
                 {tour.highlights.map((h) => (
                   <li key={h}>
@@ -527,7 +605,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                 <h3 className="booking-card__title">Reservá tu aventura</h3>
                 <div className="booking-card__guarantee">
                   <Icon name="shield-check" size={15} />
-                  <span>Best Price Guarantee</span>
+                  <span>Mejor precio garantizado</span>
                 </div>
               </div>
 
@@ -538,14 +616,16 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                 <span className="booking-card__per">por persona</span>
               </div>
 
-              <p className="booking-card__availability">
-                <span className="dot"></span> Disponibilidad limitada
-              </p>
+              {dateOptions.length > 0 && dateOptions[0].maxFree <= 3 && (
+                <p className="booking-card__availability">
+                  <span className="dot"></span> Disponibilidad limitada
+                </p>
+              )}
 
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (date) setModalOpen(true);
+                  if (date && tourDateId) setModalOpen(true);
                 }}
               >
                 <div className="booking-card__row">
@@ -596,65 +676,92 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                 </div>
 
                 {tour.priceChild != null && children > 0 && (
-                  <p className="booking-card__note">Tarifa niños: US$ {tour.priceChild} por persona.</p>
+                  <p className="booking-card__note">
+                    Tarifa niño de referencia: US$ {tour.priceChild} por persona. La reserva online
+                    aplica la tarifa de adulto a todos los viajeros.
+                  </p>
                 )}
 
                 <div className="booking-card__field">
                   <label>Fecha</label>
-                  {availability === null || availability.length === 0 ? (
+                  {availability === null || dateOptions.length === 0 ? (
                     <input type="date" disabled value={date} onChange={(e) => setDate(e.target.value)} />
                   ) : (
                     <select
                       className="select"
                       value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      onChange={(e) => handleDateChange(e.target.value)}
                       required
                     >
                       <option value="" disabled>
                         Elegí una fecha…
                       </option>
-                      {availability.map((d) => (
-                        <option key={d.id} value={d.free > 0 ? d.date : ''} disabled={d.free <= 0}>
-                          {new Date(`${d.date}T12:00:00`).toLocaleDateString('es-ES', {
-                            weekday: 'short',
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                          {d.free > 0 ? ` · ${d.free} cupo${d.free > 1 ? 's' : ''} libre${d.free > 1 ? 's' : ''}` : ' · Agotado'}
-                        </option>
-                      ))}
+                      {dateOptions.map((opt) => {
+                        const enough = opt.maxFree >= pax;
+                        return (
+                          <option key={opt.date} value={opt.date} disabled={!enough}>
+                            {new Date(`${opt.date}T12:00:00`).toLocaleDateString('es-ES', {
+                              weekday: 'short',
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                            {enough
+                              ? ` · ${opt.maxFree} cupo${opt.maxFree > 1 ? 's' : ''} libre${opt.maxFree > 1 ? 's' : ''}`
+                              : ' · Cupo insuficiente'}
+                          </option>
+                        );
+                      })}
                     </select>
                   )}
                 </div>
 
-                {availability !== null && availability.length === 0 && (
+                {availability !== null && dateOptions.length === 0 && (
                   <p style={{ fontSize: '0.82rem', color: 'var(--ink-500)', margin: '8px 0 12px' }}>
                     No hay fechas abiertas por el momento. Consultanos por WhatsApp.
                   </p>
                 )}
 
-                {startTimes.length > 0 && (
+                {date && bookableSlots.length > 0 && (bookableSlots.length > 1 || bookableSlots[0].start_time) && (
                   <div className="booking-card__field">
                     <label>Horario de salida</label>
-                    <select
-                      className="select"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                    >
-                      {startTimes.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
+                    <div className="slot-chips" role="radiogroup" aria-label="Horario de salida">
+                      {bookableSlots.map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={tourDateId === s.id}
+                          className={`slot-chip${tourDateId === s.id ? ' is-active' : ''}`}
+                          onClick={() => {
+                            setTourDateId(s.id);
+                            setStartTime(s.start_time ? s.start_time.slice(0, 5) : '');
+                          }}
+                        >
+                          <strong>{s.start_time ? s.start_time.slice(0, 5) : 'Horario único'}</strong>
+                          <small>
+                            {s.free} cupo{s.free > 1 ? 's' : ''}
+                          </small>
+                        </button>
                       ))}
-                    </select>
+                    </div>
                   </div>
+                )}
+
+                {date && bookableSlots.length === 1 && !bookableSlots[0].start_time && (
+                  <p className="booking-card__note">Salida según punto de encuentro</p>
+                )}
+
+                {date && selectedSlots.length > 0 && bookableSlots.length === 0 && (
+                  <p className="booking-card__note">
+                    No hay cupo para {pax} viajeros en esta fecha. Probá con menos viajeros u otra fecha.
+                  </p>
                 )}
 
                 <button
                   className="btn--v2-check"
                   type="submit"
-                  disabled={availability !== null && availability.length === 0}
+                  disabled={availability !== null && dateOptions.length === 0}
                 >
                   Ver disponibilidad
                 </button>
@@ -738,12 +845,18 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
         open={modalOpen}
         tour={tour}
         tourType={tourType}
-        pax={pax}
+        adults={adults}
+        children={children}
+        date={date}
+        startTime={startTime}
         extraIds={extraIds}
-        total={total}
+        totals={totals}
+        offerPct={offerPct}
+        canAdd={Boolean(date && tourDateId)}
         onClose={() => setModalOpen(false)}
         onTourTypeChange={setTourType}
-        onPaxChange={handlePaxFromModal}
+        onAdultsChange={setAdults}
+        onChildrenChange={setChildren}
         onToggleExtra={toggleExtra}
         onAddToCart={handleAddToCart}
       />

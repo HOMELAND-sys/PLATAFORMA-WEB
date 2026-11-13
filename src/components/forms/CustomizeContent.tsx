@@ -37,7 +37,7 @@ export default function CustomizeContent() {
 
       <section className="form-hero">
         <div className="container">
-          <Breadcrumbs light items={[{ label: 'Home', href: '/' }, { label: 'Personalizar viaje' }]} />
+          <Breadcrumbs light items={[{ label: 'Inicio', href: '/' }, { label: 'Personalizar viaje' }]} />
           <h1>
             ¡Hablemos de tu próxima <em>aventura!</em>
           </h1>

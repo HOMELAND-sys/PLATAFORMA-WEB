@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, safeNext, authErrorMessage } from '@/context/AuthContext';
 import { getSupabase } from '@/lib/supabase';
 import Icon from '@/components/ui/Icon';
 
@@ -12,12 +12,15 @@ function loginErrorMessage(message: string): string {
   if (/email not confirmed/i.test(message)) {
     return 'Tu email aún no fue verificado. Revisá tu bandeja de entrada (y spam) y hací click en el enlace de confirmación.';
   }
-  return 'Correo o contraseña incorrectos.';
+  if (/invalid login credentials/i.test(message)) {
+    return 'Correo o contraseña incorrectos.';
+  }
+  return authErrorMessage(message, 'Correo o contraseña incorrectos.');
 }
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/bookings';
+  const next = safeNext(searchParams.get('next'));
   const { session } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -97,7 +100,7 @@ function LoginForm() {
     <>
       <section className="page-header page-header--tight">
         <div className="container">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Iniciar sesión' }]} />
+          <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Iniciar sesión' }]} />
           <h1>
             Iniciar <em>sesión</em>
           </h1>

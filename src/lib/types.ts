@@ -1,3 +1,5 @@
+import type { SpecialOffer } from './api';
+
 export type CategoryId =
   | 'lapaz-city'
   | 'lapaz-top'
@@ -84,6 +86,10 @@ export interface Tour {
   code?: string | null;
   /** Descuento % de una oferta especial vigente (special_offers). */
   offerPct?: number;
+  /** Id de la oferta especial vigente (para enviarlo a la RPC de reserva). */
+  offerId?: string;
+  /** Oferta completa vigente: permite validar aplicabilidad a fecha/franja/pax. */
+  offer?: SpecialOffer | null;
 }
 
 export interface Review {
@@ -118,6 +124,13 @@ export interface BookingSelection {
   perPerson: number;
   extrasTotal: number;
   subtotal: number;
+  // Campos opcionales del flujo de disponibilidad real (migración 0011).
+  tourDateId?: string | null;
+  offerId?: string | null;
+  offerPct?: number;
+  adults?: number;
+  children?: number;
+  startTime?: string | null;
 }
 
 export interface BookingResult {

@@ -76,9 +76,7 @@ export default function ReviewsCarousel() {
                 </div>
                 <span className="ta-review__title">{r.title}</span>
                 <span className="ta-review__dash">-</span>
-                <span className="ta-review__text">
-                  {r.text} <a href="#" className="ta-review__more">Leer más</a>
-                </span>
+                <span className="ta-review__text">{r.text}</span>
               </div>
               <div className="ta-review__verified" aria-label="Reseña verificada">
                 <Icon name="badge-check" size={24} />

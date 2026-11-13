@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
@@ -13,10 +14,11 @@ import {
   createBooking,
   fetchActiveTourBySlug,
   fetchTourAvailability,
+  offerAppliesToSelection,
   type TourDateFree,
 } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
-import { formatUsd } from '@/lib/pricing';
+import { formatUsd, GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
 import { track } from '@/lib/analytics';
 import type { MealOption, Tour, TourExtra, TourType } from '@/lib/types';
 import Icon from '@/components/ui/Icon';
@@ -44,11 +46,20 @@ const TYPE_LABELS: Record<TourType, string> = {
   private: 'Tour privado',
 };
 
+const fmtTripDate = (d: string) =>
+  new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+
 export default function BookingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const slug = searchParams.get('slug') ?? '';
-  const { selection, setSelection, setResult } = useBooking();
+  const { selection, setSelection, setResult, hydrated } = useBooking();
+  // El slug de la URL manda; si falta (p. ej. carrito del header), usa el de la selección.
+  const slug = searchParams.get('slug') || selection?.tourSlug || '';
   const { session, profile, loading: authLoading, updateProfile } = useAuth();
 
   const [tour, setTour] = useState<Tour | null>(null);
@@ -65,8 +76,10 @@ export default function BookingContent() {
   // Sección 3: método de pago (link / QR) — el voucher usa la configuración global
   const [paymentMethod, setPaymentMethod] = useState<'link' | 'qr'>('link');
 
-  // PAX y pasajeros
-  const [pax, setPax] = useState(1);
+  // Viajeros: adultos y niños por separado (la reserva online cobra tarifa de adulto a todos).
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const pax = adults + children;
   const [passengers, setPassengers] = useState<PassengerData[]>([
     { name: '', doc: '', country: '', meal: 'Normal' },
   ]);
@@ -79,19 +92,30 @@ export default function BookingContent() {
   const [formError, setFormError] = useState('');
   const [fullDates, setFullDates] = useState<TourDateFree[]>([]);
 
-  // Login gate (RF-06): la reserva se asocia a la cuenta.
+  // Cupo real de la franja elegida (se revalida al entrar y al cambiar viajeros).
+  const [slotFree, setSlotFree] = useState<number | null>(null);
+  const [slotGone, setSlotGone] = useState(false);
+
+  // Login gate (RF-06): la reserva se asocia a la cuenta. Sin slug no hay
+  // reserva que retomar: se muestra el carrito vacío en vez de redirigir.
   useEffect(() => {
-    if (!authLoading && !session) {
-      router.replace(`/login?next=/booking?slug=${encodeURIComponent(slug)}`);
+    if (!authLoading && !session && slug) {
+      router.replace(`/login?next=${encodeURIComponent(`/booking?slug=${slug}`)}`);
     }
   }, [authLoading, session, router, slug]);
 
   // El tour se lee del catálogo (la base es la cuenta única de verdad).
+  // Al cambiar el slug se resetea el error y se reintenta la carga.
+  const initializedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!slug) {
-      setLoadError(true);
-      return;
-    }
+    initializedRef.current = null;
+    setTour(null);
+    setLoadError(false);
+    setSelectedType(null);
+    setSelectedExtras([]);
+    setSlotFree(null);
+    setSlotGone(false);
+    if (!slug) return;
     let active = true;
     fetchActiveTourBySlug(getSupabase(), slug)
       .then((t) => {
@@ -101,22 +125,6 @@ export default function BookingContent() {
           return;
         }
         setTour(t);
-        if (selection) {
-          setSelectedType(selection.tourType);
-          setPax(selection.pax);
-          if (t) {
-            const extras = t.extras.filter((e) => selection.extras.includes(e.id));
-            setSelectedExtras(extras);
-          }
-          setPassengers(
-            Array.from({ length: selection.pax }, () => ({
-              name: '',
-              doc: '',
-              country: '',
-              meal: 'Normal' as MealOption,
-            })),
-          );
-        }
       })
       .catch(() => {
         if (active) setLoadError(true);
@@ -124,8 +132,29 @@ export default function BookingContent() {
     return () => {
       active = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
+
+  // Restaura la selección (fecha, horario, viajeros, extras) aunque llegue
+  // después de la carga del tour (p. ej. tras recargar /booking o entrar directo).
+  useEffect(() => {
+    if (!tour || !selection || selection.tourSlug !== tour.slug) return;
+    if (initializedRef.current === tour.slug) return;
+    initializedRef.current = tour.slug;
+    const c = selection.children ?? 0;
+    const a = selection.adults ?? Math.max(1, selection.pax - c);
+    setAdults(a);
+    setChildren(c);
+    setSelectedType(selection.tourType);
+    setSelectedExtras(tour.extras.filter((e) => selection.extras.includes(e.id)));
+    setPassengers(
+      Array.from({ length: a + c }, () => ({
+        name: '',
+        doc: '',
+        country: '',
+        meal: 'Normal' as MealOption,
+      })),
+    );
+  }, [tour, selection]);
 
   // Precarga los datos del reservante desde la cuenta.
   useEffect(() => {
@@ -139,11 +168,29 @@ export default function BookingContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, profile]);
 
-  // Mantiene la selección (contexto/localStorage) sincronizada con los cambios.
+  // La oferta solo se aplica si es la que eligió el usuario (selection.offerId)
+  // y cumple las condiciones de la RPC para la fecha/franja/pax actuales
+  // (p. ej. cupos promocionales al cambiar la cantidad de viajeros).
+  const applicableOffer = useMemo(() => {
+    if (!tour?.offer || !selection?.date || selection.offerId !== tour.offer.id) return null;
+    return offerAppliesToSelection(tour.offer, {
+      tourId: tour.id,
+      date: selection.date,
+      startTime: selection.startTime ?? null,
+      pax,
+    })
+      ? tour.offer
+      : null;
+  }, [tour, selection?.date, selection?.offerId, selection?.startTime, pax]);
+  const offerPct = applicableOffer?.discount_pct ?? 0;
+  const offerId = applicableOffer?.id ?? null;
+
+  // Mantiene la selección (contexto/sessionStorage) sincronizada con los cambios.
   useEffect(() => {
     if (!tour || !selectedType) return;
     const extraIds = selectedExtras.map((e) => e.id);
     const perPerson = tour.tourTypes[selectedType] ?? 0;
+    const extrasTotal = selectedExtras.filter((e) => e.kind === 'paid').reduce((s, e) => s + e.price, 0);
     setSelection({
       tourSlug: tour.slug,
       tourType: selectedType,
@@ -151,11 +198,17 @@ export default function BookingContent() {
       pax,
       extras: extraIds,
       perPerson,
-      extrasTotal: selectedExtras.filter((e) => e.kind === 'paid').reduce((s, e) => s + e.price, 0),
-      subtotal: perPerson * pax + selectedExtras.filter((e) => e.kind === 'paid').reduce((s, e) => s + e.price, 0),
+      extrasTotal,
+      subtotal: perPerson * pax + extrasTotal,
+      tourDateId: selection?.tourDateId ?? null,
+      offerId,
+      offerPct,
+      adults,
+      children,
+      startTime: selection?.startTime ?? null,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tour, selectedType, selectedExtras, pax]);
+  }, [tour, selectedType, selectedExtras, adults, children]);
 
   const tourTypes = useMemo(() => {
     if (!tour) return [];
@@ -168,9 +221,45 @@ export default function BookingContent() {
   const selectedPrice = selectedTypeData?.price ?? 0;
 
   const totals = tour && selectedType
-    ? clientTotals(tour, selectedType, pax, selectedExtras.map((e) => e.id), couponApplied?.discountPct ?? 0)
+    ? clientTotals(tour, selectedType, pax, selectedExtras.map((e) => e.id), couponApplied?.discountPct ?? 0, offerPct)
     : null;
   const total = totals?.total ?? 0;
+
+  // Revalida el cupo de la franja elegida (pudo cambiar desde que se eligió).
+  useEffect(() => {
+    if (!tour?.id || !selection?.tourDateId) {
+      setSlotFree(null);
+      setSlotGone(false);
+      return;
+    }
+    let active = true;
+    fetchTourAvailability(getSupabase(), tour.id)
+      .then((rows) => {
+        if (!active) return;
+        const slot = rows.find((r) => r.id === selection.tourDateId);
+        if (!slot || slot.bookable === false || slot.blocked) {
+          setSlotGone(true);
+          setSlotFree(null);
+        } else {
+          setSlotGone(false);
+          setSlotFree(slot.free);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setSlotFree(null);
+          setSlotGone(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tour?.id, selection?.tourDateId]);
+
+  const noDate = !selection?.date || !selection?.tourDateId;
+  const slotShort = slotFree !== null && slotFree < pax;
+  const cannotSubmit = submitting || !selectedType || noDate || slotGone || slotShort;
 
   const toggleExtra = (extra: SelectedExtra) => {
     setSelectedExtras((prev) =>
@@ -178,17 +267,30 @@ export default function BookingContent() {
     );
   };
 
-  const setPaxSafe = (n: number) => {
-    const clamped = Math.max(1, Math.min(8, n));
-    setPax(clamped);
+  const syncPassengers = (n: number) => {
     setPassengers((prev) =>
-      clamped <= prev.length
-        ? prev.slice(0, clamped)
-        : [...prev, ...Array.from({ length: clamped - prev.length }, () => ({ name: '', doc: '', country: '', meal: 'Normal' as MealOption }))],
+      n <= prev.length
+        ? prev.slice(0, n)
+        : [...prev, ...Array.from({ length: n - prev.length }, () => ({ name: '', doc: '', country: '', meal: 'Normal' as MealOption }))],
     );
   };
 
-  const removePassenger = (index: number) => setPaxSafe(pax - 1);
+  const changeAdults = (n: number) => {
+    const a = Math.max(1, Math.min(GROUP_DISCOUNT_MAX_PAX - children, n));
+    setAdults(a);
+    syncPassengers(a + children);
+  };
+
+  const changeChildren = (n: number) => {
+    const c = Math.max(0, Math.min(GROUP_DISCOUNT_MAX_PAX - adults, n));
+    setChildren(c);
+    syncPassengers(adults + c);
+  };
+
+  const removePassenger = () => {
+    if (children > 0) changeChildren(children - 1);
+    else changeAdults(adults - 1);
+  };
 
   const updatePassenger = (index: number, field: keyof PassengerData, value: string) => {
     setPassengers((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
@@ -199,7 +301,15 @@ export default function BookingContent() {
     setFormError('');
     setFullDates([]);
 
-    if (!tour?.id || !session || !selection?.date || !selectedType) return;
+    if (!tour?.id || !session || !selectedType) return;
+    if (!selection?.date || !selection?.tourDateId) {
+      setFormError('Elegí una fecha y un horario en la ficha del tour antes de confirmar.');
+      return;
+    }
+    if (slotGone || slotShort) {
+      setFormError('La franja elegida ya no tiene cupo para tus viajeros. Cambiá la fecha u horario, o quitá viajeros.');
+      return;
+    }
 
     if (!booker.fullName.trim() || !booker.phone.trim()) {
       setFormError('Completa tu nombre y teléfono.');
@@ -219,6 +329,7 @@ export default function BookingContent() {
         date: selection.date,
         tourType: selectedType,
         pax,
+        children,
         extraIds: selectedExtras.map((x) => x.id),
         passengers: passengers.map((p, i) => ({
           name: p.name.trim(),
@@ -229,6 +340,8 @@ export default function BookingContent() {
         })),
         couponCode: couponApplied?.code ?? null,
         paymentMethod,
+        tourDateId: selection.tourDateId ?? null,
+        offerId,
       });
 
       setResult({
@@ -245,7 +358,7 @@ export default function BookingContent() {
       router.push('/confirmation');
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
-      const { code } = bookingErrorInfo(message);
+      const { code, detail } = bookingErrorInfo(message);
       if (code === 'date_full') {
         setFormError('Vaya, esa fecha se llenó mientras reservabas. Elegí otra fecha disponible:');
         const avail = await fetchTourAvailability(getSupabase(), tour.id).catch(() => null);
@@ -254,15 +367,60 @@ export default function BookingContent() {
         setCouponApplied(null);
         setFormError('El cupón no existe, no está activo o venció.');
       } else if (code === 'not_authenticated') {
-        router.replace(`/login?next=/booking?slug=${encodeURIComponent(slug)}`);
+        router.replace(`/login?next=${encodeURIComponent(`/booking?slug=${slug}`)}`);
       } else if (code === 'date_not_open' || code === 'date_past') {
         setFormError('La fecha seleccionada no está disponible. Volvé al tour para elegir una fecha válida.');
+      } else if (code === 'cutoff_passed') {
+        setFormError('La hora límite de reserva para esa salida ya pasó. Elegí otra fecha u horario disponible.');
+      } else if (code === 'slot_blocked') {
+        setFormError('Esa salida fue bloqueada por la operatora. Elegí otra fecha u horario disponible.');
+      } else if (code === 'offer_invalid' || code === 'offer_full') {
+        if (selection) setSelection({ ...selection, offerId: null, offerPct: 0 });
+        setFormError(
+          code === 'offer_full'
+            ? 'Se agotaron las plazas con descuento de esta oferta. Quitamos el descuento; revisá el nuevo total antes de confirmar.'
+            : 'La oferta de descuento ya no aplica a esta salida. Quitamos el descuento; revisá el nuevo total antes de confirmar.',
+        );
+      } else if (code === 'invalid_passengers') {
+        setFormError(
+          /adult/i.test(detail)
+            ? 'Debe haber al menos un adulto en la reserva. Ajustá la cantidad de adultos y niños.'
+            : 'Revisá los datos de los viajeros: falta el nombre de alguno o no coincide con la cantidad de plazas.',
+        );
+      } else if (code === 'invalid_pax') {
+        setFormError('La cantidad de viajeros no es válida para este tour (revisá el mínimo y el máximo de plazas).');
+      } else if (code === 'tour_type_unavailable') {
+        setFormError('Ese tipo de tour no está disponible para esta fecha. Elegí otro tipo (compartido, semiprivado o privado).');
       } else {
         setFormError('No pudimos crear la reserva. Volvé a intentarlo.');
       }
       setSubmitting(false);
     }
   };
+
+  // Sin slug ni selección: carrito vacío amable (no es un error de tour).
+  if (!slug) {
+    if (!hydrated) {
+      return (
+        <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
+          <p style={{ color: 'var(--ink-500)' }}>Cargando tu carrito…</p>
+        </div>
+      );
+    }
+    return (
+      <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '1.8rem', marginBottom: 8 }}>Tu carrito está vacío</h1>
+        <p style={{ color: 'var(--ink-500)' }}>
+          Todavía no elegiste ninguna aventura. Explorá los tours y armá tu viaje a Bolivia.
+        </p>
+        <div style={{ marginTop: 24 }}>
+          <Link className="btn btn--primary" href="/tours">
+            Explorar tours
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (loadError) {
     return (
@@ -295,7 +453,7 @@ export default function BookingContent() {
     <div className="form-page">
       <div className="form-hero">
         <div className="container">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Tours', href: '/tours' }, { label: 'Reservar' }]} />
+          <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Tours', href: '/tours' }, { label: 'Reservar' }]} />
           <h1>Reservá tu aventura</h1>
           <p>{tour.title} · {tour.duration} · {tour.destination}</p>
         </div>
@@ -315,6 +473,62 @@ export default function BookingContent() {
 
         <div className="booking-form-wrap">
           <form onSubmit={handleSubmit} className="form-card">
+            <div className="form-card__section booking-trip">
+              <div className="booking-trip__head">
+                <h3 className="booking-trip__title">Tu salida</h3>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm"
+                  onClick={() => router.push(`/tours/${tour.slug}`)}
+                >
+                  <Icon name="calendar" size={15} /> Cambiar fecha u horario
+                </button>
+              </div>
+              {selection?.date ? (
+                <p className="booking-trip__when">
+                  <Icon name="calendar" size={16} />
+                  {fmtTripDate(selection.date)}
+                  {selection.startTime ? ` · ${selection.startTime} hs` : ''}
+                </p>
+              ) : (
+                <p className="booking-trip__when booking-trip__when--pending">
+                  <Icon name="calendar" size={16} />
+                  Fecha pendiente: elegí una fecha y un horario en la ficha del tour.
+                </p>
+              )}
+              <div className="booking-trip__pax">
+                <div className="field">
+                  <label>Adultos</label>
+                  <div className="pax-control">
+                    <button type="button" disabled={adults <= 1} onClick={() => changeAdults(adults - 1)} aria-label="Restar adulto">−</button>
+                    <span>{adults}</span>
+                    <button type="button" disabled={pax >= GROUP_DISCOUNT_MAX_PAX} onClick={() => changeAdults(adults + 1)} aria-label="Sumar adulto">+</button>
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Niños{tour.childAgeMax ? ` · hasta ${tour.childAgeMax} años` : ''}</label>
+                  <div className="pax-control">
+                    <button type="button" disabled={children <= 0} onClick={() => changeChildren(children - 1)} aria-label="Restar niño">−</button>
+                    <span>{children}</span>
+                    <button type="button" disabled={pax >= GROUP_DISCOUNT_MAX_PAX} onClick={() => changeChildren(children + 1)} aria-label="Sumar niño">+</button>
+                  </div>
+                </div>
+              </div>
+              {tour.priceChild != null && children > 0 && (
+                <p className="form-note">
+                  Tarifa niño de referencia: US$ {tour.priceChild}. La reserva online aplica la tarifa de adulto a todos los viajeros.
+                </p>
+              )}
+              {slotGone && (
+                <div className="error-alert">Esa salida ya no está disponible. Cambiá la fecha u horario.</div>
+              )}
+              {!slotGone && slotShort && (
+                <div className="error-alert">
+                  La franja elegida tiene {slotFree} cupo{slotFree === 1 ? '' : 's'} y no alcanza para {pax} viajeros. Quitá viajeros o cambiá de horario.
+                </div>
+              )}
+            </div>
+
             <div className="form-card__section">
               <div className="form-card__section-title">
                 <span className="section-num">1</span>
@@ -408,18 +622,10 @@ export default function BookingContent() {
                   Viajeros: <strong>{pax}</strong>
                   <span style={{ color: 'var(--ink-500)' }}>
                     {' '}
-                    · {pax === 1 ? 'persona' : 'personas'} · {tour.duration}
+                    · {adults} adulto{adults !== 1 ? 's' : ''}
+                    {children > 0 ? ` · ${children} niño${children !== 1 ? 's' : ''}` : ''} · {tour.duration}
                   </span>
                 </label>
-                <div className="pax-control">
-                  <button type="button" disabled={pax <= 1} onClick={() => setPaxSafe(pax - 1)}>
-                    −
-                  </button>
-                  <span>{pax}</span>
-                  <button type="button" disabled={pax >= 8} onClick={() => setPaxSafe(pax + 1)}>
-                    +
-                  </button>
-                </div>
                 {pax >= 3 && (
                   <span className="form-note">Descuento por grupo aplicado automáticamente ({totals ? Math.round(totals.groupDiscountRate * 100) : 0}%)</span>
                 )}
@@ -435,7 +641,7 @@ export default function BookingContent() {
                       )}
                     </span>
                     {passengers.length > 1 && (
-                      <button type="button" onClick={() => removePassenger(idx)}>
+                      <button type="button" onClick={() => removePassenger()}>
                         Quitar
                       </button>
                     )}
@@ -531,7 +737,7 @@ export default function BookingContent() {
                 {fullDates.map((d) => (
                   <div key={d.id} className="full-dates__row">
                     <strong>
-                      {new Date(d.date + 'T12:00:00').toLocaleDateString('es-BY', {
+                      {new Date(d.date + 'T12:00:00').toLocaleDateString('es-ES', {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long',
@@ -545,7 +751,7 @@ export default function BookingContent() {
               </div>
             )}
 
-            <button className="form-card__submit" type="submit" disabled={submitting || !selectedType}>
+            <button className="form-card__submit" type="submit" disabled={cannotSubmit}>
               {submitting ? 'Procesando…' : 'Continuar →'}
             </button>
             <button className="form-card__cancel" type="button" onClick={() => router.push(`/tours/${slug}`)}>
@@ -562,6 +768,8 @@ export default function BookingContent() {
             totals={{
               groupDiscount: totals?.groupDiscount ?? 0,
               groupDiscountRate: totals?.groupDiscountRate,
+              offerDiscount: totals?.offerDiscount ?? 0,
+              offerPct,
               coupon: totals?.couponDiscount ?? 0,
               total,
             }}
@@ -586,7 +794,7 @@ export default function BookingContent() {
             </button>
             <button
               className="btn btn--primary"
-              disabled={submitting || !selectedType}
+              disabled={cannotSubmit}
               onClick={() => {
                 const form = document.querySelector<HTMLFormElement>('.form-card');
                 form?.requestSubmit();

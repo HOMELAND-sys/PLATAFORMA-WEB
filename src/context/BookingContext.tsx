@@ -18,6 +18,7 @@ export interface BookingResult {
 interface BookingContextValue {
   selection: BookingSelection | null;
   result: BookingResult | null;
+  hydrated: boolean;
   setSelection: (sel: BookingSelection | null) => void;
   setResult: (res: BookingResult | null) => void;
   clear: () => void;
@@ -28,24 +29,26 @@ const BookingContext = createContext<BookingContextValue | undefined>(undefined)
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [selection, setSelectionState] = useState<BookingSelection | null>(null);
   const [result, setResultState] = useState<BookingResult | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = sessionStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as { selection: BookingSelection | null; result: BookingResult | null };
         setSelectionState(parsed.selection ?? null);
         setResultState(parsed.result ?? null);
       }
     } catch {
-      // localStorage no disponible o JSON inválido: ignorar
+      // sessionStorage no disponible o JSON inválido: ignorar
     }
+    setHydrated(true);
   }, []);
 
   const persist = useCallback(
     (sel: BookingSelection | null, res: BookingResult | null) => {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ selection: sel, result: res }));
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ selection: sel, result: res }));
       } catch {
         // sin persistencia disponible
       }
@@ -73,14 +76,14 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     setSelectionState(null);
     setResultState(null);
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
     } catch {
       // ignore
     }
   }, []);
 
   return (
-    <BookingContext.Provider value={{ selection, result, setSelection, setResult, clear }}>
+    <BookingContext.Provider value={{ selection, result, hydrated, setSelection, setResult, clear }}>
       {children}
     </BookingContext.Provider>
   );

@@ -1,0 +1,477 @@
+/* ============================================
+   Booking — flujo de reserva real
+   Complementa booking.css (no editable) con las
+   clases del formulario actual. Marca: verde
+   #75953e y su gama, Fraunces + Inter.
+   ============================================ */
+
+/* Hero compacto (carrito vacío / tour no encontrado / carga) */
+.form-hero--sm { padding: 56px 0 48px; }
+
+/* El layout real es una columna: stepper arriba, formulario + resumen abajo.
+   booking.css define una grilla de 2 columnas del diseño anterior. */
+.booking-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Stepper */
+.booking-stepper {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 12px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.booking-stepper .step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-500);
+}
+.booking-stepper .step + .step {
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid var(--ink-100);
+}
+.step-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ink-100);
+  color: var(--ink-500);
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.booking-stepper .step.is-active { color: var(--green-900); }
+.booking-stepper .step.is-active .step-badge {
+  background: var(--green-bg);
+  color: var(--ink-900);
+  box-shadow: 0 0 0 4px var(--green-100);
+}
+.booking-stepper .step.is-pending { color: var(--ink-400); }
+@media (max-width: 640px) {
+  .booking-stepper { display: none; }
+}
+
+/* Formulario + resumen */
+.booking-form-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 1024px) {
+  .booking-form-wrap { grid-template-columns: 1fr; }
+}
+
+/* Secciones del formulario */
+.form-card__section {
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--ink-100);
+}
+.form-card__section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--green-900);
+  margin-bottom: 18px;
+}
+.section-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--green-100);
+  color: var(--green-800);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Campos */
+.form-card .field { margin-bottom: 16px; }
+.form-card .field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-700);
+}
+.form-card .field input:not([type='radio']):not([type='checkbox']),
+.form-card .field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--ink-800);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.form-card .field input:not([type='radio']):not([type='checkbox']):focus,
+.form-card .field select:focus {
+  outline: none;
+  border-color: var(--green-500);
+  box-shadow: 0 0 0 3px var(--green-100);
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .field-row { grid-template-columns: 1fr; }
+}
+.form-note {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--ink-500);
+  margin-top: 6px;
+}
+
+/* Contador de viajeros */
+.pax-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  overflow: hidden;
+}
+.pax-control button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--green-800);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.pax-control button:hover:not(:disabled) { background: var(--green-50); }
+.pax-control button:disabled { opacity: 0.35; cursor: not-allowed; }
+.pax-control span {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+/* Radios (tipo de tour / método de pago) */
+.radio-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.radio-pill small { color: var(--ink-500); font-size: 0.78rem; }
+.radio-pill.is-active {
+  background: var(--green-100);
+  border-color: var(--green-500);
+  color: var(--green-800);
+}
+
+/* Extras */
+.extras-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .extras-grid { grid-template-columns: 1fr; }
+}
+.extra-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--white);
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+.extra-option:hover { border-color: var(--green-300); }
+.extra-option.is-active {
+  border-color: var(--green-500);
+  background: var(--green-50);
+}
+.extra-option input {
+  accent-color: var(--green-700);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.extra-option__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.extra-option__body strong { font-size: 0.9rem; color: var(--ink-800); }
+.extra-option__body small { font-size: 0.76rem; color: var(--ink-500); }
+.extra-option__price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--green-700);
+  white-space: nowrap;
+}
+
+/* Pasajeros */
+.passenger-form {
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.passenger-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.passenger-header > span {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--green-800);
+}
+.passenger-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--ink-500);
+  text-decoration: underline;
+}
+.passenger-header button:hover { color: var(--danger); }
+.passenger-form .field-row { gap: 12px; margin-bottom: 12px; }
+.passenger-form .field-row:last-child { margin-bottom: 0; }
+.passenger-form .field-row .field { margin-bottom: 0; }
+
+/* Tu salida: fecha + horario + viajeros editables */
+.form-card__section.booking-trip {
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+.booking-trip__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.booking-trip__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--green-900);
+}
+.booking-trip__when {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--green-800);
+}
+.booking-trip__when--pending { color: var(--danger); font-weight: 500; }
+.booking-trip__pax {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.booking-trip__pax .field { margin-bottom: 0; }
+@media (max-width: 520px) {
+  .booking-trip__pax { grid-template-columns: 1fr; }
+}
+.booking-trip .error-alert { margin-bottom: 0; }
+.booking-trip .form-note { margin-top: 12px; }
+
+/* Botones del formulario */
+.form-card__submit {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px 22px;
+  background: var(--green-bg);
+  color: var(--ink-900);
+  border: 1.5px solid var(--green-bg);
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+.form-card__submit:hover:not(:disabled) {
+  background: var(--green-bg-hover);
+  border-color: var(--green-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.form-card__submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.form-card__cancel {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-500);
+  font-size: 0.9rem;
+}
+.form-card__cancel:hover { color: var(--green-700); }
+
+/* Barra fija de total (móvil / tablet) */
+.booking-bottom-bar { display: none; }
+@media (max-width: 1024px) {
+  .booking-bottom-bar {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 70;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 24px rgba(35, 45, 19, 0.12);
+    padding: 10px 0;
+  }
+  .booking-bottom-bar__inner {
+    width: 100%;
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .booking-bottom-bar__total span {
+    font-size: 0.75rem;
+    color: var(--ink-500);
+    line-height: 1.2;
+  }
+  .booking-bottom-bar__total strong {
+    font-size: 1.15rem;
+    color: var(--green-900);
+  }
+  .booking-bottom-bar__actions { display: flex; gap: 8px; }
+  .form-page:has(.booking-bottom-bar) { padding-bottom: 120px; }
+}
+
+/* Móvil estrecho (≤480 px): apila total y acciones para que importes largos
+   (US$ 3879.92) y dos botones no desborden la barra fija. */
+@media (max-width: 480px) {
+  .booking-bottom-bar { padding: 8px 0; }
+  .booking-bottom-bar__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 0 16px;
+  }
+  .booking-bottom-bar__total span {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+  .booking-bottom-bar__total br { display: none; }
+  .booking-bottom-bar__total strong { font-size: 1.05rem; white-space: nowrap; }
+  .booking-bottom-bar__actions .btn {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .form-page:has(.booking-bottom-bar) { padding-bottom: 132px; }
+}
+
+/* Diálogo de cancelación (Mis reservas) */
+.cancel-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.cancel-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 26, 14, 0.55);
+}
+.cancel-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: 0 24px 60px rgba(20, 26, 14, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  outline: none;
+}
+.cancel-modal__panel h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--green-900);
+}
+.cancel-modal__panel p { margin: 0; color: var(--ink-500); font-size: 0.92rem; }
+.cancel-modal__panel label { font-size: 0.85rem; font-weight: 600; color: var(--ink-700); }
+.cancel-modal__panel textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--ink-800);
+  font: inherit;
+  resize: vertical;
+  min-height: 72px;
+}
+.cancel-modal__panel textarea:focus {
+  outline: none;
+  border-color: var(--green-500);
+  box-shadow: 0 0 0 3px var(--green-100);
+}
+.cancel-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+.cancel-modal__confirm {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--white);
+  font-weight: 600;
+}
+.cancel-modal__confirm:hover {
+  background: #a83a2e;
+  border-color: #a83a2e;
+  color: var(--white);
+}

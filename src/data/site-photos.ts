@@ -50,6 +50,12 @@ export const TOURS_HERO = photo(
 
 export const REVIEWS_BG = photo('salar-de-uyuni', '02', '');
 
+export const FOOTER_CTA = photo(
+  'condoriri',
+  '03',
+  'Trekking hacia los nevados de la Cordillera Condoriri',
+);
+
 export const CATEGORY_PHOTOS: Record<string, SitePhoto> = {
   'lapaz-top': photo('teleferico-la-paz', '01', 'Teleférico de La Paz cruzando la ciudad'),
   'lapaz-city': photo('mirador-alaxpacha', '01', 'Viajero fotografiando los valles desde un mirador de La Paz'),

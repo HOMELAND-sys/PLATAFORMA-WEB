@@ -76,9 +76,9 @@
   font-family: var(--font-mono);
   font-weight: 700;
   font-size: 9.5px;
-  fill: #dccd92;
+  fill: #d9e4c2;
 }
-.vh__rosette { fill: #75953e; stroke: #e3b23c; stroke-width: 1.6; }
+.vh__rosette { fill: #75953e; stroke: #9ab26e; stroke-width: 1.6; }
 .vh__badge-core { fill: #3b4c24; }
 .vh__mark path {
   fill: none;
@@ -92,7 +92,7 @@
   position: absolute;
   inset: 24px;
   border-radius: 50%;
-  border: 2px solid rgba(227, 178, 60, 0.7);
+  border: 2px solid rgba(154, 178, 110, 0.7);
   opacity: 0;
   z-index: 1;
   pointer-events: none;
@@ -319,7 +319,7 @@
 }
 .vt__guilloche path { fill: none; stroke: var(--green-100); stroke-width: 0.9; }
 
-.vt__aguayo { display: block; width: 100%; height: 12px; position: relative; z-index: 2; }
+.vt__band { display: block; width: 100%; height: 12px; position: relative; z-index: 2; }
 
 /* Encabezado fotográfico con borde de cordillera */
 .vt__head {
@@ -469,7 +469,7 @@
 .vt__route-ground { stroke: var(--border-strong); stroke-width: 1.2; stroke-dasharray: 2 5; fill: none; }
 .vt__route-line { fill: none; stroke: var(--accent-500); stroke-width: 3; stroke-linecap: round; }
 .vt__pin path { fill: var(--green-700); }
-.vt__pin--end path { fill: #d9772b; }
+.vt__pin--end path { fill: #617a3a; }
 .vt__pin circle { fill: #fff; }
 .vt__route-label {
   font-family: var(--font-display);
@@ -788,7 +788,7 @@
   background: linear-gradient(90deg, transparent, #75953e, transparent);
   box-shadow: 0 0 14px 3px rgba(117, 149, 62, 0.5);
 }
-.vt__qr-corner { position: absolute; width: 22px; height: 22px; border: 3px solid #e3b23c; }
+.vt__qr-corner { position: absolute; width: 22px; height: 22px; border: 3px solid #9ab26e; }
 .vt__qr-corner--tl { top: -7px; left: -7px; border-right: 0; border-bottom: 0; border-radius: 9px 0 0 0; }
 .vt__qr-corner--tr { top: -7px; right: -7px; border-left: 0; border-bottom: 0; border-radius: 0 9px 0 0; }
 .vt__qr-corner--bl { bottom: -7px; left: -7px; border-right: 0; border-top: 0; border-radius: 0 0 0 9px; }
@@ -837,7 +837,7 @@
 .vt__stub-art svg { display: block; width: 100%; flex: 1; min-height: 160px; max-height: 300px; }
 .vt__stub-star { fill: #eaeee2; opacity: 0.7; }
 
-.vt__stub-sun { fill: #e3b23c; }
+.vt__stub-sun { fill: #eaeee2; }
 .vt__stub-ridge--back { fill: #34431f; }
 .vt__stub-ridge--front { fill: #4e6330; }
 .vt__stub-snow { fill: #e9eedd; opacity: 0.9; }
@@ -862,12 +862,12 @@
   place-items: center;
   background: conic-gradient(
     from calc(var(--mx) * 3.6deg),
-    #e3b23c,
-    #c9e08f,
-    #6fc3c9,
-    #c58ad6,
-    #f0a35e,
-    #e3b23c
+    #9ab26e,
+    #eaeee2,
+    #75953e,
+    #c9d6a8,
+    #4e6330,
+    #9ab26e
   );
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45), 0 4px 14px rgba(0, 0, 0, 0.3);
   filter: saturate(0.85) brightness(1.05);
@@ -930,8 +930,8 @@
   padding: 32px 36px 32px 44px;
   margin-bottom: 56px;
   border-radius: var(--radius-xl);
-  border: 1px solid #ecd9a8;
-  background: linear-gradient(135deg, #fff8e8 0%, #fff 60%);
+  border: 1px solid #d8e0c2;
+  background: linear-gradient(135deg, var(--green-50) 0%, #fff 60%);
   box-shadow: var(--shadow-md);
 }
 .pay-card::before {
@@ -943,11 +943,11 @@
   width: 9px;
   background: repeating-linear-gradient(
     180deg,
-    #b8322a 0 10px,
-    #e3b23c 10px 15px,
-    #26304f 15px 30px,
-    #d9772b 30px 36px,
-    #1f6f78 36px 44px
+    #3b4c24 0 10px,
+    #75953e 10px 15px,
+    #232d13 15px 30px,
+    #9ab26e 30px 36px,
+    #4e6330 36px 44px
   );
 }
 .pay-card__eyebrow {
@@ -959,14 +959,18 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #9a6b12;
+  color: var(--green-600);
 }
 .pay-card__pulse {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #d9a441;
-  animation: vtPulse 1.8s ease-out infinite;
+  background: var(--green-bg);
+  animation: payPulse 1.8s ease-out infinite;
+}
+@keyframes payPulse {
+  0% { box-shadow: 0 0 0 0 rgba(117, 149, 62, 0.55); }
+  100% { box-shadow: 0 0 0 10px rgba(117, 149, 62, 0); }
 }
 .pay-card h3 {
   font-family: var(--font-display);
@@ -975,7 +979,7 @@
   color: var(--green-900);
   margin: 10px 0 2px;
 }
-.pay-card h3 em { font-style: italic; color: #b26f12; white-space: nowrap; }
+.pay-card h3 em { font-style: italic; color: var(--green-500); white-space: nowrap; }
 .pay-card p { color: var(--ink-600); max-width: 580px; margin: 0; line-height: 1.55; }
 .pay-card .pay-card__bob { margin: 0 0 12px; font-size: 0.9rem; color: var(--ink-500); }
 .pay-card__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }

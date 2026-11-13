@@ -2,7 +2,7 @@ import DrawIcon from '@/components/ui/DrawIcon';
 
 export default function DiffSection() {
   return (
-    <section className="section section-dark diff">
+    <section className="section section-dark diff" id="nuestra-diferencia" style={{ scrollMarginTop: 96 }}>
       <div className="container">
         <div className="section-head">
           <p className="eyebrow center" style={{ color: 'var(--ink-900)' }}>

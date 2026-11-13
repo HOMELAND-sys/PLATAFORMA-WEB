@@ -213,20 +213,21 @@ export function circlePath(cx: number, cy: number, r: number, points = 24): stri
 }
 
 /* ------------------------------------------------------------------
-   Paleta del aguayo (tejido andino) — acentos de celebración
+   Paleta de marca — gama del verde Homeland (#75953e)
    ------------------------------------------------------------------ */
-export const AGUAYO = {
-  red: '#b8322a',
-  magenta: '#a3245f',
-  orange: '#d9772b',
-  gold: '#e3b23c',
-  green: '#5d8a2e',
-  teal: '#1f6f78',
-  navy: '#26304f',
-  cream: '#f6edd6',
+export const BRAND = {
+  ink: '#232d13',
+  deep: '#2e3b1b',
+  forest: '#3b4c24',
+  moss: '#4e6330',
+  olive: '#617a3a',
+  green: '#75953e',
+  sage: '#9ab26e',
+  mist: '#eaeee2',
+  cream: '#f4f6ec',
 } as const;
 
-export const CONFETTI_COLORS = [AGUAYO.red, AGUAYO.magenta, AGUAYO.orange, AGUAYO.gold, AGUAYO.green, AGUAYO.teal, '#9ab26e'];
+export const CONFETTI_COLORS = [BRAND.green, BRAND.sage, BRAND.olive, BRAND.mist, BRAND.forest, BRAND.cream];
 
 /* ------------------------------------------------------------------
    Utilidades raster para el PDF

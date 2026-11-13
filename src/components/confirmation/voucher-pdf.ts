@@ -1,12 +1,12 @@
 // Voucher PDF (A4) dibujado en vectores con jsPDF: misma identidad que la vista
-// web — cordillera, aguayo, ruta, sello de goma y QR de check-in — y con TODOS
-// los datos de la reserva: pasajeros, desglose de precio, pago, punto de
+// web — cordillera, cinta de marca, ruta, sello de goma y QR de check-in — y con
+// TODOS los datos de la reserva: pasajeros, desglose de precio, pago, punto de
 // encuentro, qué incluye y políticas.
 import QRCode from 'qrcode';
 import type { MyBooking, PaymentSettings } from '@/lib/api';
 import { LOGO_ASPECT } from '@/components/brand/logo-paths';
 import {
-  AGUAYO,
+  BRAND,
   ALTIPLANO,
   CORDILLERA,
   ILLIMANI,
@@ -37,6 +37,7 @@ import {
   meetingTime,
   money,
   parseRoute,
+  paxSplit,
   priceBreakdown,
   voucherUrl,
 } from './voucher-data';
@@ -61,7 +62,6 @@ const C = {
   border: [227, 230, 213] as RGB,
   white: [255, 255, 255] as RGB,
   snow: [244, 246, 236] as RGB,
-  gold: [227, 178, 60] as RGB,
 };
 
 const hex = (h: string): RGB => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
@@ -102,7 +102,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
 
   doc.setProperties({
     title: `Voucher ${b.code} · ${b.tour_title}`,
-    subject: 'Travel voucher — Homeland Tours',
+    subject: 'Voucher de viaje — Homeland Tours',
     author: 'Homeland Tours',
     keywords: `voucher, ${b.code}, bolivia, tour`,
     creator: 'homeland.tours',
@@ -192,31 +192,30 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
     doc.fill();
   };
 
-  const aguayo = (x: number, y: number, w: number, h: number) => {
+  const brandBand = (x: number, y: number, w: number, h: number) => {
     const s = h / 14;
     const tile = 28 * s;
     doc.saveGraphicsState();
     doc.rect(x, y, w, h, null);
     doc.clip();
     doc.discardPath();
-    fill(hex(AGUAYO.navy));
+    fill(hex(BRAND.deep));
     doc.rect(x, y, w, h, 'F');
-    fill(hex(AGUAYO.red));
+    fill(hex(BRAND.green));
     doc.rect(x, y, w, 1.6 * s, 'F');
     doc.rect(x, y + 12.4 * s, w, 1.6 * s, 'F');
-    fill(hex(AGUAYO.gold));
-    doc.rect(x, y + 1.6 * s, w, 1.3 * s, 'F');
-    doc.rect(x, y + 11.1 * s, w, 1.3 * s, 'F');
+    fill(hex(BRAND.sage));
+    doc.rect(x, y + 1.6 * s, w, 0.7 * s, 'F');
+    doc.rect(x, y + 11.7 * s, w, 0.7 * s, 'F');
     for (let tx = x; tx < x + w + tile; tx += tile) {
-      fillPath('M14 3.6L20.2 7L14 10.4L7.8 7Z', hex(AGUAYO.orange), tx, y, s);
-      fillPath('M14 5.4L17 7L14 8.6L11 7Z', hex(AGUAYO.cream), tx, y, s);
-      fillPath('M0 5L2.8 7L0 9L-2.8 7Z', hex(AGUAYO.teal), tx, y, s);
+      fill(hex(BRAND.cream));
+      doc.circle(tx + tile / 2, y + h / 2, 1.1 * s, 'F');
     }
     doc.restoreGraphicsState();
   };
 
   const sectionTitle = (txt: string, x: number, y: number) => {
-    fillPath('M0 -1.6L1.6 0L0 1.6L-1.6 0Z', hex(AGUAYO.orange), x + 1.6, y - 1.2, 1);
+    fillPath('M0 -1.6L1.6 0L0 1.6L-1.6 0Z', hex(BRAND.green), x + 1.6, y - 1.2, 1);
     font(8.5, 'bold');
     color(C.g900);
     doc.text(t(txt).toUpperCase(), x + 5, y, { charSpace: 0.35 });
@@ -319,7 +318,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
     font(11, 'bold', 'courier');
     color(C.white);
     doc.text(b.code, PW - M, 16, { align: 'right' });
-    aguayo(0, 22, PW, 3.2);
+    brandBand(0, 22, PW, 3.2);
   };
 
   /* ================================================================
@@ -351,12 +350,12 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
   });
   // sol
   alpha(0.1);
-  fill(C.gold);
+  fill(C.g300);
   doc.circle(150, 40, 19, 'F');
   alpha(0.16);
   doc.circle(150, 40, 12.5, 'F');
   alpha(0.95);
-  fill([243, 210, 122]);
+  fill(C.g100);
   doc.circle(150, 40, 7.5, 'F');
   alpha(1);
 
@@ -384,7 +383,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
     color(C.white);
     doc.text('HOMELAND.TOURS', M, 20);
   }
-  label('Travel voucher · Nº', PW - M, 14, C.g300, { align: 'right' });
+  label('Voucher de viaje · Nº', PW - M, 14, C.g300, { align: 'right' });
   font(19, 'bold', 'courier');
   color(C.white);
   doc.text(b.code, PW - M, 23, { align: 'right' });
@@ -400,7 +399,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
   color(C.white);
   doc.text(pill, PW - M - 2.6, 31.2, { align: 'right', charSpace: 0.3 });
 
-  aguayo(0, BAND, PW, 4.6);
+  brandBand(0, BAND, PW, 4.6);
 
   /* Título + foto */
   let y = BAND + 13;
@@ -528,7 +527,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
   y = RY + RH + 5;
   const facts: Array<[string, string, string]> = [
     ['Titular', lead?.name ?? '-', [lead?.doc, lead?.country].filter(Boolean).join(' · ') || 'Datos a completar'],
-    ['Pasajeros', `${b.pax} adulto${b.pax === 1 ? '' : 's'}`, `Tour ${TOUR_TYPE_LABEL[b.tour_type]?.toLowerCase() ?? ''}`],
+    ['Pasajeros', paxSplit(b), `Tour ${TOUR_TYPE_LABEL[b.tour_type]?.toLowerCase() ?? ''}`],
     ['Emitido', fmtDate(b.created_at.slice(0, 10)), new Date(b.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' hs'],
     ['Estado', meta.label, paid && b.paid_at ? `Pagado el ${fmtDate(b.paid_at.slice(0, 10))}` : `Pago por ${b.payment_method === 'qr' ? 'QR' : 'enlace'}`],
   ];
@@ -651,7 +650,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
   const tx = PW - M - tw - 4;
   fill(C.g900);
   doc.roundedRect(tx, y + 4, tw, SH - 8, 3, 3, 'F');
-  aguayo(tx, y + 4, tw, 2.2);
+  brandBand(tx, y + 4, tw, 2.2);
   label(paid ? 'Total pagado' : cancelled ? 'Total' : 'Total a pagar', tx + tw / 2, y + 12, C.g300, { align: 'center' });
   font(19, 'bold', 'times');
   color(C.white);
@@ -881,10 +880,10 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
   for (let p = 1; p <= total; p++) {
     doc.setPage(p);
     if (p > 1) miniHeader();
-    aguayo(0, PH - 13, PW, 2.6);
+    brandBand(0, PH - 13, PW, 2.6);
     font(6.8);
     color(C.ink5);
-    doc.text(t(`Homeland Tours · Bolivian Tour Operator · ${SUPPORT_PHONE} · homeland.tours`), M, PH - 6.5);
+    doc.text(t(`Homeland Tours · Operador turístico boliviano · ${SUPPORT_PHONE} · homeland.tours`), M, PH - 6.5);
     doc.text(`Página ${p} de ${total}`, PW - M, PH - 6.5, { align: 'right' });
     font(6, 'bold');
     color(C.ink4);

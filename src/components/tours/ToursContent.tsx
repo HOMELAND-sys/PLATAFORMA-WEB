@@ -102,7 +102,7 @@ export default function ToursContent() {
   }, [tours !== null]);
 
   const allPills = useMemo(
-    () => [{ slug: 'all', label: 'All tours' }, ...categories.map((c) => ({ slug: c.slug, label: c.label }))],
+    () => [{ slug: 'all', label: 'Todos los tours' }, ...categories.map((c) => ({ slug: c.slug, label: c.label }))],
     [categories],
   );
 
@@ -162,13 +162,13 @@ export default function ToursContent() {
     <>
       <section className="page-header">
         <div className="container">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Tours & Packages' }]} />
+          <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Tours' }]} />
           <h1>
-            Tours & <em>Packages</em>
+            Tours y <em>paquetes</em>
           </h1>
           <p>
-            Journeys handpicked across Bolivia&apos;s most extraordinary landscapes and cultures. 200+ curated
-            tours, all with local operators and best-price guarantee.
+            Recorridos seleccionados por los paisajes y las culturas más extraordinarias de Bolivia,
+            con operadores locales y garantía del mejor precio.
           </p>
           {(query || dateChip || paxChip) && (
             <div className="tours-search-summary">
@@ -266,7 +266,7 @@ export default function ToursContent() {
               </span>
               <div>
                 <div className="stat-item__num">2,000+</div>
-                <div className="stat-item__label">Happy travelers</div>
+                <div className="stat-item__label">Viajeros felices</div>
               </div>
             </div>
             <div className="stat-item">
@@ -275,7 +275,7 @@ export default function ToursContent() {
               </span>
               <div>
                 <div className="stat-item__num">4.9/5</div>
-                <div className="stat-item__label">Average rating</div>
+                <div className="stat-item__label">Valoración media</div>
               </div>
             </div>
             <div className="stat-item">
@@ -284,7 +284,7 @@ export default function ToursContent() {
               </span>
               <div>
                 <div className="stat-item__num">98%</div>
-                <div className="stat-item__label">Would travel again</div>
+                <div className="stat-item__label">Volverían a viajar</div>
               </div>
             </div>
             <div className="stat-item">
@@ -293,7 +293,7 @@ export default function ToursContent() {
               </span>
               <div>
                 <div className="stat-item__num">24/7</div>
-                <div className="stat-item__label">Local support</div>
+                <div className="stat-item__label">Soporte local</div>
               </div>
             </div>
           </div>
