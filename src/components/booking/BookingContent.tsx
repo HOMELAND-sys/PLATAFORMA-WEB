@@ -303,11 +303,11 @@ export default function BookingContent() {
 
     if (!tour?.id || !session || !selectedType) return;
     if (!selection?.date || !selection?.tourDateId) {
-      setFormError('Elegí una fecha y un horario en la ficha del tour antes de confirmar.');
+      setFormError('Elige una fecha y un horario en la ficha del tour antes de confirmar.');
       return;
     }
     if (slotGone || slotShort) {
-      setFormError('La franja elegida ya no tiene cupo para tus viajeros. Cambiá la fecha u horario, o quitá viajeros.');
+      setFormError('La franja elegida ya no tiene cupo para tus viajeros. Cambia la fecha u horario, o quita viajeros.');
       return;
     }
 
@@ -342,6 +342,8 @@ export default function BookingContent() {
         paymentMethod,
         tourDateId: selection.tourDateId ?? null,
         offerId,
+        contactName: booker.fullName.trim(),
+        contactPhone: booker.phone.trim(),
       });
 
       setResult({
@@ -360,7 +362,7 @@ export default function BookingContent() {
       const message = err instanceof Error ? err.message : '';
       const { code, detail } = bookingErrorInfo(message);
       if (code === 'date_full') {
-        setFormError('Vaya, esa fecha se llenó mientras reservabas. Elegí otra fecha disponible:');
+        setFormError('Vaya, esa fecha se llenó mientras reservabas. Elige otra fecha disponible:');
         const avail = await fetchTourAvailability(getSupabase(), tour.id).catch(() => null);
         if (avail) setFullDates(avail.filter((a) => a.free > 0).slice(0, 5));
       } else if (code === 'coupon_invalid') {
@@ -369,11 +371,11 @@ export default function BookingContent() {
       } else if (code === 'not_authenticated') {
         router.replace(`/login?next=${encodeURIComponent(`/booking?slug=${slug}`)}`);
       } else if (code === 'date_not_open' || code === 'date_past') {
-        setFormError('La fecha seleccionada no está disponible. Volvé al tour para elegir una fecha válida.');
+        setFormError('La fecha seleccionada no está disponible. Vuelve al tour para elegir una fecha válida.');
       } else if (code === 'cutoff_passed') {
-        setFormError('La hora límite de reserva para esa salida ya pasó. Elegí otra fecha u horario disponible.');
+        setFormError('La hora límite de reserva para esa salida ya pasó. Elige otra fecha u horario disponible.');
       } else if (code === 'slot_blocked') {
-        setFormError('Esa salida fue bloqueada por la operatora. Elegí otra fecha u horario disponible.');
+        setFormError('Esa salida fue bloqueada por la operatora. Elige otra fecha u horario disponible.');
       } else if (code === 'offer_invalid' || code === 'offer_full') {
         if (selection) setSelection({ ...selection, offerId: null, offerPct: 0 });
         setFormError(
@@ -384,15 +386,17 @@ export default function BookingContent() {
       } else if (code === 'invalid_passengers') {
         setFormError(
           /adult/i.test(detail)
-            ? 'Debe haber al menos un adulto en la reserva. Ajustá la cantidad de adultos y niños.'
-            : 'Revisá los datos de los viajeros: falta el nombre de alguno o no coincide con la cantidad de plazas.',
+            ? 'Debe haber al menos un adulto en la reserva. Ajusta la cantidad de adultos y niños.'
+            : 'Revisa los datos de los viajeros: falta el nombre de alguno o no coincide con la cantidad de plazas.',
         );
+      } else if (code === 'invalid_contact') {
+        setFormError('Revisa el nombre y el teléfono de contacto.');
       } else if (code === 'invalid_pax') {
-        setFormError('La cantidad de viajeros no es válida para este tour (revisá el mínimo y el máximo de plazas).');
+        setFormError('La cantidad de viajeros no es válida para este tour (revisa el mínimo y el máximo de plazas).');
       } else if (code === 'tour_type_unavailable') {
-        setFormError('Ese tipo de tour no está disponible para esta fecha. Elegí otro tipo (compartido, semiprivado o privado).');
+        setFormError('Ese tipo de tour no está disponible para esta fecha. Elige otro tipo (compartido, semiprivado o privado).');
       } else {
-        setFormError('No pudimos crear la reserva. Volvé a intentarlo.');
+        setFormError('No pudimos crear la reserva. Vuelve a intentarlo.');
       }
       setSubmitting(false);
     }
@@ -411,7 +415,7 @@ export default function BookingContent() {
       <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
         <h1 style={{ fontSize: '1.8rem', marginBottom: 8 }}>Tu carrito está vacío</h1>
         <p style={{ color: 'var(--ink-500)' }}>
-          Todavía no elegiste ninguna aventura. Explorá los tours y armá tu viaje a Bolivia.
+          Todavía no elegiste ninguna aventura. Explora los tours y arma tu viaje a Bolivia.
         </p>
         <div style={{ marginTop: 24 }}>
           <Link className="btn btn--primary" href="/tours">
@@ -427,7 +431,7 @@ export default function BookingContent() {
       <div className="form-hero form-hero--sm" style={{ textAlign: 'center' }}>
         <h1 style={{ fontSize: '1.8rem', marginBottom: 8 }}>Tour no encontrado</h1>
         <p style={{ color: 'var(--ink-500)' }}>
-          El tour que buscás no está disponible. Volvé al catálogo para elegir otra aventura.
+          El tour que buscas no está disponible. Vuelve al catálogo para elegir otra aventura.
         </p>
         <div style={{ marginTop: 24 }}>
           <button className="btn btn--primary" onClick={() => router.push('/tours')}>
@@ -454,7 +458,7 @@ export default function BookingContent() {
       <div className="form-hero">
         <div className="container">
           <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Tours', href: '/tours' }, { label: 'Reservar' }]} />
-          <h1>Reservá tu aventura</h1>
+          <h1>Reserva tu aventura</h1>
           <p>{tour.title} · {tour.duration} · {tour.destination}</p>
         </div>
       </div>
@@ -520,11 +524,11 @@ export default function BookingContent() {
                 </p>
               )}
               {slotGone && (
-                <div className="error-alert">Esa salida ya no está disponible. Cambiá la fecha u horario.</div>
+                <div className="error-alert">Esa salida ya no está disponible. Cambia la fecha u horario.</div>
               )}
               {!slotGone && slotShort && (
                 <div className="error-alert">
-                  La franja elegida tiene {slotFree} cupo{slotFree === 1 ? '' : 's'} y no alcanza para {pax} viajeros. Quitá viajeros o cambiá de horario.
+                  La franja elegida tiene {slotFree} cupo{slotFree === 1 ? '' : 's'} y no alcanza para {pax} viajeros. Quita viajeros o cambia de horario.
                 </div>
               )}
             </div>
@@ -698,7 +702,7 @@ export default function BookingContent() {
               </div>
               <div className="form-note" style={{ marginBottom: 12 }}>
                 Al confirmar vas a recibir un voucher con el enlace de pago o el QR del pago. El pago lo
-                coordinás con la operatora — nada se cobra automáticamente.
+                coordinas con la operatora — nada se cobra automáticamente.
               </div>
               <div className="radio-row">
                 <label className={`radio-pill${paymentMethod === 'link' ? ' is-active' : ''}`}>
@@ -725,7 +729,7 @@ export default function BookingContent() {
                   <span className="icon-inline">
                     <Icon name="qr" size={17} /> QR
                   </span>
-                  <small>Escaneá el QR del voucher</small>
+                  <small>Escanea el QR del voucher</small>
                 </label>
               </div>
             </div>

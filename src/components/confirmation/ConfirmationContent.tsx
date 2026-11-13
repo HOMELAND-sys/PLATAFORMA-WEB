@@ -23,7 +23,7 @@ import {
   buildIcs,
   downloadBlob,
   leadPassenger,
-  meetingTime,
+  departureTime,
   money,
   whatsAppUrl,
 } from './voucher-data';
@@ -86,8 +86,8 @@ export default function ConfirmationContent() {
           {authLoading
             ? 'Un momento…'
             : !session
-              ? 'Iniciá sesión para ver tu voucher.'
-              : 'Verificá el código de la reserva o volvé al catálogo.'}
+              ? 'Inicia sesión para ver tu voucher.'
+              : 'Verifica el código de la reserva o vuelve al catálogo.'}
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           {!session ? (
@@ -118,7 +118,7 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
   const cancelled = b.status === 'cancelada';
   const lead = leadPassenger(b);
   const info = b.tour_info ?? {};
-  const time = meetingTime(info.meeting);
+  const time = departureTime(b);
   const hasPayment = Boolean(settings?.link || settings?.qrUrl);
 
   /* Paso activo de la línea de tiempo según el estado. */
@@ -193,12 +193,12 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
   const steps = [
     {
       icon: 'card' as const,
-      title: paid ? 'Pago recibido' : 'Completá el pago',
+      title: paid ? 'Pago recibido' : 'Completa el pago',
       text: paid ? 'Tu operadora ya registró el pago.' : 'Con el QR o el enlace de pago de este voucher.',
     },
     { icon: 'badge-check' as const, title: 'Confirmación', text: 'Te avisamos por email cuando pase a “Confirmada”.' },
     { icon: 'bell' as const, title: 'Recordatorio', text: 'Recibís un aviso antes de la fecha del tour.' },
-    { icon: 'ticket' as const, title: 'Check-in', text: 'Mostrá el QR del voucher en el punto de encuentro.' },
+    { icon: 'ticket' as const, title: 'Check-in', text: 'Muestra el QR del voucher en el punto de encuentro.' },
   ];
 
   const infoCards = [
@@ -249,7 +249,7 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
                 {settings?.instructions ||
                   (hasPayment
                     ? 'Pagá con el QR o el enlace. Apenas lo registremos, tu voucher cambia a “Confirmada” y te avisamos por email.'
-                    : 'El operador aún no configuró el pago en línea. Escribinos por WhatsApp y lo coordinamos al instante.')}
+                    : 'El operador aún no configuró el pago en línea. Escríbenos por WhatsApp y lo coordinamos al instante.')}
               </p>
               <div className="pay-card__actions">
                 {settings?.link && (
@@ -275,7 +275,7 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
                   <img src={settings.qrUrl} alt="QR de pago" />
                   <span className="pay-card__sheen" />
                 </div>
-                <small>Escaneá para pagar</small>
+                <small>Escanea para pagar</small>
               </div>
             )}
           </section>

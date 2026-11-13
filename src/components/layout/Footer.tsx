@@ -259,7 +259,7 @@ export default function Footer() {
               <Icon name="rotate-ccw" size={22} />
               <span>
                 <strong>Cancelación gratuita</strong>
-                <small>En tours seleccionados · consultá condiciones</small>
+                <small>En tours seleccionados · consulta las condiciones</small>
               </span>
             </div>
             <div className="footer-trust__item">

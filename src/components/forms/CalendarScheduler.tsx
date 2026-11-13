@@ -53,7 +53,7 @@ export default function CalendarScheduler() {
 
   const selectedLabel = selectedDay
     ? `${WEEKDAYS[selectedDay.getDay()]} ${selectedDay.getDate()} ${MONTHS[selectedDay.getMonth()].slice(0, 3)}`
-    : 'Seleccioná un día';
+    : 'Selecciona un día';
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 32, alignItems: 'start', marginTop: 12 }}>

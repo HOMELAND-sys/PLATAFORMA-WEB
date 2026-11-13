@@ -42,7 +42,7 @@ export default function CustomizeContent() {
             ¡Hablemos de tu próxima <em>aventura!</em>
           </h1>
           <p>
-            Cuanto más sepamos sobre vos y lo que te imaginás, más inolvidable será tu viaje. Completá el
+            Cuanto más sepamos sobre ti y lo que te imaginas, más inolvidable será tu viaje. Completa el
             formulario y nos pondremos en contacto en menos de 24 horas.
           </p>
         </div>
@@ -56,7 +56,7 @@ export default function CustomizeContent() {
             )}
             <h2>¡Hablemos de tu próxima aventura!</h2>
             <p>
-              Como nos interesa saber más sobre vos y es importante que tu experiencia de viaje sea inolvidable,
+              Como nos interesa saber más sobre ti y es importante que tu experiencia de viaje sea inolvidable,
               necesitamos los siguientes datos:
             </p>
 
@@ -176,7 +176,7 @@ export default function CustomizeContent() {
               <textarea
                 className="textarea"
                 rows={5}
-                placeholder="Contanos más sobre tu viaje soñado, expectativas, ocasión especial, etc."
+                placeholder="Cuéntanos más sobre tu viaje soñado, expectativas, ocasión especial, etc."
               ></textarea>
             </div>
 

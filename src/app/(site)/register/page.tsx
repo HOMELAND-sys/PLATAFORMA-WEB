@@ -90,12 +90,12 @@ function RegisterForm() {
               <Icon name="check-circle" size={20} />
               <span>
                 <strong style={{ display: 'block', marginBottom: 4 }}>¡Cuenta creada!</strong>
-                Te enviamos un email de verificación a <strong>{email}</strong>. Abrilo y hací click
-                en el enlace para activar tu cuenta; después podés iniciar sesión y reservar.
+                Te enviamos un email de verificación a <strong>{email}</strong>. Ábrelo y haz click
+                en el enlace para activar tu cuenta; después puedes iniciar sesión y reservar.
               </span>
             </div>
             <p style={{ color: 'var(--ink-500)', fontSize: '0.88rem' }}>
-              ¿No llegó el email? Revisá la carpeta de spam o{' '}
+              ¿No llegó el email? Revisa la carpeta de spam o{' '}
               <a href={`/forgot?next=${encodeURIComponent(next)}`}>pedí una recuperación</a>.
             </p>
             <Link className="btn btn--primary btn--block" href={`/login?next=${encodeURIComponent(next)}`}>
@@ -124,7 +124,7 @@ function RegisterForm() {
             <h1>
               Empezá a <em>reservar</em>
             </h1>
-            <p>Con tu cuenta reservás de forma segura, guardás tus datos y seguís el estado de cada reserva.</p>
+            <p>Con tu cuenta reservas de forma segura, guardas tus datos y sigues el estado de cada reserva.</p>
 
             {error && (
               <div className="auth-alert auth-alert--error" role="alert" ref={errorRef} tabIndex={-1}>
@@ -134,7 +134,7 @@ function RegisterForm() {
                   {existingAccount && (
                     <>
                       {' '}
-                      Si la olvidaste, podés{' '}
+                      Si la olvidaste, puedes{' '}
                       <a href={`/forgot?next=${encodeURIComponent(next)}`}>recuperar tu contraseña</a>.
                     </>
                   )}
@@ -228,7 +228,7 @@ function RegisterForm() {
 
             <div className="auth-links">
               <span>
-                ¿Ya tenés cuenta?{' '}
+                ¿Ya tienes cuenta?{' '}
                 <a href={`/login?next=${encodeURIComponent(next)}`}>Iniciar sesión</a>
               </span>
             </div>

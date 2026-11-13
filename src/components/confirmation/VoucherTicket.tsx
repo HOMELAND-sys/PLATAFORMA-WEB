@@ -45,7 +45,7 @@ import {
   fmtRange,
   initials,
   leadPassenger,
-  meetingTime,
+  departureTime,
   money,
   parseRoute,
   paxSplit,
@@ -121,7 +121,7 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
   const lead = leadPassenger(b);
   const price = priceBreakdown(b);
   const missingPax = Math.max(0, b.pax - b.passengers.length);
-  const time = meetingTime(b.tour_info?.meeting);
+  const time = departureTime(b);
   const issued = new Date(b.created_at);
   const discount = price.groupDiscount + price.couponDiscount;
 
@@ -646,7 +646,7 @@ export default function VoucherTicket({ booking: b }: VoucherTicketProps) {
                 <span key={p} className={`vt__qr-corner vt__qr-corner--${p}`} />
               ))}
             </div>
-            <p className="vt__qr-hint">Mostrá este código en el punto de encuentro</p>
+            <p className="vt__qr-hint">Muestra este código en el punto de encuentro</p>
 
             <dl className="vt__stub-facts">
               <div className="vt__stub-fact">

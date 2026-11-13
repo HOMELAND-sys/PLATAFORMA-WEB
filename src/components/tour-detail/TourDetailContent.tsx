@@ -602,7 +602,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
           <aside className="detail-aside" ref={asideRef}>
             <div className="booking-card booking-card--v2">
               <div className="booking-card__head">
-                <h3 className="booking-card__title">Reservá tu aventura</h3>
+                <h3 className="booking-card__title">Reserva tu aventura</h3>
                 <div className="booking-card__guarantee">
                   <Icon name="shield-check" size={15} />
                   <span>Mejor precio garantizado</span>
@@ -694,7 +694,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
                       required
                     >
                       <option value="" disabled>
-                        Elegí una fecha…
+                        Elige una fecha…
                       </option>
                       {dateOptions.map((opt) => {
                         const enough = opt.maxFree >= pax;
@@ -754,7 +754,7 @@ export default function TourDetailContent({ tour, mightLike }: { tour: Tour; mig
 
                 {date && selectedSlots.length > 0 && bookableSlots.length === 0 && (
                   <p className="booking-card__note">
-                    No hay cupo para {pax} viajeros en esta fecha. Probá con menos viajeros u otra fecha.
+                    No hay cupo para {pax} viajeros en esta fecha. Prueba con menos viajeros u otra fecha.
                   </p>
                 )}
 

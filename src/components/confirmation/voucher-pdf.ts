@@ -34,7 +34,7 @@ import {
   fmtDate,
   fmtDateLong,
   leadPassenger,
-  meetingTime,
+  departureTime,
   money,
   parseRoute,
   paxSplit,
@@ -97,7 +97,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
   const lead = leadPassenger(b);
   const price = priceBreakdown(b);
   const info = b.tour_info ?? {};
-  const time = meetingTime(info.meeting);
+  const time = departureTime(b);
   const url = voucherUrl(b.code);
 
   doc.setProperties({
@@ -631,7 +631,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
   doc.text(b.code, cx0, y + 16.5);
   font(7.8);
   color(C.ink7);
-  doc.text('Mostrá este código (impreso o en el celular) en el punto de encuentro.', cx0, y + 22, { maxWidth: 82 });
+  doc.text('Muestra este código (impreso o en el celular) en el punto de encuentro.', cx0, y + 22, { maxWidth: 82 });
   font(7.8, 'bold');
   color(C.g700);
   doc.text(t(`Presentarse: ${time ?? 'hora a confirmar'} · ${route.origin}`), cx0, y + 30, { maxWidth: 82 });
@@ -849,7 +849,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
     'Próximos pasos',
     () => {
       const stepsList: Array<[string, string]> = [
-        [paid ? 'Pago recibido' : 'Completá el pago', paid ? 'Tu operadora ya registró el pago.' : 'Con el enlace o el QR de pago de este voucher.'],
+        [paid ? 'Pago recibido' : 'Completa el pago', paid ? 'Tu operadora ya registró el pago.' : 'Con el enlace o el QR de pago de este voucher.'],
         ['Confirmación', 'Te avisamos por email cuando la reserva pase a "Confirmada".'],
         ['Recordatorio', 'Recibís un aviso antes de la fecha del tour.'],
         ['Check-in', 'Presentá el QR de este voucher en el punto de encuentro.'],

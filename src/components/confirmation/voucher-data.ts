@@ -109,10 +109,23 @@ export function parseRoute(startEnd: string, destination?: string): RouteInfo {
   return { origin, highlight, end };
 }
 
-/** Extrae la hora de presentación del texto de punto de encuentro ("… 07:30 AM."). */
+/** Hora de presentación del texto del punto de encuentro, en 24 h ("… 07:30 AM." → "07:30"). */
 export function meetingTime(meeting?: string): string | null {
-  const m = meeting?.match(/\b(\d{1,2}:\d{2})\s*(AM|PM|am|pm)?/);
-  return m ? `${m[1]}${m[2] ? ` ${m[2].toUpperCase()}` : ''}` : null;
+  const m = meeting?.match(/\b(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?/);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const ap = m[3]?.toUpperCase();
+  if (ap === 'PM' && h < 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return `${String(h).padStart(2, '0')}:${m[2]}`;
+}
+
+/** Hora de salida en 24 h: prioridad a la franja reservada (tour_dates.start_time);
+ *  el texto del punto de encuentro solo como respaldo si la franja no tiene hora. */
+export function departureTime(b: MyBooking): string | null {
+  const slot = b.tour_start_time?.slice(0, 5);
+  if (slot && /^\d{2}:\d{2}$/.test(slot)) return slot;
+  return meetingTime(b.tour_info?.meeting);
 }
 
 /* ---------------------------------------------------------------- precios */
@@ -242,8 +255,10 @@ export function buildIcs(b: MyBooking): string {
   const end = addDays(b.tour_date, days).replace(/-/g, '');
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const meeting = b.tour_info?.meeting ?? b.tour_start_end;
+  const dep = departureTime(b);
   const desc = [
     `Reserva ${b.code} · ${b.pax} pasajero(s)`,
+    dep ? `Hora de salida: ${dep}` : '',
     meeting ? `Punto de encuentro: ${meeting}` : '',
     `Voucher: ${voucherUrl(b.code)}`,
   ]

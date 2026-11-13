@@ -303,7 +303,7 @@ export default function VoucherHero({ status, code, firstName }: VoucherHeroProp
     status === 'cancelada'
       ? 'Este voucher ya no es válido. Si fue un error, escribinos por WhatsApp y lo resolvemos.'
       : status === 'confirmada'
-        ? `Todo listo${hi}. Mostrá este voucher en el punto de encuentro y preparate para el Altiplano.`
+        ? `Todo listo${hi}. Muestra este voucher en el punto de encuentro y prepárate para el Altiplano.`
         : status === 'completada'
           ? `Esperamos que la experiencia haya sido inolvidable${hi}. ¡Te esperamos en tu próxima aventura!`
           : `Gracias${hi}. Guardamos tu lugar — completá el pago para confirmarlo. Tu voucher queda siempre en “Mis reservas”.`;

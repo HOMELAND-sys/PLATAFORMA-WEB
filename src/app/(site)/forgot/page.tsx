@@ -33,7 +33,7 @@ function ForgotForm() {
       }
       setSent(true);
     } catch {
-      setError('No hay conexión con el servidor. Revisá tu internet e intentá de nuevo.');
+      setError('No hay conexión con el servidor. Revisa tu internet e intenta de nuevo.');
     } finally {
       setBusy(false);
     }
@@ -58,7 +58,7 @@ function ForgotForm() {
                 <div className="auth-alert auth-alert--success" style={{ marginBottom: 16 }}>
                   <Icon name="check-circle" size={20} />
                   <span>
-                    <strong style={{ display: 'block', marginBottom: 4 }}>Revisá tu email</strong>
+                    <strong style={{ display: 'block', marginBottom: 4 }}>Revisa tu email</strong>
                     Si existe una cuenta para <strong>{email}</strong>, te enviamos un enlace para
                     elegir una contraseña nueva. El enlace es válido por 24 horas.
                   </span>

@@ -10,7 +10,7 @@ import Icon from '@/components/ui/Icon';
 
 function loginErrorMessage(message: string): string {
   if (/email not confirmed/i.test(message)) {
-    return 'Tu email aún no fue verificado. Revisá tu bandeja de entrada (y spam) y hací click en el enlace de confirmación.';
+    return 'Tu email aún no fue verificado. Revisa tu bandeja de entrada (y spam) y haz click en el enlace de confirmación.';
   }
   if (/invalid login credentials/i.test(message)) {
     return 'Correo o contraseña incorrectos.';
@@ -123,8 +123,8 @@ function LoginForm() {
             </h1>
             <p>
               {totpFactorId
-                ? 'Ingresá el código de 6 dígitos de tu aplicación de autenticación.'
-                : 'Iniciá sesión para reservar tours, ver tus reservas y seguir su estado.'}
+                ? 'Ingresa el código de 6 dígitos de tu aplicación de autenticación.'
+                : 'Inicia sesión para reservar tours, ver tus reservas y seguir su estado.'}
             </p>
 
             {error && (
@@ -199,7 +199,7 @@ function LoginForm() {
               <div className="auth-links">
                 <a href={`/forgot?next=${encodeURIComponent(next)}`}>¿Olvidaste tu contraseña?</a>
                 <span>
-                  ¿No tenés cuenta?{' '}
+                  ¿No tienes cuenta?{' '}
                   <a href={`/register?next=${encodeURIComponent(next)}`}>Crear cuenta</a>
                 </span>
               </div>

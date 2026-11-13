@@ -277,7 +277,7 @@ export default function Hero() {
               <div className="hero-search-dropdown" id="hero-search-list" role="listbox">
                 {results.length === 0 ? (
                   <div className="hero-search-empty">
-                    Sin resultados para &ldquo;{search.trim()}&rdquo;. Probá con otro destino.
+                    Sin resultados para &ldquo;{search.trim()}&rdquo;. Prueba con otro destino.
                   </div>
                 ) : (
                   results.map((tour, i) => (
