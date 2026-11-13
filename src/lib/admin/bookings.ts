@@ -1,5 +1,6 @@
 ﻿import { allRows, sb } from './core';
 import type { AuditEntry, Booking, ManualBookingInput } from './types';
+import { validateManualBooking } from './validation';
 const selection = '*,tour:reservations_tour_id_fkey(title,slug,summary,included,meeting_point),profile:reservations_user_id_fkey(full_name,phone),date_row:reservations_tour_date_id_fkey(date,start_time),passengers:booking_passengers_reservations_id_fkey(*)';
 export async function bookings() {
   const rows = await allRows<Booking>((a,b) => sb().from('reservations').select(selection).order('created_at', { ascending: false }).order('id').range(a,b));
@@ -20,6 +21,7 @@ export async function bookings() {
 }
 export const auditFor = (id: string) => allRows<AuditEntry>((a,b) => sb().from('audit_log').select('id,action,before,after,created_at').eq('entity', 'reservations').eq('entity_id', id).order('created_at').order('id').range(a,b));
 export async function manualBooking(input: ManualBookingInput) {
+  validateManualBooking(input);
   const { data, error } = await sb().rpc('admin_create_manual_booking', input);
   if (error) throw error;
   window.dispatchEvent(new Event('admin-data-changed'));

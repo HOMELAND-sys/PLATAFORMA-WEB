@@ -5,6 +5,7 @@ import { LoadState } from './AdminShared';
 import { messageOf } from '@/lib/admin/core';
 import { fetchPaymentSettings, uploadToBucket, type PaymentSettings } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
+import { paymentSettingsRows } from '@/lib/admin/payments';
 
 export default function PaymentTab() {
   const [settings, setSettings] = useState<PaymentSettings | null>(null);
@@ -29,23 +30,26 @@ export default function PaymentTab() {
   useEffect(load, [load]);
 
   const save = async () => {
+    if (saving) return;
     setSaving(true);
     setError('');
     setOkMsg('');
     try {
-      if (link.trim() && !['http:', 'https:'].includes(new URL(link.trim()).protocol)) throw new Error('Usa un enlace de pago HTTP o HTTPS.');
       const sb = getSupabase();
-      const { error: saveError } = await sb.from('settings').upsert([{ key: 'payment_link', value: link.trim() || null }, { key: 'payment_instructions', value: instructions.trim() || null }, { key: 'payment_qr_url', value: qrUrl.trim() || null }], { onConflict: 'key' });
+      const { data: saved, error: saveError } = await sb.from('settings').upsert(paymentSettingsRows(link, instructions, qrUrl), { onConflict: 'key' }).select('key');
       if (saveError) throw saveError;
+      if (saved?.length !== 3) throw new Error('No se pudo guardar toda la configuración de pago. Actualiza la página e inténtalo de nuevo.');
       setOkMsg('Configuración guardada. Los nuevos vouchers ya la usan.');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo guardar.');
+      setError(messageOf(e));
     } finally {
       setSaving(false);
     }
   };
 
   const uploadQr = async (file: File) => {
+    if (saving) return;
+    if (!file.type.startsWith('image/')) { setError('Selecciona una imagen para el QR de pago.'); return; }
     setError(''); setSaving(true);
     try {
       const url = await uploadToBucket(getSupabase(), 'payment', `qr-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`, file);
@@ -74,8 +78,8 @@ export default function PaymentTab() {
         </div>
       </div>
 
-      {error && <div className="admin-alert admin-alert--error">{error}</div>}
-      {okMsg && <div className="admin-alert admin-alert--ok">{okMsg}</div>}
+      {error && <div className="admin-alert admin-alert--error" role="alert">{error}</div>}
+      {okMsg && <div className="admin-alert admin-alert--ok" role="status">{okMsg}</div>}
 
       <div className="admin-card">
         <div className="admin-form">
@@ -83,6 +87,7 @@ export default function PaymentTab() {
             <label>Enlace de pago <small>(botón “Pagar” del voucher)</small></label>
             <input
               type="url"
+              disabled={saving}
               placeholder="https://pago.mioperadora.com/homeland"
               value={link}
               onChange={(e) => setLink(e.target.value)}
@@ -95,7 +100,7 @@ export default function PaymentTab() {
               {qrUrl && <img className="af-upload__preview" src={qrUrl} alt="QR de pago" />}
               <input type="file" accept="image/*" disabled={saving} onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadQr(f); }} />
               {qrUrl && (
-                <button className="btn btn--ghost btn--sm" onClick={() => setQrUrl('')}>
+                <button className="btn btn--ghost btn--sm" disabled={saving} onClick={() => setQrUrl('')}>
                   Quitar QR
                 </button>
               )}
@@ -106,6 +111,7 @@ export default function PaymentTab() {
             <label>Instrucciones de pago <small>(texto breve que se muestra en el voucher)</small></label>
             <textarea
               rows={3}
+              disabled={saving}
               placeholder="Ej: aboná el 50% para confirmar. Consultas por WhatsApp al +591 760 12345."
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}

@@ -1,6 +1,20 @@
 ﻿import { operatorDay } from '@/lib/admin-dashboard';
 export { operatorDay, shiftDay } from '@/lib/admin-dashboard';
-export const dateLabel = (d: string, long = false) => d ? new Date(`${d}T12:00:00Z`).toLocaleDateString('es-BO', { timeZone: 'America/La_Paz', day: 'numeric', month: long ? 'long' : 'short', year: 'numeric', ...(long ? { weekday: 'long' as const } : {}) }) : 'Sin fecha';
+export function dateLabel(day: string, long = false): string {
+  if (!day) return 'Sin fecha';
+  const label = new Date(`${day}T12:00:00Z`).toLocaleDateString('es-BO', {
+    timeZone: 'America/La_Paz',
+    day: 'numeric',
+    month: long ? 'long' : 'short',
+    year: 'numeric',
+    ...(long ? { weekday: 'long' as const } : {}),
+  });
+  return label.charAt(0).toLocaleUpperCase('es') + label.slice(1);
+}
+
+export function participantSummary(adults: number, children: number): string {
+  return `${adults} ${adults === 1 ? 'adulto' : 'adultos'} · ${children} ${children === 1 ? 'niño' : 'niños'}`;
+}
 export const timeLabel = (d: string | null) => d ? new Date(d).toLocaleString('es-BO', { timeZone: 'America/La_Paz', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
 export const usd = (n: number) => `US$ ${Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export const bob = (n: number) => `Bs. ${Number(n).toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -26,8 +40,4 @@ export function ticketState(b: { status: string; checked_in_at: string | null; d
   return 'Válido';
 }
 
-export function validDay(value: string | null): string | null {
-  if(!value||!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;
-  const date=new Date(value+'T12:00:00Z');
-  return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value?value:null;
-}
+export { validDay } from './validation';

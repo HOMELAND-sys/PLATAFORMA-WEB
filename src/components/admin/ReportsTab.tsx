@@ -13,6 +13,11 @@ import {
 } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 
+import { csvText } from '@/lib/admin/exports';
+import { messageOf } from '@/lib/admin/core';
+import { operatorDay, shiftDay } from '@/lib/admin/format';
+import { requireRange } from '@/lib/admin/validation';
+
 type ReportType = 'ventas' | 'reservas' | 'clientes';
 
 const REPORT_TYPES: { id: ReportType; label: string; hint: string }[] = [
@@ -38,23 +43,14 @@ const GREEN_DARK: [number, number, number] = [13, 31, 22];
 const GREEN: [number, number, number] = [117, 149, 62];
 const LOGO_URL = '/assets/full_square_transparent_customcolor%20(2).png';
 
-function isoDay(d: Date): string {
-  const pad = (n: number) => `${n}`.padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function daysAgo(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return isoDay(d);
-}
+function daysAgo(days: number): string { return shiftDay(operatorDay(), -days); }
 
 function usd(n: number): string {
   return `US$ ${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function fmtDay(d: string): string {
-  return new Date(`${d.slice(0, 10)}T12:00:00`).toLocaleDateString('es-ES', {
+  return new Date(`${d.slice(0, 10)}T12:00:00Z`).toLocaleDateString('es-ES', { timeZone: 'America/La_Paz',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -62,7 +58,7 @@ function fmtDay(d: string): string {
 }
 
 function fmtDateTime(d: string): string {
-  return new Date(d).toLocaleString('es-ES', {
+  return new Date(d).toLocaleString('es-ES', { timeZone: 'America/La_Paz',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -138,7 +134,7 @@ function stampFooter(doc: jsPDF): void {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(140, 146, 141);
-    doc.text(`Generado el ${new Date().toLocaleString('es-ES')}`, 14, pageHeight - 8);
+    doc.text(`Generado el ${new Date().toLocaleString('es-ES', { timeZone: 'America/La_Paz' })}`, 14, pageHeight - 8);
     doc.text(`Página ${i} de ${total}`, pageWidth - 14, pageHeight - 8, { align: 'right' });
   }
 }
@@ -306,13 +302,7 @@ function buildClientsPdf(data: ReportClients, logo: string | null): jsPDF {
 // CSV (mismos datos, ; como separador + BOM para Excel en español)
 // ---------------------------------------------------------------------------
 
-function toCsv(rows: (string | number)[][]): string {
-  const esc = (v: string | number) => {
-    const s = `${v}`;
-    return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  return `\ufeff${rows.map((r) => r.map(esc).join(';')).join('\n')}`;
-}
+const toCsv = csvText;
 
 function downloadBlob(content: string | Blob, filename: string, type = 'text/csv;charset=utf-8') {
   const blob = content instanceof Blob ? content : new Blob([content], { type });
@@ -339,13 +329,15 @@ export default function ReportsTab() {
   useEffect(() => {
     setOkMsg('');
     setError('');
-  }, [type, from, to, status]);
+  }, [type, from, to, status, includeAllClients]);
 
   const generate = async (format: 'pdf' | 'csv') => {
+    if (busy) return;
     setBusy(format);
     setError('');
     setOkMsg('');
     try {
+      if (type !== 'clientes' || !includeAllClients) requireRange(from, to);
       const sb = getSupabase();
       const range = { from, to };
       const suffix = `${from}_a_${to}`;
@@ -421,7 +413,7 @@ export default function ReportsTab() {
         setOkMsg(`Reporte de clientes generado: ${data.totals.clients} clientes.`);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo generar el reporte.');
+      setError(messageOf(e));
     } finally {
       setBusy(null);
     }
@@ -447,7 +439,7 @@ export default function ReportsTab() {
       </div>
 
       <div className="admin-card">
-        <div className="admin-form">
+        <fieldset className="admin-form ops-fieldset" disabled={busy !== null}>
           <div className="admin-form__row">
             <div className="af-field">
               <label>Tipo de reporte</label>
@@ -495,11 +487,11 @@ export default function ReportsTab() {
               Incluir todos los clientes (ignora el rango de fechas)
             </label>
           )}
-        </div>
+        </fieldset>
       </div>
 
-      {error && <div className="admin-alert admin-alert--error">{error}</div>}
-      {okMsg && <div className="admin-alert admin-alert--ok">{okMsg}</div>}
+      {error && <div className="admin-alert admin-alert--error" role="alert">{error}</div>}
+      {okMsg && <div className="admin-alert admin-alert--ok" role="status">{okMsg}</div>}
 
       <div className="admin-card">
         <h3>¿Qué incluye cada reporte?</h3>
