@@ -2,22 +2,27 @@
 import type { AuditEntry, Booking, ManualBookingInput } from './types';
 import { validateManualBooking } from './validation';
 const selection = '*,tour:reservations_tour_id_fkey(title,slug,summary,included,meeting_point),profile:reservations_user_id_fkey(full_name,phone),date_row:reservations_tour_date_id_fkey(date,start_time),passengers:booking_passengers_reservations_id_fkey(*)';
+// El contacto guardado pertenece a la reserva; el perfil solo suple datos antiguos.
+function withContact(row: Booking, userEmail = ''): Booking {
+  const passengers = [...row.passengers].sort((a,b) => a.position-b.position);
+  const lead = passengers.find(p => p.is_lead) ?? passengers[0];
+  return { ...row, passengers,
+    client_name: row.contact_name || lead?.name || row.profile?.full_name || 'Sin nombre',
+    client_email: row.contact_email || userEmail || '',
+    client_phone: row.contact_phone || row.profile?.phone || '',
+    client_country: row.contact_country || lead?.country || '',
+  };
+}
 export async function bookings() {
   const rows = await allRows<Booking>((a,b) => sb().from('reservations').select(selection).order('created_at', { ascending: false }).order('id').range(a,b));
   const emails = new Map<string,string>();
-  const ids = [...new Set(rows.map(r => r.user_id).filter((id): id is string => Boolean(id)))];
+  const ids = [...new Set(rows.filter(r => !r.contact_email).map(r => r.user_id).filter((id): id is string => Boolean(id)))];
   for (let i=0; i<ids.length; i+=100) {
     const { data, error } = await sb().from('v_user_emails').select('id,email').in('id', ids.slice(i,i+100));
     if (error) throw error;
     for (const row of data ?? []) emails.set(row.id, row.email);
   }
-  return rows.map(normalize => ({ ...normalize,
-    client_name: normalize.contact_name || normalize.profile?.full_name || normalize.passengers.find(p => p.is_lead)?.name || 'Sin nombre',
-    client_email: normalize.contact_email || emails.get(normalize.user_id ?? '') || '',
-    client_phone: normalize.contact_phone || normalize.profile?.phone || '',
-    client_country: normalize.contact_country || normalize.passengers[0]?.country || '',
-    passengers: [...normalize.passengers].sort((a,b) => a.position-b.position),
-  }));
+  return rows.map(row => withContact(row, emails.get(row.user_id ?? '')));
 }
 export const auditFor = (id: string) => allRows<AuditEntry>((a,b) => sb().from('audit_log').select('id,action,before,after,created_at').eq('entity', 'reservations').eq('entity_id', id).order('created_at').order('id').range(a,b));
 export async function manualBooking(input: ManualBookingInput) {
@@ -51,5 +56,5 @@ export async function ticketByCode(code: string): Promise<Booking | null> {
   if (error) throw error;
   if (!data) return null;
   const row = data as unknown as Booking;
-  return { ...row, client_name: row.contact_name || row.profile?.full_name || row.passengers[0]?.name || 'Sin nombre', client_email: row.contact_email || '', client_phone: row.contact_phone || row.profile?.phone || '', client_country: row.contact_country || row.passengers[0]?.country || '' };
+  return withContact(row);
 }

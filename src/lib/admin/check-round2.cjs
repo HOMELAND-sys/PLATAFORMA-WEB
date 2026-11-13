@@ -28,15 +28,16 @@ module.exports=function({test,load,lexicalSql,workspace,root,React,renderToStati
   }
   assert.match(fn('guard_reservation_capacity').body,/for update/);assert.match(sql,/Cancelar o completar libera plazas/);
  });
- test('Checkout: llamada publica de ocho claves cubierta por una unica firma',()=>{
-  const signature=fn('create_booking').args;
-  const names=[...signature.matchAll(/\b(p_\w+)\s+(?:uuid|date|text|integer|jsonb)\b/g)].map(m=>m[1]);
+ test('Checkout: llamada publica cubierta por la firma vigente de trece argumentos',()=>{
+  const current=fs.readFileSync(path.join(workspace,'supabase/migrations/0016_contacto_reserva.sql'),'utf8');
+  const booking=current.match(/create or replace function public\.create_booking\(([\s\S]*?)\)\s*returns[\s\S]*?\$\$([\s\S]*?)\$\$;/i);assert.ok(booking);
+  const signature=booking[1],params=signature.split(',').map(arg=>arg.trim());
+  const names=params.map(arg=>arg.split(/\s+/)[0]);
   const api=ts.createSourceFile('api.ts',fs.readFileSync(path.join(root,'lib/api.ts'),'utf8'),ts.ScriptTarget.Latest,true);
   let used=[];function visit(node){if(ts.isCallExpression(node)&&node.arguments[0]&&ts.isStringLiteral(node.arguments[0])&&node.arguments[0].text==='create_booking'){used=node.arguments[1].properties.map(p=>p.name.text);}ts.forEachChild(node,visit);}visit(api);
-  assert.ok(used.length>=8);for(const key of used)assert.ok([...names,'p_children'].includes(key),key);assert.equal(names.length,10);assert.match(signature,/p_tour_date_id uuid default null, p_offer_id uuid default null/);
+  assert.ok(used.length>=8);for(const key of used)assert.ok(names.includes(key),key);assert.equal(names.length,13);for(const param of params)if(!used.includes(param.split(/\s+/)[0]))assert.match(param,/\bdefault\b/i);assert.match(signature,/p_contact_name text default null, p_contact_phone text default null/);
   assert.ok(sql.includes('drop function if exists public.create_booking(uuid,date,text,integer,jsonb,jsonb,text,text);'));assert.ok(sql.includes('drop function if exists public.create_booking(uuid,date,text,integer,jsonb,jsonb,text,text,uuid);'));
-  const all=[sql,...['0012_compatibilidad_operativa.sql','0013_catalogo_real.sql'].map(name=>fs.readFileSync(path.join(workspace,'supabase/migrations',name),'utf8'))].join('\n');assert.equal((all.match(/create or replace function public\.create_booking\(/g)||[]).length,1);
-  const body=fn('create_booking').body;assert.match(body,/if p_tour_date_id is null then[\s\S]*order by td\.id for update/);assert.match(body,/f\.bookable and f\.free>=p_pax/);assert.match(body,/order by td\.start_time nulls first,td\.id limit 1/);assert.doesNotMatch(body,/slot_required/);assert.match(sql,/notify pgrst, 'reload schema'/);
+  const body=booking[2];assert.match(body,/if p_tour_date_id is null then[\s\S]*order by td\.id for update/);assert.match(body,/f\.bookable and f\.free>=p_pax/);assert.match(body,/order by td\.start_time nulls first,td\.id limit 1/);assert.doesNotMatch(body,/slot_required/);assert.match(current,/notify pgrst, 'reload schema'/);
  });
  test('0013: delimitadores, transaccion e idempotencia sin tocar migraciones previas',()=>{lexicalSql(catalog);assert.match(catalog,/\bbegin;/);assert.match(catalog,/commit;\s*$/);assert.match(catalog,/on conflict \(slug\) do nothing/);assert.match(catalog,/where t\.slug=m\.slug/);assert.match(catalog,/where not exists\(select 1 from public\.tours existing/);assert.ok(!catalog.includes('\ufeff'));});
  const manifest=JSON.parse(fs.readFileSync(path.join(workspace,'public/assets/tours/manifest.json'),'utf8').replace(/^\ufeff/,''));

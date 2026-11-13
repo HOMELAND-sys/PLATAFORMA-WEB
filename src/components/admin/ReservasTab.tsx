@@ -52,7 +52,7 @@ export default function ReservasTab() {
     return (list.data ?? []).filter(b => {
       const day = dateMode === 'travel' ? b.date_row?.date || '' : operatorDay(new Date(b.created_at));
       return (params.get('alert') !== 'stale' || b.status === 'pendiente_pago' && Date.parse(b.created_at) < Date.now() - 86400000)
-        && (!q || `${b.code} ${b.client_name} ${b.client_email} ${b.passengers.map(p => p.name).join(' ')} ${b.tour?.title}`.toLowerCase().includes(q))
+        && (!q || `${b.code} ${b.client_name} ${b.client_email} ${b.client_phone} ${b.client_country} ${b.passengers.map(p => p.name).join(' ')} ${b.tour?.title}`.toLowerCase().includes(q))
         && (!status || b.status === status)
         && (!tour || b.tour_id === tour)
         && (!from || day >= from)
@@ -325,6 +325,7 @@ export default function ReservasTab() {
               <span className="cell-sub">
                 {b.client_email || 'Sin email'}
               </span>
+              <span className="cell-sub">{b.client_phone || 'Sin teléfono'}</span>
               <span className="cell-sub">{flag(b.client_country)} {b.client_country || 'Sin país'}</span>
             </span>
           </div>

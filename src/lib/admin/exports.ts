@@ -40,6 +40,9 @@ export async function openVoucher(booking: Booking) {
     startY: 46,
     body: [
       ['Viajero', booking.client_name],
+      ['Email', booking.client_email || 'Sin email'],
+      ['Teléfono', booking.client_phone || 'Sin teléfono'],
+      ['País', booking.client_country || 'Sin país'],
       ['Servicio', booking.tour?.title || ''],
       ['Viaje', `${dateLabel(booking.date_row?.date || '')} · ${booking.date_row?.start_time?.slice(0, 5) || 'Sin hora'} (Bolivia)`],
       ['Modalidad', booking.tour_type],
