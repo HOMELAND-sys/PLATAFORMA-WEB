@@ -18,8 +18,22 @@ import { messageOf } from '@/lib/admin/core';
 import { operatorDay, shiftDay } from '@/lib/admin/format';
 import { requireRange } from '@/lib/admin/validation';
 import { moneyNumber } from '@/lib/admin/money';
+import type { Booking } from '@/lib/admin/types';
 
 type ReportType = 'ventas' | 'reservas' | 'clientes';
+type AdminBookingReport = Omit<ReportBookings, 'rows'> & {
+  rows: (ReportBookings['rows'][number] & Pick<Booking, 'adults' | 'children'>)[];
+};
+
+function bookingPartyTotals(rows: AdminBookingReport['rows']) {
+  return rows.reduce((totals, row) => {
+    if (row.status !== 'cancelada') {
+      totals.adults += row.adults ?? row.pax;
+      totals.children += row.children;
+    }
+    return totals;
+  }, { adults: 0, children: 0 });
+}
 
 const REPORT_TYPES: { id: ReportType; label: string; hint: string }[] = [
   { id: 'ventas', label: 'Ventas', hint: 'Reservas, pax, ingresos confirmados y cancelaciones, por tour y por mes.' },
@@ -221,8 +235,9 @@ function buildSalesPdf(data: ReportSales, logo: string | null): jsPDF {
   return doc;
 }
 
-function buildBookingsPdf(data: ReportBookings, logo: string | null): jsPDF {
+function buildBookingsPdf(data: AdminBookingReport, logo: string | null): jsPDF {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const participants = bookingPartyTotals(data.rows);
   const statusLabel = data.status ? ` · Estado: ${STATUS_LABELS[data.status] ?? data.status}` : '';
   const title = 'Reporte de Reservas';
   const periodLabel = `Creadas entre ${fmtDay(data.from)} y ${fmtDay(data.to)}${statusLabel}`;
@@ -230,7 +245,7 @@ function buildBookingsPdf(data: ReportBookings, logo: string | null): jsPDF {
 
   autoTable(doc, {
     startY,
-    head: [['Código', 'Creada', 'Cliente', 'Email', 'Tour', 'Fecha tour', 'Tipo', 'Pax', 'Total', 'Estado']],
+    head: [['Código', 'Creada', 'Cliente', 'Email', 'Tour', 'Fecha tour', 'Tipo', 'Pax', 'Adultos', 'Niños', 'Total', 'Estado']],
     body: data.rows.map((r) => [
       r.code,
       fmtDateTime(r.created_at),
@@ -240,6 +255,8 @@ function buildBookingsPdf(data: ReportBookings, logo: string | null): jsPDF {
       fmtDay(r.tour_date),
       TOUR_TYPE_LABELS[r.tour_type] ?? r.tour_type,
       r.pax,
+      r.adults ?? r.pax,
+      r.children,
       usd(r.total),
       STATUS_LABELS[r.status] ?? r.status,
     ]),
@@ -253,6 +270,8 @@ function buildBookingsPdf(data: ReportBookings, logo: string | null): jsPDF {
         '',
         '',
         data.totals.pax,
+        participants.adults,
+        participants.children,
         usd(data.totals.grand_total),
         `Ingresos: ${usd(data.totals.revenue)}`,
       ],
@@ -261,7 +280,12 @@ function buildBookingsPdf(data: ReportBookings, logo: string | null): jsPDF {
     headStyles: { fillColor: GREEN_DARK, fontSize: 8 },
     footStyles: { fillColor: [230, 239, 227], textColor: GREEN_DARK, fontStyle: 'bold' },
     styles: { fontSize: 8, cellPadding: 1.6 },
-    columnStyles: { 7: { halign: 'right' }, 8: { halign: 'right' } },
+    columnStyles: {
+      7: { halign: 'right' },
+      8: { halign: 'right' },
+      9: { halign: 'right' },
+      10: { halign: 'right' },
+    },
     margin: { top: 32, bottom: 16 },
   });
 
@@ -366,14 +390,15 @@ export default function ReportsTab() {
         }
         setOkMsg(`Reporte de ventas generado: ${data.totals.reservations} reservas en el rango.`);
       } else if (type === 'reservas') {
-        const data = await fetchReportBookings(sb, range.from, range.to, status || null);
+        const data = await fetchReportBookings(sb, range.from, range.to, status || null) as AdminBookingReport;
+        const participants = bookingPartyTotals(data.rows);
         if (format === 'pdf') {
           buildBookingsPdf(data, logo).save(`homeland-reporte-reservas-${suffix}.pdf`);
         } else {
           const rows: (string | number)[][] = [
             ['Reporte de Reservas', `Creadas entre ${from} y ${to}${status ? ` · Estado: ${STATUS_LABELS[status]}` : ''}`],
             [],
-            ['Código', 'Creada', 'Cliente', 'Email', 'Tour', 'Fecha tour', 'Tipo', 'Pax', 'Total', 'Estado'],
+            ['Código', 'Creada', 'Cliente', 'Email', 'Tour', 'Fecha tour', 'Tipo', 'Pax', 'Adultos', 'Niños', 'Total', 'Estado'],
             ...data.rows.map((r) => [
               r.code,
               fmtDateTime(r.created_at),
@@ -383,10 +408,16 @@ export default function ReportsTab() {
               r.tour_date,
               TOUR_TYPE_LABELS[r.tour_type] ?? r.tour_type,
               r.pax,
+              r.adults ?? r.pax,
+              r.children,
               usd(r.total),
               STATUS_LABELS[r.status] ?? r.status,
             ]),
-            ['TOTAL', `${data.totals.reservations} reservas`, '', '', '', '', '', data.totals.pax, usd(data.totals.grand_total), `Ingresos: ${usd(data.totals.revenue)}`],
+            [
+              'TOTAL', `${data.totals.reservations} reservas`, '', '', '', '', '',
+              data.totals.pax, participants.adults, participants.children,
+              usd(data.totals.grand_total), `Ingresos: ${usd(data.totals.revenue)}`,
+            ],
           ];
           downloadBlob(toCsv(rows), `homeland-reporte-reservas-${suffix}.csv`);
         }

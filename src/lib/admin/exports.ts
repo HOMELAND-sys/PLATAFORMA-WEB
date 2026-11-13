@@ -36,7 +36,22 @@ export async function openVoucher(booking: Booking) {
   doc.setTextColor(41,66,46);doc.setFontSize(23);doc.text('Homeland Tours',14,20);
   doc.setFontSize(14);doc.text(`Voucher ${booking.code}`,14,30);doc.setFontSize(10);
   doc.text(statusLabels[booking.status],14,38);
-  autoTable(doc,{startY:46,body:[['Viajero',booking.client_name],['Servicio',booking.tour?.title||''],['Viaje',`${dateLabel(booking.date_row?.date||'')} · ${booking.date_row?.start_time?.slice(0,5)||'Sin hora'} (Bolivia)`],['Modalidad',booking.tour_type],['Participantes',String(booking.pax)],['Encuentro',booking.tour?.meeting_point||'Coordinar con la operadora'],['Pago',`${booking.paid_at?'Pagado':'Pendiente'} · ${methodLabels[booking.payment_method]}`]],styles:{fontSize:10},columnStyles:{0:{fontStyle:'bold',cellWidth:36}}});
+  autoTable(doc, {
+    startY: 46,
+    body: [
+      ['Viajero', booking.client_name],
+      ['Servicio', booking.tour?.title || ''],
+      ['Viaje', `${dateLabel(booking.date_row?.date || '')} · ${booking.date_row?.start_time?.slice(0, 5) || 'Sin hora'} (Bolivia)`],
+      ['Modalidad', booking.tour_type],
+      ['Participantes', String(booking.pax)],
+      ['Adultos', String(booking.adults ?? booking.pax)],
+      ['Niños', String(booking.children)],
+      ['Encuentro', booking.tour?.meeting_point || 'Coordinar con la operadora'],
+      ['Pago', `${booking.paid_at ? 'Pagado' : 'Pendiente'} · ${methodLabels[booking.payment_method]}`],
+    ],
+    styles: { fontSize: 10 },
+    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 36 } },
+  });
   let y=(doc as unknown as { lastAutoTable:{finalY:number} }).lastAutoTable.finalY+10;
   autoTable(doc,{startY:y,head:[['Pasajero','Documento','País','Comida']],body:booking.passengers.map(p=>[p.name,p.doc,p.country,p.meal]),headStyles:{fillColor:[41,66,46]},styles:{fontSize:9}});
   y=(doc as unknown as {lastAutoTable:{finalY:number}}).lastAutoTable.finalY+10;
