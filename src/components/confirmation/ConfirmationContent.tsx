@@ -10,6 +10,8 @@ import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useBooking } from '@/context/BookingContext';
 import { useAuth } from '@/context/AuthContext';
+import { useSite } from '@/context/SiteContext';
+import { primaryPhone } from '@/lib/site';
 import { fetchBookingByCode, fetchPaymentSettings, type MyBooking, type PaymentSettings } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import { prefersReducedMotion } from '@/lib/intro';
@@ -18,7 +20,8 @@ import DrawIcon from '@/components/ui/DrawIcon';
 import VoucherHero from './VoucherHero';
 import VoucherTicket from './VoucherTicket';
 import {
-  SUPPORT_PHONE,
+  setVoucherContact,
+  supportPhone,
   bob,
   buildIcs,
   downloadBlob,
@@ -34,6 +37,9 @@ export default function ConfirmationContent() {
   const { result, hydrated, selection, clearCart } = useBooking();
   const searchParams = useSearchParams();
   const { session, loading: authLoading } = useAuth();
+  const { company } = useSite();
+  // El voucher (pantalla y PDF) usa el contacto real de la empresa.
+  setVoucherContact({ whatsapp: company.whatsapp, phone: primaryPhone(company) });
   const code = (searchParams.get('code') ?? result?.code ?? '').toUpperCase();
 
   // La reserva ya existe: el carrito del header no debe seguir mostrando viajeros.
@@ -231,9 +237,11 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
               <Icon name="calendar" size={17} /> Agregar al calendario
             </button>
           )}
-          <a className="btn btn--ghost" href={whatsAppUrl(b)} target="_blank" rel="noopener noreferrer">
-            <Icon name="whatsapp" size={17} /> WhatsApp
-          </a>
+          {whatsAppUrl(b) && (
+            <a className="btn btn--ghost" href={whatsAppUrl(b) ?? undefined} target="_blank" rel="noopener noreferrer">
+              <Icon name="whatsapp" size={17} /> WhatsApp
+            </a>
+          )}
           <Link href="/bookings" className="btn btn--ghost">
             <Icon name="ticket" size={17} /> Mis reservas
           </Link>
@@ -267,10 +275,15 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
                     <Icon name="qr" size={17} /> Descargar QR
                   </button>
                 )}
-                {!hasPayment && (
-                  <a className="btn btn--primary" href={whatsAppUrl(b)} target="_blank" rel="noopener noreferrer">
+                {!hasPayment && whatsAppUrl(b) && (
+                  <a className="btn btn--primary" href={whatsAppUrl(b) ?? undefined} target="_blank" rel="noopener noreferrer">
                     <Icon name="whatsapp" size={17} /> Coordinar por WhatsApp
                   </a>
+                )}
+                {!hasPayment && !whatsAppUrl(b) && (
+                  <span className="form-note">
+                    Tu lugar ya está apartado. Te contactaremos por correo o teléfono para coordinar el pago.
+                  </span>
                 )}
               </div>
             </div>
@@ -359,7 +372,13 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
             <div>
               <h4>¿Necesitas ayuda?</h4>
               <p>
-                24/7 · <strong>{SUPPORT_PHONE}</strong>
+                {supportPhone() ? (
+                  <>
+                    Escríbenos al <strong>{supportPhone()}</strong>
+                  </>
+                ) : (
+                  'Respondemos por los canales de tu reserva.'
+                )}
               </p>
             </div>
           </div>

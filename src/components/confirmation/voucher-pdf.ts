@@ -23,7 +23,7 @@ import {
 import {
   DIFFICULTY_LABEL,
   STATUS_META,
-  SUPPORT_PHONE,
+  supportPhone,
   TONE_INK,
   TOUR_TYPE_LABEL,
   addDays,
@@ -779,7 +779,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
     if (!settings?.link && !payQr) {
       font(7.4);
       color(C.ink5);
-      const l = doc.splitTextToSize(t(`Coordiná el pago por WhatsApp al ${SUPPORT_PHONE}.`), pw2 - 8) as string[];
+      const l = doc.splitTextToSize(t(supportPhone() ? `Coordina el pago por WhatsApp al ${supportPhone()}.` : 'Te contactaremos para coordinar el pago.'), pw2 - 8) as string[];
       doc.text(l, px + 4, ry + 1);
       ry += l.length * 3.4 + 3;
     }
@@ -883,7 +883,7 @@ export async function generateVoucherPdf(b: MyBooking, settings: PaymentSettings
     brandBand(0, PH - 13, PW, 2.6);
     font(6.8);
     color(C.ink5);
-    doc.text(t(`Homeland Tours · Operador turístico boliviano · ${SUPPORT_PHONE} · homeland.tours`), M, PH - 6.5);
+    doc.text(t(`Homeland Tours · Operadora de turismo boliviana${supportPhone() ? ` · ${supportPhone()}` : ''} · www.homeland.tours`), M, PH - 6.5);
     doc.text(`Página ${p} de ${total}`, PW - M, PH - 6.5, { align: 'right' });
     font(6, 'bold');
     color(C.ink4);

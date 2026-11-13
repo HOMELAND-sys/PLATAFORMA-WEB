@@ -19,9 +19,10 @@ const ReportsTab = dynamic(() => import('./ReportsTab'), { loading: () => <p rol
 const SettingsTab = dynamic(() => import('./SettingsTab'), { loading: () => <p role="status">Cargando configuración…</p> });
 const TransfersTab = dynamic(() => import('./TransfersTab'), { loading: () => <p role="status">Cargando registros…</p> });
 const OffersTab = dynamic(() => import('./OffersTab'), { loading: () => <p role="status">Cargando ofertas…</p> });
+const ReviewsTab = dynamic(() => import('./ReviewsTab'), { loading: () => <p role="status">Cargando reseñas…</p> });
 const NAV_ITEMS = [
 
-  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { id: 'dashboard', label: 'Resumen', icon: 'dashboard' },
 
   { id: 'tours', label: 'Productos / Tours', icon: 'tours' },
 
@@ -30,6 +31,8 @@ const NAV_ITEMS = [
   { id: 'reservas', label: 'Reservas', icon: 'ticket' },
 
   { id: 'clientes', label: 'Clientes', icon: 'users' },
+
+  { id: 'resenas', label: 'Reseñas', icon: 'star' },
 
   { id: 'pases', label: 'Reportes pases', icon: 'ticket' },
 
@@ -165,7 +168,7 @@ export default function AdminPanel() {
         <Link
           className="admin-side__brand"
           href="/admin"
-          aria-label="Homeland Tours · Dashboard"
+          aria-label="Homeland Tours · Resumen"
         >
           <AdminBrand />
         </Link>
@@ -236,7 +239,7 @@ export default function AdminPanel() {
                 <AdminIcon name="calendar" size={19} />
                 <span>{dashboardDate(range.from)} – {dashboardDate(range.to)}</span>
                 <select
-                  aria-label="Período del dashboard"
+                  aria-label="Período del resumen"
                   value={period}
                   onChange={(event) => setPeriod(event.target.value as DashboardPeriod)}
                 >
@@ -310,6 +313,7 @@ export default function AdminPanel() {
           {tab === 'endosos' && <TransfersTab key="endoso" kind="endoso" />}
           {tab === 'ofertas' && <OffersTab />}
           {tab === 'clientes' && <ClientsTab />}
+          {tab === 'resenas' && <ReviewsTab />}
           {tab === 'reportes' && <ReportsTab />}
         </main>
       </div>

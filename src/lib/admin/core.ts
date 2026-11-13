@@ -52,7 +52,7 @@ export function messageOf(error: unknown): string {
   if (/Failed to fetch|fetch failed|NetworkError/i.test(msg)) return 'No se pudo conectar con el servidor. Revisa la conexión y vuelve a intentarlo.';
   return msg;
 }
-export const products = () => allRows<Product>((from, to) => sb().from('tours').select('id,title,slug,active,code,price_group,price_semi,price_private,price_child,child_age_max,min_pax,default_cutoff_hours,default_start_times').order('title').order('id').range(from, to));
+export const products = () => allRows<Product>((from, to) => sb().from('tours').select('id,title,slug,active,code,price_group,price_semi,price_private,price_child,price_tiers,child_age_max,min_pax,default_cutoff_hours,default_start_times').order('title').order('id').range(from, to));
 export async function saveRow(table: 'agencies' | 'agency_transfers' | 'special_offers', input: object, id?: string) {
   const query = id ? sb().from(table).update(input).eq('id', id) : sb().from(table).insert(input);
   const { data, error } = await query.select('id').single();

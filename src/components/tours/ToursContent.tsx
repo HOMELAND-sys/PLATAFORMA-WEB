@@ -5,130 +5,142 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
 import TourCard from '@/components/ui/TourCard';
-import FilterPanel from '@/components/tours/FilterPanel';
-import { fetchActiveTours, fetchCategories, tourThumb } from '@/lib/api';
-import type { CategoryRow } from '@/lib/api';
-import { getSupabase } from '@/lib/supabase';
-import { track } from '@/lib/analytics';
-import type { CategoryId, Difficulty, Tour } from '@/lib/types';
 import Icon from '@/components/ui/Icon';
+import type { CategoryRow, OpenDate } from '@/lib/api';
+import { track } from '@/lib/analytics';
+import { DIFFICULTY_LABEL, fmtDate } from '@/lib/tour-display';
+import { TOURS_HERO } from '@/data/site-photos';
+import type { CategoryId, Difficulty, Tour } from '@/lib/types';
 
-interface Filters {
-  mode: 'shared' | 'private';
-  duration: string;
-  difficulties: Difficulty[];
-  maxPrice: number;
-}
+type DurationKey = 'any' | 'half' | 'one' | 'short' | 'long';
+type ServiceKey = 'any' | 'shared' | 'private';
 
-const DURATION_MAP: Record<string, (t: { duration: string }) => boolean> = {
-  any: () => true,
-  'half-day': (t) => t.duration.toLowerCase().includes('half'),
-  '1-day': (t) => /^1 day$/i.test(t.duration.trim()),
-  '2-3-days': (t) => /^2|^3/.test(t.duration.trim()),
-  '4-plus': (t) => /^4|^5/.test(t.duration.trim()),
-};
+const DURATIONS: { key: DurationKey; label: string }[] = [
+  { key: 'any', label: 'Cualquier duración' },
+  { key: 'half', label: 'Medio día' },
+  { key: 'one', label: '1 día' },
+  { key: 'short', label: '2 a 3 días' },
+  { key: 'long', label: '4 días o más' },
+];
 
+/** Días aproximados a partir del texto de duración ("Medio día", "3 días · 2 noches"…). */
 function durationDays(duration: string): number {
   const s = duration.toLowerCase();
-  if (s.includes('half')) return 0.5;
-  const m = s.match(/(\d+(?:[.,]\d+)?)\s*(day|día|hora|hour)/);
-  if (!m) return 99;
-  const n = parseFloat(m[1].replace(',', '.'));
-  return /hora|hour/.test(m[2]) ? n / 24 : n;
+  if (/medio|half|hora|hour/.test(s)) return 0.5;
+  const m = s.match(/(\d+(?:[.,]\d+)?)\s*(d[ií]as?|days?)/);
+  if (m) return parseFloat(m[1].replace(',', '.'));
+  if (/d[ií]a completo|full day/.test(s)) return 1;
+  return 1;
+}
+
+function matchesDuration(t: Tour, key: DurationKey): boolean {
+  const d = durationDays(t.duration);
+  if (key === 'any') return true;
+  if (key === 'half') return d < 1;
+  if (key === 'one') return d === 1;
+  if (key === 'short') return d >= 2 && d <= 3;
+  return d >= 4;
+}
+
+function norm(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
 }
 
 function effectivePrice(t: Tour): number {
   return t.price * (1 - (t.offerPct ?? 0) / 100);
 }
 
-function fmtChipDate(iso: string): string {
-  const d = new Date(`${iso}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+interface Props {
+  tours: Tour[];
+  categories: CategoryRow[];
+  openDates: Record<string, OpenDate[]>;
 }
 
-// Selección curada de la sección "Experiencias destacadas" (datos reales del catálogo).
-const PREMIUM_SLUGS = [
-  'salkantay-trek-machu-picchu',
-  'laguna-colorada-uyuni-4-day-tour',
-  'rurrenabaque-pampas-jungle-3-day',
-  'valle-de-la-luna-half-day',
-];
-
-export default function ToursContent() {
+export default function ToursContent({ tours, categories, openDates }: Props) {
   const searchParams = useSearchParams();
-  const initialCat = searchParams.get('cat');
-  const initialQuery = searchParams.get('q')?.trim().toLowerCase() ?? '';
-  const initialDate = searchParams.get('date') ?? '';
-  const initialPax = searchParams.get('pax') ?? '';
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const priceCeil = useMemo(
+    () => Math.max(100, Math.ceil(Math.max(0, ...tours.map((t) => t.price)) / 50) * 50),
+    [tours],
+  );
 
-  const [tours, setTours] = useState<Tour[] | null>(null);
-  const [categories, setCategories] = useState<CategoryRow[]>([]);
-  const [category, setCategory] = useState<string>('all');
-  const [query, setQuery] = useState(initialQuery);
-  const [dateChip, setDateChip] = useState(initialDate);
-  const [paxChip, setPaxChip] = useState(initialPax);
-  const [sort, setSort] = useState('recommended');
-  const [filters, setFilters] = useState<Filters>({
-    mode: 'shared',
-    duration: 'any',
-    difficulties: ['Easy'],
-    maxPrice: 1000,
+  const paramCat = searchParams.get('cat');
+  const [category, setCategory] = useState<string>(
+    paramCat && categories.some((c) => c.slug === paramCat) ? paramCat : 'all',
+  );
+  const [query, setQuery] = useState(searchParams.get('q')?.trim() ?? '');
+  const [date, setDate] = useState(searchParams.get('date') ?? '');
+  const [pax, setPax] = useState(() => {
+    const n = Number(searchParams.get('pax'));
+    return Number.isInteger(n) && n >= 1 && n <= 8 ? n : 2;
   });
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [duration, setDuration] = useState<DurationKey>('any');
+  const [service, setService] = useState<ServiceKey>('any');
+  const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
+  const [maxPrice, setMaxPrice] = useState(priceCeil);
+  const [onlyOpen, setOnlyOpen] = useState(false);
+  const [sort, setSort] = useState('recommended');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Al llegar por un enlace de categoría (menú, pie) se respeta el parámetro.
+  useEffect(() => {
+    const cat = searchParams.get('cat');
+    setCategory(cat && categories.some((c) => c.slug === cat) ? cat : 'all');
+    setQuery(searchParams.get('q')?.trim() ?? '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
-    let active = true;
-    Promise.all([fetchActiveTours(getSupabase()), fetchCategories(getSupabase())])
-      .then(([t, c]) => {
-        if (!active) return;
-        setTours(t);
-        setCategories(c);
-        const validCat = initialCat && c.some((x) => x.slug === initialCat) ? initialCat : 'all';
-        setCategory(validCat);
-      })
-      .catch(() => {
-        if (active) setTours([]);
-      });
-    return () => {
-      active = false;
-    };
+    track('tours_browsed', { count: tours.length });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // La URL refleja la búsqueda para poder compartirla.
   useEffect(() => {
-    if (tours) track('tours_browsed', { count: tours.length });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tours !== null]);
+    const params = new URLSearchParams();
+    if (category !== 'all') params.set('cat', category);
+    if (query) params.set('q', query);
+    if (date) params.set('date', date);
+    if (pax !== 2) params.set('pax', String(pax));
+    const qs = params.toString();
+    window.history.replaceState(null, '', qs ? `/tours?${qs}` : '/tours');
+  }, [category, query, date, pax]);
 
-  const allPills = useMemo(
-    () => [{ slug: 'all', label: 'Todos los tours' }, ...categories.map((c) => ({ slug: c.slug, label: c.label }))],
-    [categories],
-  );
+  const nextDateOf = (t: Tour): string | null =>
+    (t.id ? openDates[t.id] : undefined)?.find((d) => d.free >= pax)?.date ?? null;
 
   const filtered = useMemo(() => {
-    if (!tours) return [];
+    const q = norm(query);
     const list = tours.filter((t) => {
       if (category !== 'all' && !t.categories.includes(category as CategoryId)) return false;
-      if (!DURATION_MAP[filters.duration]?.(t)) return false;
-      if (!filters.difficulties.includes(t.difficulty)) return false;
-      if (t.price > filters.maxPrice) return false;
-      if (query) {
-        const haystack = [
-          t.title,
-          t.destination,
-          t.summary.join(' '),
-          t.highlights.join(' '),
-          t.typeLabel,
-          t.activityLabel,
-          ...categories.filter((c) => t.categories.includes(c.slug as CategoryId)).map((c) => c.label),
-        ]
-          .join(' ')
-          .toLowerCase();
-        if (!haystack.includes(query)) return false;
+      if (!matchesDuration(t, duration)) return false;
+      if (difficulties.length > 0 && !difficulties.includes(t.difficulty)) return false;
+      if (t.price > maxPrice) return false;
+      if (service === 'private' && !t.availableTypes.includes('private')) return false;
+      if (service === 'shared' && !t.availableTypes.some((x) => x !== 'private')) return false;
+      const dates = (t.id ? openDates[t.id] : undefined) ?? [];
+      if (date && !dates.some((d) => d.date === date && d.free >= pax)) return false;
+      if (onlyOpen && !dates.some((d) => d.free >= pax)) return false;
+      if (q) {
+        const haystack = norm(
+          [
+            t.title,
+            t.destination,
+            t.summary.join(' '),
+            t.highlights.join(' '),
+            t.typeLabel,
+            t.activityLabel,
+            ...categories.filter((c) => t.categories.includes(c.slug as CategoryId)).map((c) => c.label),
+          ].join(' '),
+        );
+        if (!q.split(/\s+/).every((word) => haystack.includes(word))) return false;
       }
       return true;
     });
+    const hasDates = (t: Tour) => ((t.id ? openDates[t.id] : undefined)?.length ?? 0) > 0;
     switch (sort) {
       case 'price-asc':
         list.sort((a, b) => effectivePrice(a) - effectivePrice(b));
@@ -141,76 +153,91 @@ export default function ToursContent() {
         break;
       default:
         list.sort(
-          (a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.reviewCount ?? 0) - (a.reviewCount ?? 0),
+          (a, b) =>
+            Number(hasDates(b)) - Number(hasDates(a)) ||
+            Number(Boolean(b.featured)) - Number(Boolean(a.featured)) ||
+            (b.rating ?? 0) - (a.rating ?? 0),
         );
     }
     return list;
-  }, [tours, category, filters, query, categories, sort]);
+  }, [tours, category, duration, difficulties, maxPrice, service, date, pax, onlyOpen, query, sort, categories, openDates]);
 
-  const premium = useMemo(() => {
-    if (!tours) return [];
-    return PREMIUM_SLUGS.map((slug) => tours.find((t) => t.slug === slug)).filter(
-      (t): t is Tour => Boolean(t),
-    );
-  }, [tours]);
+  const activeCount =
+    Number(duration !== 'any') +
+    Number(service !== 'any') +
+    Number(difficulties.length > 0) +
+    Number(maxPrice < priceCeil) +
+    Number(onlyOpen) +
+    Number(Boolean(date)) +
+    Number(Boolean(query));
 
-  if (tours === null) {
-    return <div style={{ padding: '80px 0', textAlign: 'center' }}>Cargando tours…</div>;
-  }
+  const reset = () => {
+    setCategory('all');
+    setQuery('');
+    setDate('');
+    setDuration('any');
+    setService('any');
+    setDifficulties([]);
+    setMaxPrice(priceCeil);
+    setOnlyOpen(false);
+  };
+
+  const toggleDifficulty = (d: Difficulty) =>
+    setDifficulties((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
+
+  const currentCat = categories.find((c) => c.slug === category);
 
   return (
     <>
-      <section className="page-header">
+      <section className="page-header tl-hero">
+        <img className="tl-hero__bg" src={TOURS_HERO.src} alt="" />
         <div className="container">
           <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Tours' }]} />
-          <h1>
-            Tours y <em>paquetes</em>
-          </h1>
-          <p>
-            Recorridos seleccionados por los paisajes y las culturas más extraordinarias de Bolivia,
-            con operadores locales y garantía del mejor precio.
-          </p>
-          {(query || dateChip || paxChip) && (
-            <div className="tours-search-summary">
-              {query && (
-                <span>
-                  Resultados para <strong>&ldquo;{query}&rdquo;</strong>
-                </span>
-              )}
-              {dateChip && (
-                <span className="tours-search-chip">
-                  <Icon name="calendar" size={14} />
-                  {fmtChipDate(dateChip)}
-                  <button type="button" aria-label="Quitar fecha" onClick={() => setDateChip('')}>
-                    <Icon name="close" size={12} />
-                  </button>
-                </span>
-              )}
-              {paxChip && (
-                <span className="tours-search-chip">
-                  <Icon name="users" size={14} />
-                  {paxChip} viajero{paxChip === '1' ? '' : 's'}
-                  <button type="button" aria-label="Quitar viajeros" onClick={() => setPaxChip('')}>
-                    <Icon name="close" size={12} />
-                  </button>
-                </span>
-              )}
-              {query && (
-                <button type="button" className="tours-search-clear" onClick={() => setQuery('')}>
-                  Limpiar búsqueda
-                </button>
-              )}
+          <h1>{currentCat ? currentCat.label : <>Tours y experiencias en <em>Bolivia</em></>}</h1>
+          <p>Elige tu destino y tu fecha: aquí ves los cupos reales de cada salida y reservas en minutos.</p>
+
+          <form className="tl-search" role="search" onSubmit={(e) => e.preventDefault()}>
+            <label className="tl-search__field tl-search__field--q">
+              <Icon name="search" size={18} />
+              <input
+                type="search"
+                placeholder="Busca un destino o actividad"
+                aria-label="Buscar tours"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </label>
+            <label className="tl-search__field">
+              <Icon name="calendar" size={18} />
+              <input type="date" min={today} aria-label="Fecha del viaje" value={date} onChange={(e) => setDate(e.target.value)} />
+            </label>
+            <div className="tl-search__field tl-search__field--pax">
+              <Icon name="users" size={18} />
+              <button type="button" aria-label="Quitar un viajero" disabled={pax <= 1} onClick={() => setPax((p) => Math.max(1, p - 1))}>
+                <Icon name="minus" size={14} />
+              </button>
+              <span aria-live="polite">
+                {pax} {pax === 1 ? 'viajero' : 'viajeros'}
+              </span>
+              <button type="button" aria-label="Añadir un viajero" disabled={pax >= 8} onClick={() => setPax((p) => Math.min(8, p + 1))}>
+                <Icon name="plus" size={14} />
+              </button>
             </div>
-          )}
+          </form>
         </div>
       </section>
 
       <div className="toolbar">
         <div className="container toolbar__inner">
-          <div className="cat-pills">
-            {allPills.map((c) => (
+          <div className="cat-pills" role="tablist" aria-label="Categorías">
+            <button role="tab" aria-selected={category === 'all'} className={`cat-pill${category === 'all' ? ' is-active' : ''}`} onClick={() => setCategory('all')}>
+              Todos los tours
+            </button>
+            {categories.map((c) => (
               <button
                 key={c.slug}
+                role="tab"
+                aria-selected={category === c.slug}
                 className={`cat-pill${category === c.slug ? ' is-active' : ''}`}
                 onClick={() => setCategory(c.slug)}
               >
@@ -220,9 +247,9 @@ export default function ToursContent() {
           </div>
           <div className="toolbar__side">
             <span className="divider-v"></span>
-            <button className="filter-toggle" onClick={() => setFilterPanelOpen(true)}>
+            <button className="filter-toggle" aria-expanded={filtersOpen} onClick={() => setFiltersOpen((v) => !v)}>
               <Icon name="filter" size={17} />
-              Filtros
+              Filtros{activeCount > 0 ? ` (${activeCount})` : ''}
             </button>
           </div>
         </div>
@@ -230,9 +257,67 @@ export default function ToursContent() {
 
       <section className="section-tight">
         <div className="container">
+          {filtersOpen && (
+            <div className="tl-filters">
+              <label className="tl-filter">
+                <span>Duración</span>
+                <select value={duration} onChange={(e) => setDuration(e.target.value as DurationKey)}>
+                  {DURATIONS.map((d) => (
+                    <option key={d.key} value={d.key}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="tl-filter">
+                <span>Tipo de servicio</span>
+                <select value={service} onChange={(e) => setService(e.target.value as ServiceKey)}>
+                  <option value="any">Todos</option>
+                  <option value="shared">Compartido (grupal)</option>
+                  <option value="private">Privado</option>
+                </select>
+              </label>
+              <div className="tl-filter">
+                <span>Exigencia física</span>
+                <div className="tl-chips">
+                  {(['Easy', 'Moderate', 'Challenging'] as Difficulty[]).map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      aria-pressed={difficulties.includes(d)}
+                      className={`tl-chip${difficulties.includes(d) ? ' is-on' : ''}`}
+                      onClick={() => toggleDifficulty(d)}
+                    >
+                      {DIFFICULTY_LABEL[d].replace('Exigencia ', '')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="tl-filter tl-filter--range">
+                <span>
+                  Precio máximo: <b>{maxPrice >= priceCeil ? 'sin límite' : `US$ ${maxPrice}`}</b>
+                </span>
+                <input type="range" min={50} max={priceCeil} step={10} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} />
+              </label>
+              <label className="tl-filter tl-filter--check">
+                <input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} />
+                Solo con fechas disponibles
+              </label>
+            </div>
+          )}
+
           <div className="results-head">
             <span>
-              Mostrando <strong>{filtered.length} de {tours.length} tours</strong> · Tour compartido / privado
+              <strong>
+                {filtered.length} {filtered.length === 1 ? 'tour' : 'tours'}
+              </strong>
+              {date ? ` con salida el ${fmtDate(date, { day: 'numeric', month: 'long' })}` : ''}
+              {query ? ` para «${query}»` : ''}
+              {activeCount > 0 || category !== 'all' ? (
+                <button type="button" className="tl-reset" onClick={reset}>
+                  Limpiar filtros
+                </button>
+              ) : null}
             </span>
             <label className="sort-select">
               <span>Ordenar por</span>
@@ -245,121 +330,49 @@ export default function ToursContent() {
             </label>
           </div>
 
-          <div className="tour-grid">
-            {filtered.map((tour) => (
-              <TourCard key={tour.slug} tour={tour} />
-            ))}
-          </div>
-
-          {filtered.length === 0 && (
-            <p style={{ textAlign: 'center', color: 'var(--ink-500)', padding: '40px 0' }}>
-              {query
-                ? `No encontramos tours para "${query}". Prueba con otro destino o limpia los filtros.`
-                : 'No hay tours que coincidan con los filtros seleccionados.'}
-            </p>
+          {filtered.length > 0 ? (
+            <div className="tl-grid">
+              {filtered.map((tour, i) => (
+                <TourCard key={tour.slug} tour={tour} priority={i < 4} nextDate={nextDateOf(tour)} />
+              ))}
+            </div>
+          ) : (
+            <div className="ht-empty">
+              <span className="ht-empty__icon">
+                <Icon name="compass" size={30} />
+              </span>
+              <h2>No encontramos tours con esos filtros</h2>
+              <p>
+                {date
+                  ? 'No hay salidas abiertas ese día para tu grupo. Prueba con otra fecha o cuéntanos qué buscas y armamos tu viaje.'
+                  : 'Prueba con otro destino, quita algún filtro o pídenos un viaje a medida.'}
+              </p>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button type="button" className="btn btn--primary" onClick={reset}>
+                  Ver todos los tours
+                </button>
+                <Link className="btn btn--ghost" href="/customize">
+                  Pedir un viaje a medida
+                </Link>
+              </div>
+            </div>
           )}
-
-          <div className="stats-row">
-            <div className="stat-item">
-              <span className="stat-item__icon">
-                <Icon name="users" size={24} />
-              </span>
-              <div>
-                <div className="stat-item__num">2,000+</div>
-                <div className="stat-item__label">Viajeros felices</div>
-              </div>
-            </div>
-            <div className="stat-item">
-              <span className="stat-item__icon" style={{ color: 'var(--accent-600)' }}>
-                <Icon name="star-solid" size={24} />
-              </span>
-              <div>
-                <div className="stat-item__num">4.9/5</div>
-                <div className="stat-item__label">Valoración media</div>
-              </div>
-            </div>
-            <div className="stat-item">
-              <span className="stat-item__icon">
-                <Icon name="rotate-ccw" size={24} />
-              </span>
-              <div>
-                <div className="stat-item__num">98%</div>
-                <div className="stat-item__label">Volverían a viajar</div>
-              </div>
-            </div>
-            <div className="stat-item">
-              <span className="stat-item__icon">
-                <Icon name="chat" size={24} />
-              </span>
-              <div>
-                <div className="stat-item__num">24/7</div>
-                <div className="stat-item__label">Soporte local</div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      <section className="section section-alt">
+      <section className="section-tight tl-cta">
         <div className="container">
-          <div className="flex-between" style={{ marginBottom: 32 }}>
+          <div className="tl-cta__box">
             <div>
-              <p className="eyebrow">Aventura premium</p>
-              <h2>Experiencias destacadas</h2>
+              <h2>¿No encuentras lo que buscas?</h2>
+              <p>Diseñamos itinerarios privados para tu grupo, con las fechas y el ritmo que necesites.</p>
             </div>
-            <Link className="btn btn--ghost btn--sm" href="/tours">
-              Ver todas
-              <Icon name="arrow-right" size={16} />
+            <Link className="btn btn--dark" href="/customize">
+              Armar mi viaje a medida <Icon name="arrow-right" size={16} />
             </Link>
           </div>
-
-          <div className="premium-grid">
-            {premium.map((p) => (
-              <Link className="premium-card" key={p.slug} href={`/tours/${p.slug}`}>
-                <div className="premium-card__media">
-                  <img src={tourThumb(p.image)} alt={p.title} loading="lazy" />
-                  {p.badge && <span className="premium-card__badge">{p.badge}</span>}
-                </div>
-                <div className="premium-card__body">
-                  <h3>{p.title}</h3>
-                  <div className="premium-card__meta">
-                    <span>
-                      <Icon name="clock" size={14} />{' '}
-                      {p.duration}
-                    </span>
-                    <span>
-                      <Icon name="mountain" size={14} />{' '}
-                      {p.activityLabel}
-                    </span>
-                    <span>
-                      <Icon name="pin" size={14} />{' '}
-                      {p.typeLabel}
-                    </span>
-                  </div>
-                  <div className="premium-card__price-row">
-                    <div>
-                      <small>Desde</small>
-                      <strong>US$ {p.price}</strong>
-                    </div>
-                    <span className="premium-card__cta">
-                      VER MÁS
-                      <Icon name="arrow-right" size={14} />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
-
-      {filterPanelOpen && <div className="scrim is-open" onClick={() => setFilterPanelOpen(false)}></div>}
-      <FilterPanel
-        open={filterPanelOpen}
-        filters={filters}
-        onChange={setFilters}
-        onClose={() => setFilterPanelOpen(false)}
-      />
     </>
   );
 }

@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { checkCoupon } from '@/lib/api';
+import { checkCoupon, tourThumb } from '@/lib/api';
 import { formatUsd, usdToBob } from '@/lib/pricing';
 import { getSupabase } from '@/lib/supabase';
+import { cancellationShort } from '@/lib/site';
+import { fmtDate, plural, TYPE_LABEL } from '@/lib/tour-display';
 import type { BookingSelection, Tour } from '@/lib/types';
 import Icon from '@/components/ui/Icon';
 
 interface SummaryCardProps {
-  tour?: Tour;
+  tour: Tour;
   selection: BookingSelection | null;
   paxCount: number;
   couponCode: string | null;
@@ -23,6 +25,7 @@ interface SummaryCardProps {
   };
   baseSubtotal: number;
   onApplyCoupon: (code: string, discount: number) => void;
+  onRemoveCoupon?: () => void;
 }
 
 export default function SummaryCard({
@@ -34,20 +37,25 @@ export default function SummaryCard({
   totals,
   baseSubtotal,
   onApplyCoupon,
+  onRemoveCoupon,
 }: SummaryCardProps) {
   const [input, setInput] = useState('');
+  const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
-
   const [checking, setChecking] = useState(false);
 
   const children = selection?.children ?? 0;
   const adults = selection?.adults ?? Math.max(0, paxCount - children);
   const perPerson = selection?.perPerson ?? 0;
+  const childPrice =
+    tour.priceChild != null && children > 0 ? Math.min(Number(tour.priceChild), perPerson) : perPerson;
+  const extras = tour.extras.filter((e) => selection?.extras.includes(e.id));
+  const cancel = cancellationShort(tour.freeCancellationHours ?? 0);
 
   const applyCoupon = async () => {
     const code = input.trim().toUpperCase();
     if (!code) {
-      setMessage({ text: 'Ingresa un código de cupón.', ok: false });
+      setMessage({ text: 'Escribe un código de cupón.', ok: false });
       return;
     }
     setChecking(true);
@@ -55,144 +63,175 @@ export default function SummaryCard({
       const coupon = await checkCoupon(getSupabase(), code);
       if (coupon.valid) {
         onApplyCoupon(coupon.code, coupon.discount_pct);
-        setMessage({ text: `✓ Cupón "${coupon.code}" aplicado — ${coupon.discount_pct}% de descuento.`, ok: true });
+        setMessage({ text: `Cupón ${coupon.code} aplicado: ${coupon.discount_pct}% de descuento.`, ok: true });
       } else {
-        setMessage({ text: '✕ El cupón no existe, no está activo o venció.', ok: false });
+        setMessage({ text: 'Ese cupón no existe, no está activo o ya venció.', ok: false });
       }
     } catch {
-      setMessage({ text: '✕ No pudimos validar el cupón. Vuelve a intentarlo.', ok: false });
+      setMessage({ text: 'No pudimos validar el cupón. Vuelve a intentarlo.', ok: false });
     } finally {
       setChecking(false);
     }
   };
 
   return (
-    <div className="summary-card">
-      <h3>Resumen de tu aventura</h3>
+    <aside className="summary-card" aria-label="Resumen de tu reserva">
+      <h3>Tu reserva</h3>
 
       <div className="summary-tour">
-        <div
-          className="summary-tour__img"
-          style={{ backgroundImage: `url('${tour?.image ?? '/assets/uyuni-salt.jpg'}')` }}
-        ></div>
+        <div className="summary-tour__img" style={{ backgroundImage: `url('${tourThumb(tour.image)}')` }} />
         <div>
-          <div className="summary-tour__name">{tour?.title ?? 'Salar de Uyuni 3-Day Adventure'}</div>
+          <div className="summary-tour__name">{tour.title}</div>
           <div className="summary-tour__meta">
-            {tour?.duration ?? '3 Days · 2 Nights'} · {tour?.typeLabel ?? 'Adventure'}
+            {tour.duration}
+            {selection ? ` · ${TYPE_LABEL[selection.tourType]}` : ''}
           </div>
         </div>
       </div>
 
       <div className="summary-row">
         <span className="icon-inline">
-          <Icon name="calendar" size={16} /> Fechas
+          <Icon name="calendar" size={16} /> Salida
         </span>
         <span style={{ textAlign: 'right' }}>
-          {selection?.date
-            ? new Date(`${selection.date}T12:00:00`).toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              })
-            : 'Fecha a confirmar'}
-          {selection?.startTime ? ` · ${selection.startTime}` : ''}
-          <br />
-          <small className="text-muted">{tour?.duration ?? '3 días · 2 noches'}</small>
+          {selection?.date ? fmtDate(selection.date) : 'Fecha por elegir'}
+          {selection?.startTime ? (
+            <>
+              <br />
+              <small className="text-muted">{selection.startTime} h (hora de Bolivia)</small>
+            </>
+          ) : null}
         </span>
       </div>
       <div className="summary-row">
         <span className="icon-inline">
-          <Icon name="users" size={16} /> Pasajeros
+          <Icon name="users" size={16} /> Viajeros
         </span>
         <span>
-          {adults} Adulto{adults !== 1 ? 's' : ''}
-          {children > 0 ? ` · ${children} Niño${children !== 1 ? 's' : ''}` : ''}
+          {plural(adults, 'adulto', 'adultos')}
+          {children > 0 ? ` · ${plural(children, 'niño', 'niños')}` : ''}
         </span>
       </div>
 
-      <div className="divider" style={{ margin: '16px 0' }}></div>
+      <div className="divider" style={{ margin: '16px 0' }} />
 
-      <div className="summary-coupon">
-        <label className="summary-coupon__label">
-          <Icon name="tag" size={15} />
-          ¿Tienes un cupón?
-        </label>
-        <div className="summary-coupon__form">
-          <input
-            type="text"
-            className="summary-coupon__input"
-            placeholder="Código de cupón"
-            value={input}
-            disabled={Boolean(couponCode)}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <button
-            type="button"
-            className="summary-coupon__btn"
-            onClick={() => void applyCoupon()}
-            disabled={Boolean(couponCode) || checking}
-          >
-            {checking ? '…' : 'Aplicar'}
-          </button>
-        </div>
-        {message && (
-          <p
-            className="summary-coupon__msg"
-            style={{ display: 'block', color: message.ok ? 'var(--green-700)' : 'var(--danger)' }}
-          >
-            {message.text}
-          </p>
-        )}
-      </div>
-
-      <div className="summary-row">
-        <span>
-          {paxCount} viajero{paxCount > 1 ? 's' : ''} × US$ {perPerson}
-        </span>
-        <span>{formatUsd(baseSubtotal)}</span>
-      </div>
-      {children > 0 && tour?.priceChild != null && (
-        <p className="text-small" style={{ color: 'var(--ink-500)', margin: '2px 0 0' }}>
-          Tarifa niño de referencia: US$ {tour.priceChild}. La reserva online aplica la tarifa de
-          adulto (US$ {perPerson}) a todos los viajeros.
-        </p>
-      )}
-      {couponCode && (
-        <div className="summary-row summary-row--sub">
-          <span>Cupón ({couponCode})</span>
-          <span style={{ color: 'var(--green-700)' }}>-US$ {couponDiscount}</span>
+      {children > 0 && childPrice !== perPerson ? (
+        <>
+          <div className="summary-row">
+            <span>
+              {plural(adults, 'adulto', 'adultos')} × {formatUsd(perPerson)}
+            </span>
+            <span>{formatUsd(perPerson * adults)}</span>
+          </div>
+          <div className="summary-row">
+            <span>
+              {plural(children, 'niño', 'niños')} × {formatUsd(childPrice)}
+            </span>
+            <span>{formatUsd(childPrice * children)}</span>
+          </div>
+        </>
+      ) : (
+        <div className="summary-row">
+          <span>
+            {plural(paxCount, 'viajero', 'viajeros')} × {formatUsd(perPerson)}
+          </span>
+          <span>{formatUsd(perPerson * paxCount)}</span>
         </div>
       )}
+      {extras
+        .filter((e) => e.kind === 'paid')
+        .map((e) => (
+          <div className="summary-row summary-row--sub" key={e.id}>
+            <span>{e.name}</span>
+            <span>{formatUsd(e.price)}</span>
+          </div>
+        ))}
       {totals.groupDiscount > 0 && (
-        <div className="summary-row summary-row--sub">
-          <span>Descuento grupo ({Math.round((totals.groupDiscountRate ?? 0) * 100)}%)</span>
-          <span style={{ color: 'var(--green-700)' }}>-US$ {totals.groupDiscount}</span>
+        <div className="summary-row summary-row--sub summary-row--off">
+          <span>Descuento por grupo ({Math.round((totals.groupDiscountRate ?? 0) * 100)}%)</span>
+          <span>−{formatUsd(totals.groupDiscount)}</span>
         </div>
       )}
       {(totals.offerDiscount ?? 0) > 0 && (
-        <div className="summary-row summary-row--sub">
+        <div className="summary-row summary-row--sub summary-row--off">
           <span>Oferta especial ({Math.round(totals.offerPct ?? 0)}%)</span>
-          <span style={{ color: 'var(--green-700)' }}>-{formatUsd(totals.offerDiscount ?? 0)}</span>
+          <span>−{formatUsd(totals.offerDiscount ?? 0)}</span>
         </div>
       )}
+      {couponCode && (
+        <div className="summary-row summary-row--sub summary-row--off">
+          <span>
+            Cupón {couponCode}
+            {onRemoveCoupon && (
+              <button type="button" className="summary-coupon__remove" onClick={onRemoveCoupon}>
+                Quitar
+              </button>
+            )}
+          </span>
+          <span>−{formatUsd(couponDiscount)}</span>
+        </div>
+      )}
+
       <div className="summary-row summary-row--total">
         <span>Total</span>
         <span>{formatUsd(totals.total)}</span>
       </div>
-      <p className="text-small" style={{ textAlign: 'right', color: 'var(--ink-500)', margin: '4px 0 0' }}>
-        ≈ BOB {usdToBob(totals.total).toLocaleString('es-BO')}
+      <p className="summary-bob">
+        Aprox. Bs {usdToBob(totals.total).toLocaleString('es-BO')} · sin cargos ocultos
+        {baseSubtotal > totals.total ? ` · ahorras ${formatUsd(baseSubtotal - totals.total)}` : ''}
       </p>
 
-      <div className="summary-cta">
-        <p className="text-small" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <Icon name="shield-check" size={15} />
-          Pago seguro y encriptado
+      {!couponCode && (
+        <div className="summary-coupon">
+          {open ? (
+            <>
+              <div className="summary-coupon__form">
+                <input
+                  type="text"
+                  className="summary-coupon__input"
+                  placeholder="Código de cupón"
+                  aria-label="Código de cupón"
+                  value={input}
+                  autoFocus
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      void applyCoupon();
+                    }
+                  }}
+                />
+                <button type="button" className="summary-coupon__btn" onClick={() => void applyCoupon()} disabled={checking}>
+                  {checking ? '…' : 'Aplicar'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <button type="button" className="summary-coupon__toggle" onClick={() => setOpen(true)}>
+              <Icon name="tag" size={15} /> Tengo un cupón de descuento
+            </button>
+          )}
+        </div>
+      )}
+      {message && (
+        <p className={`summary-coupon__msg${message.ok ? ' is-ok' : ' is-error'}`} role="status">
+          {message.text}
         </p>
-        <p className="text-small" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Icon name="clock" size={15} />
-          Confirmación instantánea
-        </p>
-      </div>
-    </div>
+      )}
+
+      <ul className="summary-perks">
+        <li>
+          <Icon name="shield-check" size={16} /> Reserva ahora, paga después
+        </li>
+        {cancel && (
+          <li>
+            <Icon name="rotate-ccw" size={16} /> {cancel}
+          </li>
+        )}
+        <li>
+          <Icon name="ticket" size={16} /> Voucher digital al instante
+        </li>
+      </ul>
+    </aside>
   );
 }

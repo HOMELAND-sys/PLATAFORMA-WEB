@@ -2,13 +2,15 @@
 import { slots } from './slots';
 import { operatorDay, shiftDay } from './format';
 export async function pendingCounts(){
-  const [bookings,pases,endosos]=await Promise.all([
+  const [bookings,pases,endosos,reviews]=await Promise.all([
     sb().from('reservations').select('id',{count:'exact',head:true}).eq('status','pendiente_pago'),
     sb().from('agency_transfers').select('id',{count:'exact',head:true}).eq('status','pendiente').eq('kind','pase'),
     sb().from('agency_transfers').select('id',{count:'exact',head:true}).eq('status','pendiente').eq('kind','endoso'),
+    sb().from('reviews').select('id',{count:'exact',head:true}).eq('status','pending'),
   ]);
   for(const result of [bookings,pases,endosos])if(result.error)throw result.error;
-  return {reservas:bookings.count??0,pases:pases.count??0,endosos:endosos.count??0};
+  // Las reseñas no deben romper los contadores si la tabla aún no existe en un entorno.
+  return {reservas:bookings.count??0,pases:pases.count??0,endosos:endosos.count??0,resenas:reviews.error?0:reviews.count??0};
 }
 export async function operationalAlerts(){
   const tomorrow=shiftDay(operatorDay(),1);

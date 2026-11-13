@@ -9,25 +9,8 @@ import Reveal from '@/components/ui/Reveal';
 import { fetchCategories, type CategoryRow } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import { FOOTER_CTA } from '@/data/site-photos';
-
-// Datos de contacto que ya existen en el proyecto (WhatsAppFab, voucher-data, footer anterior).
-const WHATSAPP_URL = 'https://wa.me/59176012345';
-const PHONE_TEL = 'tel:+59176012345';
-const PHONE_LABEL = '(+591) 760 12345';
-const EMAIL = 'info@homeland.tours';
-const SCHEDULE = 'Lun–Vie, 9am–12pm / 14:00–18:00';
-
-interface CompanyLinks {
-  facebook?: string;
-  instagram?: string;
-  tiktok?: string;
-}
-
-function safeUrl(url?: string): string | null {
-  if (!url) return null;
-  const trimmed = url.trim();
-  return /^https?:\/\//i.test(trimmed) ? trimmed : null;
-}
+import { useSite } from '@/context/SiteContext';
+import { cancellationShort, primaryPhone, socialUrl, telHref, whatsappUrl } from '@/lib/site';
 
 function useIsMobile() {
   const [mobile, setMobile] = useState(false);
@@ -77,10 +60,12 @@ const SOCIAL_GLYPHS: Record<string, ReactNode> = {
   ),
 };
 
+const SOCIAL_LABEL = { facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' } as const;
+
 export default function Footer() {
   const mobile = useIsMobile();
+  const { company, policies } = useSite();
   const [categories, setCategories] = useState<CategoryRow[]>([]);
-  const [social, setSocial] = useState<CompanyLinks>({});
 
   useEffect(() => {
     let active = true;
@@ -89,44 +74,25 @@ export default function Footer() {
         if (active) setCategories(cats);
       })
       .catch(() => undefined);
-    // Redes sociales: solo las que la operatora configuró en Ajustes (settings.company).
-    const loadSocial = async () => {
-      try {
-        const { data, error } = await getSupabase()
-          .from('settings')
-          .select('value')
-          .eq('key', 'company')
-          .maybeSingle();
-        if (!active || error || !data) return;
-        const value = data.value as CompanyLinks | null;
-        if (value && typeof value === 'object') setSocial(value);
-      } catch {
-        // sin redes configuradas: la fila simplemente no se muestra
-      }
-    };
-    void loadSocial();
     return () => {
       active = false;
     };
   }, []);
 
+  const wa = whatsappUrl(company, 'Hola, quisiera información sobre sus tours.');
+  const phone = primaryPhone(company);
   const socialLinks = (['facebook', 'instagram', 'tiktok'] as const)
-    .map((key) => ({ key, url: safeUrl(social[key]) }))
+    .map((key) => ({ key, url: socialUrl(key, company[key]) }))
     .filter((s): s is { key: 'facebook' | 'instagram' | 'tiktok'; url: string } => Boolean(s.url));
-
+  const hasContact = Boolean(wa || phone || company.email || company.address);
+  const cancelLabel = cancellationShort(policies.free_cancellation_hours);
   const year = new Date().getFullYear();
 
   return (
     <footer className="site-footer">
       {/* ---------- Banda CTA con fotografía real ---------- */}
       <section className="footer-cta" aria-label="Invitación a reservar">
-        <img
-          className="footer-cta__bg"
-          src={FOOTER_CTA.src}
-          alt={FOOTER_CTA.alt}
-          loading="lazy"
-          decoding="async"
-        />
+        <img className="footer-cta__bg" src={FOOTER_CTA.src} alt={FOOTER_CTA.alt} loading="lazy" decoding="async" />
         <div className="footer-cta__overlay" aria-hidden="true" />
         <div className="container footer-cta__inner">
           <Reveal>
@@ -135,21 +101,22 @@ export default function Footer() {
               ¿Listo para tu próxima <em>aventura</em>?
             </h2>
             <p className="footer-cta__sub">
-              Salar de Uyuni, Amazonía, Cordillera y más: viajes auténticos diseñados por gente de
-              aquí, con operadores locales y precio justo.
+              Elige tu tour, reserva tu fecha en minutos y nosotros nos ocupamos del resto: transporte,
+              guías locales y todos los detalles.
             </p>
             <div className="footer-cta__actions">
               <Link className="btn btn--primary btn--lg" href="/tours">
                 Ver tours <Icon name="arrow-right" size={17} />
               </Link>
-              <a
-                className="btn btn--outline-white btn--lg"
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Icon name="whatsapp" size={18} /> Escríbenos por WhatsApp
-              </a>
+              {wa ? (
+                <a className="btn btn--outline-white btn--lg" href={wa} target="_blank" rel="noopener noreferrer">
+                  <Icon name="whatsapp" size={18} /> Escríbenos por WhatsApp
+                </a>
+              ) : (
+                <Link className="btn btn--outline-white btn--lg" href="/customize">
+                  <Icon name="route" size={18} /> Arma tu viaje a medida
+                </Link>
+              )}
             </div>
           </Reveal>
         </div>
@@ -158,12 +125,12 @@ export default function Footer() {
       {/* ---------- Cuerpo ---------- */}
       <div className="footer-body">
         <div className="container">
-          <div className="footer-grid">
+          <div className="footer-grid footer-grid--5">
             <div className="footer-brand-col">
               <HomelandLogo className="footer-logo" height={92} />
               <p className="footer-brand__text">
-                <strong>Authentic journeys. Local hearts.</strong>
-                Operador 100% boliviano: viajes auténticos diseñados por gente de aquí.
+                <strong>Viajes auténticos. Corazón local.</strong>
+                Operadora de turismo boliviana: diseñamos y operamos cada salida con gente de aquí.
               </p>
               {socialLinks.length > 0 && (
                 <div className="footer-social" aria-label="Redes sociales">
@@ -174,7 +141,7 @@ export default function Footer() {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={key === 'facebook' ? 'Facebook' : key === 'instagram' ? 'Instagram' : 'TikTok'}
+                      aria-label={SOCIAL_LABEL[key]}
                     >
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
                         {SOCIAL_GLYPHS[key]}
@@ -195,78 +162,115 @@ export default function Footer() {
                     <Link href={`/tours?cat=${cat.slug}`}>{cat.label}</Link>
                   </li>
                 ))}
+              </ul>
+            </FooterCol>
+
+            <FooterCol title="Homeland Tours" mobile={mobile}>
+              <ul className="footer-links">
                 <li>
-                  <Link href="/customize">Personalizar viaje</Link>
+                  <Link href="/nosotros">Sobre nosotros</Link>
+                </li>
+                <li>
+                  <Link href="/customize">Viaje a medida</Link>
+                </li>
+                <li>
+                  <Link href="/business">Empresas y agencias</Link>
+                </li>
+                <li>
+                  <Link href="/bookings">Mis reservas</Link>
+                </li>
+                <li>
+                  <Link href="/favoritos">Mis favoritos</Link>
                 </li>
               </ul>
             </FooterCol>
 
-            <FooterCol title="Empresa" mobile={mobile}>
+            <FooterCol title="Ayuda" mobile={mobile}>
               <ul className="footer-links">
                 <li>
-                  <Link href="/#nosotros">Sobre nosotros</Link>
+                  <Link href="/preguntas-frecuentes">Preguntas frecuentes</Link>
                 </li>
                 <li>
-                  <Link href="/#nuestra-diferencia">Nuestra diferencia</Link>
+                  <Link href="/politica-de-cancelacion">Política de cancelación</Link>
                 </li>
                 <li>
-                  <Link href="/customize">Formulario de reserva</Link>
+                  <Link href="/terminos">Términos y condiciones</Link>
                 </li>
                 <li>
-                  <Link href="/bookings">Mis reservas</Link>
+                  <Link href="/privacidad">Privacidad</Link>
                 </li>
               </ul>
             </FooterCol>
 
             <FooterCol title="Contacto" mobile={mobile}>
-              <ul className="footer-contact">
-                <li>
-                  <Icon name="whatsapp" size={17} className="ic" />
-                  <span>
-                    <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                      WhatsApp
-                    </a>
-                    <small>Respuesta rápida en horario de oficina</small>
-                  </span>
-                </li>
-                <li>
-                  <Icon name="phone" size={17} className="ic" />
-                  <span>
-                    <a href={PHONE_TEL}>{PHONE_LABEL}</a>
-                    <small className="schedule">{SCHEDULE}</small>
-                  </span>
-                </li>
-                <li>
-                  <Icon name="mail" size={17} className="ic" />
-                  <span>
-                    <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
-                  </span>
-                </li>
-              </ul>
+              {hasContact ? (
+                <ul className="footer-contact">
+                  {wa && (
+                    <li>
+                      <Icon name="whatsapp" size={17} className="ic" />
+                      <span>
+                        <a href={wa} target="_blank" rel="noopener noreferrer">
+                          WhatsApp
+                        </a>
+                        <small>Te respondemos en horario de oficina</small>
+                      </span>
+                    </li>
+                  )}
+                  {phone && (
+                    <li>
+                      <Icon name="phone" size={17} className="ic" />
+                      <span>
+                        <a href={telHref(phone)}>{phone}</a>
+                      </span>
+                    </li>
+                  )}
+                  {company.email && (
+                    <li>
+                      <Icon name="mail" size={17} className="ic" />
+                      <span>
+                        <a href={`mailto:${company.email}`}>{company.email}</a>
+                      </span>
+                    </li>
+                  )}
+                  {company.address && (
+                    <li>
+                      <Icon name="pin" size={17} className="ic" />
+                      <span>{company.address}</span>
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <ul className="footer-links">
+                  <li>
+                    <Link href="/customize">Escríbenos tu consulta</Link>
+                  </li>
+                </ul>
+              )}
             </FooterCol>
           </div>
 
-          {/* ---------- Sellos de confianza (los que ya usa el sitio) ---------- */}
           <div className="footer-trust" aria-label="Garantías Homeland Tours">
             <div className="footer-trust__item">
               <Icon name="shield-check" size={22} />
               <span>
-                <strong>Pago seguro</strong>
-                <small>Zwap, enlace o QR</small>
+                <strong>Reserva segura</strong>
+                <small>Pago con enlace o QR y voucher al instante</small>
               </span>
             </div>
             <div className="footer-trust__item">
               <Icon name="rotate-ccw" size={22} />
               <span>
-                <strong>Cancelación gratuita</strong>
-                <small>En tours seleccionados · consulta las condiciones</small>
+                <strong>Cancelación flexible</strong>
+                <small>{cancelLabel ? `${cancelLabel} · consulta las condiciones` : 'Consulta las condiciones de cada tour'}</small>
               </span>
             </div>
             <div className="footer-trust__item">
               <Icon name="badge-check" size={22} />
               <span>
-                <strong>Operador local</strong>
-                <small>100% boliviano</small>
+                <strong>Operadora local</strong>
+                <small>
+                  100 % boliviana{company.license ? ` · Licencia ${company.license}` : ''}
+                </small>
               </span>
             </div>
           </div>
@@ -277,18 +281,17 @@ export default function Footer() {
       <div className="footer-bottom">
         <div className="container footer-bottom__inner">
           <span className="footer-copyright">
-            © {year} Homeland Tours. Todos los derechos reservados.
+            © {year} {company.name || 'Homeland Tours'}. Todos los derechos reservados.
           </span>
           <div className="footer-bottom__right">
+            <nav className="footer-legal" aria-label="Información legal">
+              <Link href="/terminos">Términos</Link>
+              <Link href="/privacidad">Privacidad</Link>
+              <Link href="/politica-de-cancelacion">Cancelaciones</Link>
+            </nav>
             <span className="footer-locale" title="Idioma y moneda del sitio">
-              <Icon name="globe" size={15} /> ES · US$
+              <Icon name="globe" size={15} /> Español · US$
             </span>
-            <div className="footer-payments" aria-label="Métodos de pago aceptados">
-              <span className="pay-badge pay-badge--visa" aria-label="Visa">VISA</span>
-              <span className="pay-badge pay-badge--mastercard" aria-label="Mastercard">MC</span>
-              <span className="pay-badge pay-badge--paypal" aria-label="PayPal">PayPal</span>
-              <span className="pay-badge pay-badge--zwap" aria-label="Zwap">Zwap</span>
-            </div>
           </div>
         </div>
       </div>

@@ -1,9 +1,11 @@
 ﻿import type { PassengerRow, ReservationRow, TourRow } from '@/lib/api';
-import type { AgencyCompanyType, BookingSource, SpecialOfferKind, TransferKind } from '@/lib/types';
+import type { AgencyCompanyType, BookingSource, PriceTier, SpecialOfferKind, TourType, TransferKind } from '@/lib/types';
 
 export interface Product extends Pick<TourRow, 'id' | 'title' | 'slug' | 'active' | 'price_group' | 'price_semi' | 'price_private'> {
   code: string | null;
   price_child: number | null;
+  /** Precio por persona según tamaño de grupo (opcional, por modalidad). */
+  price_tiers?: Partial<Record<TourType, PriceTier[]>> | null;
   child_age_max: number;
   min_pax: number;
   default_cutoff_hours: number;

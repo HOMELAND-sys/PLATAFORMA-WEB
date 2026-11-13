@@ -1,147 +1,71 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { SplitText } from 'gsap/SplitText';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 import Icon from '@/components/ui/Icon';
-import HomelandLogo from '@/components/brand/HomelandLogo';
 import { onIntroReveal, prefersReducedMotion } from '@/lib/intro';
-import { fetchActiveTours, fetchCategories, tourThumb, type CategoryRow } from '@/lib/api';
-import { getSupabase } from '@/lib/supabase';
+import { tourThumb, type CategoryRow } from '@/lib/api';
+import { money } from '@/lib/pricing';
 import { HERO_SLIDES } from '@/data/site-photos';
 import type { Tour } from '@/lib/types';
 
-gsap.registerPlugin(useGSAP, SplitText, ScrambleTextPlugin);
-
-const PLACEHOLDERS = [
-  '¿A dónde quieres ir?',
-  'Salar de Uyuni',
-  'La Paz',
-  'Valle de la Luna',
-  'Amazonía',
-  'Titicaca',
-  'Potosí',
-];
-
 const SLIDE_MS = 7000;
-const PROOF_AVATARS = [12, 32, 45, 8];
+
+function norm(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
 
 function tourMatchesQuery(tour: Tour, q: string, categories: CategoryRow[]): boolean {
   if (!q) return true;
-  const haystack = [
-    tour.title,
-    tour.destination,
-    tour.summary.join(' '),
-    tour.highlights.join(' '),
-    tour.typeLabel,
-    tour.activityLabel,
-    ...categories.filter((c) => tour.categories.includes(c.slug as never)).map((c) => c.label),
-  ]
-    .join(' ')
-    .toLowerCase();
-  return haystack.includes(q.toLowerCase());
+  const haystack = norm(
+    [
+      tour.title,
+      tour.destination,
+      tour.summary.join(' '),
+      tour.highlights.join(' '),
+      tour.typeLabel,
+      tour.activityLabel,
+      ...categories.filter((c) => tour.categories.includes(c.slug as never)).map((c) => c.label),
+    ].join(' '),
+  );
+  return norm(q)
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((word) => haystack.includes(word));
 }
 
-export default function Hero() {
-  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+interface HeroProps {
+  tours: Tour[];
+  categories: CategoryRow[];
+  rating: { avg: number; count: number } | null;
+}
+
+export default function Hero({ tours, categories, rating }: HeroProps) {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [slideIdx, setSlideIdx] = useState(0);
   const [date, setDate] = useState('');
   const [pax, setPax] = useState(2);
   const [paxOpen, setPaxOpen] = useState(false);
+  const [shown, setShown] = useState(false);
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const paxRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLElement>(null);
 
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-  /* Entrada del hero: espera a que la intro del logotipo abra la cortina. */
-  useGSAP(
-    () => {
-      const hero = heroRef.current;
-      if (!hero || prefersReducedMotion()) return;
-      const q = gsap.utils.selector(hero);
-      const media = q('.hero__media');
-      const eyebrow = q('.hero__eyebrow')[0] as HTMLElement | undefined;
-      const title = q('.hero__title')[0] as HTMLElement | undefined;
-      const rest = q('.hero__lead, .search, .hero__proof, .hero__foot');
-
-      gsap.set(media, { autoAlpha: 0 });
-      gsap.set([eyebrow, title, ...rest], { autoAlpha: 0 });
-
-      let split: SplitText | null = null;
-      const play = () => {
-        const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-        tl.to(media, { autoAlpha: 1, duration: 1.6, ease: 'power2.out' }, 0);
-
-        if (eyebrow) {
-          const text = eyebrow.textContent ?? '';
-          tl.set(eyebrow, { autoAlpha: 1 }, 0.25).to(
-            eyebrow,
-            { duration: 1.2, scrambleText: { text, chars: 'upperCase', speed: 0.5, revealDelay: 0.15 }, ease: 'none' },
-            0.25,
-          );
-        }
-
-        if (title) {
-          split = SplitText.create(title, { type: 'lines,words', mask: 'lines', linesClass: 'hero__line' });
-          tl.set(title, { autoAlpha: 1 }, 0.3).from(
-            split.words,
-            { yPercent: 115, rotate: 4, duration: 1.3, stagger: 0.07, transformOrigin: '0% 100%' },
-            0.3,
-          );
-          tl.add(() => {
-            split?.revert();
-            split = null;
-          });
-        }
-
-        tl.fromTo(
-          rest,
-          { autoAlpha: 0, y: 26 },
-          { autoAlpha: 1, y: 0, duration: 1.2, stagger: 0.12, clearProps: 'transform' },
-          0.75,
-        );
-      };
-
-      let cancelled = false;
-      const unsubscribe = onIntroReveal(() => {
-        // Espera a las fuentes para que SplitText corte las líneas correctamente.
-        void document.fonts.ready.then(() => {
-          if (!cancelled) play();
-        });
-      });
-      return () => {
-        cancelled = true;
-        unsubscribe();
-        split?.revert();
-      };
-    },
-    { scope: heroRef },
-  );
-
+  // La entrada espera a que la intro del logotipo abra la cortina (con tope de seguridad).
   useEffect(() => {
-    let active = true;
-    Promise.all([fetchActiveTours(getSupabase()), fetchCategories(getSupabase())])
-      .then(([t, c]) => {
-        if (!active) return;
-        setTours(t);
-        setCategories(c);
-      })
-      .catch(() => {
-        // sin catálogo no hay sugerencias
-      });
+    const unsubscribe = onIntroReveal(() => setShown(true));
+    const safety = window.setTimeout(() => setShown(true), 3200);
     return () => {
-      active = false;
+      unsubscribe();
+      window.clearTimeout(safety);
     };
   }, []);
 
@@ -152,26 +76,9 @@ export default function Hero() {
   }, [slideIdx]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIdx((i) => (i + 1) % PLACEHOLDERS.length);
-    }, 3500);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (inputRef.current && document.activeElement !== inputRef.current && !search) {
-      inputRef.current.placeholder = PLACEHOLDERS[placeholderIdx];
-    }
-  }, [placeholderIdx, search]);
-
-  useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-      if (paxRef.current && !paxRef.current.contains(e.target as Node)) {
-        setPaxOpen(false);
-      }
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+      if (paxRef.current && !paxRef.current.contains(e.target as Node)) setPaxOpen(false);
     };
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
@@ -179,8 +86,8 @@ export default function Hero() {
 
   const results = useMemo(() => {
     const q = search.trim();
-    if (!q) return tours.slice(0, 6);
-    return tours.filter((t) => tourMatchesQuery(t, q, categories)).slice(0, 8);
+    if (!q) return tours.slice(0, 5);
+    return tours.filter((t) => tourMatchesQuery(t, q, categories)).slice(0, 6);
   }, [search, tours, categories]);
 
   useEffect(() => {
@@ -200,27 +107,35 @@ export default function Hero() {
     const q = search.trim();
     if (q) params.set('q', q);
     if (date) params.set('date', date);
-    params.set('pax', String(pax));
-    router.push(`/tours?${params.toString()}`);
+    if (pax !== 2) params.set('pax', String(pax));
+    const qs = params.toString();
+    router.push(qs ? `/tours?${qs}` : '/tours');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!open) setOpen(true);
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      setOpen(true);
       setActiveIdx((i) => Math.min(results.length - 1, i + 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIdx((i) => Math.max(0, i - 1));
+    } else if (e.key === 'Enter' && open && search.trim() && results[activeIdx]) {
+      e.preventDefault();
+      goToTour(results[activeIdx].slug);
     } else if (e.key === 'Escape') {
       setOpen(false);
     }
   };
 
   const slide = HERO_SLIDES[slideIdx];
+  const quick = categories.filter((c) => tours.some((t) => t.categories.includes(c.slug as never))).slice(0, 5);
 
   return (
-    <section className="hero" ref={heroRef}>
+    <section className={`hero hv${shown ? ' is-in' : ''}`}>
+      <noscript>
+        <style>{`.hv .hv-anim{opacity:1!important;transform:none!important}`}</style>
+      </noscript>
       <div className="hero__media">
         {HERO_SLIDES.map((s, i) => (
           <img
@@ -235,30 +150,30 @@ export default function Hero() {
         ))}
         <div className="hero__veil"></div>
       </div>
+
       <div className="container hero__inner">
-        <HomelandLogo className="hero__brand" height={30} />
-        <p className="hero__eyebrow">Viajes auténticos. Corazón local.</p>
-        <h1 className="hero__title">
-          Descubre la magia
-          <br />
-          de los <em>Andes Bolivianos</em>
+        <p className="hv-eyebrow hv-anim">
+          <Icon name="badge-check" size={16} /> Operadora de turismo boliviana
+        </p>
+        <h1 className="hero__title hv-anim">
+          Vive Bolivia con quienes <em>mejor la conocen</em>
         </h1>
-        <p className="hero__lead">
-          Paisajes inolvidables, culturas vibrantes y experiencias auténticas —{' '}
-          <span className="accent">reservables 100% online</span> con operadores locales.
+        <p className="hero__lead hv-anim">
+          Salar de Uyuni, Sajama, Toro Toro, el lago Titicaca y la Amazonía. Elige tu fecha, reserva online y
+          recibe tu voucher al instante.
         </p>
 
-        <form className="search" onSubmit={handleSubmit} autoComplete="off">
+        <form className="search hv-anim" onSubmit={handleSubmit} autoComplete="off" role="search">
           <div className="search__field search__field--main" ref={containerRef}>
             <span className="search__icon">
               <Icon name="search" size={19} />
             </span>
             <div className="search__field-text">
-              <label>Destino o tour</label>
+              <label htmlFor="hero-q">Destino o tour</label>
               <input
-                ref={inputRef}
+                id="hero-q"
                 type="text"
-                placeholder={PLACEHOLDERS[0]}
+                placeholder="¿A dónde quieres ir?"
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -277,38 +192,38 @@ export default function Hero() {
               <div className="hero-search-dropdown" id="hero-search-list" role="listbox">
                 {results.length === 0 ? (
                   <div className="hero-search-empty">
-                    Sin resultados para &ldquo;{search.trim()}&rdquo;. Prueba con otro destino.
+                    Sin resultados para «{search.trim()}». Prueba con otro destino.
                   </div>
                 ) : (
-                  results.map((tour, i) => (
-                    <button
-                      type="button"
-                      key={tour.slug}
-                      id={`hero-opt-${tour.slug}`}
-                      role="option"
-                      aria-selected={i === activeIdx}
-                      className={`hero-search-item${i === activeIdx ? ' is-active' : ''}`}
-                      onMouseEnter={() => setActiveIdx(i)}
-                      onClick={() => goToTour(tour.slug)}
-                    >
-                      <span
-                        className="hero-search-item__img"
-                        style={{ backgroundImage: `url('${tourThumb(tour.image)}')` }}
-                        aria-hidden="true"
-                      ></span>
-                      <span className="hero-search-item__body">
-                        <span className="hero-search-item__title">{tour.title}</span>
-                        <span className="hero-search-item__meta">
-                          {tour.destination} · {tour.duration}
+                  <>
+                    <div className="hero-search-foot">{search.trim() ? 'Tours que coinciden' : 'Tours populares'}</div>
+                    {results.map((tour, i) => (
+                      <button
+                        type="button"
+                        key={tour.slug}
+                        id={`hero-opt-${tour.slug}`}
+                        role="option"
+                        aria-selected={i === activeIdx}
+                        className={`hero-search-item${i === activeIdx ? ' is-active' : ''}`}
+                        onMouseEnter={() => setActiveIdx(i)}
+                        onClick={() => goToTour(tour.slug)}
+                      >
+                        <span
+                          className="hero-search-item__img"
+                          style={{ backgroundImage: `url('${tourThumb(tour.image)}')` }}
+                          aria-hidden="true"
+                        ></span>
+                        <span className="hero-search-item__body">
+                          <span className="hero-search-item__title">{tour.title}</span>
+                          <span className="hero-search-item__meta">
+                            {tour.destination} · {tour.duration}
+                          </span>
                         </span>
-                      </span>
-                      <span className="hero-search-item__price">US$ {tour.price}</span>
-                    </button>
-                  ))
+                        {tour.price > 0 && <span className="hero-search-item__price">US$ {money(tour.price)}</span>}
+                      </button>
+                    ))}
+                  </>
                 )}
-                <div className="hero-search-foot">
-                  {results.length > 0 ? `${results.length} tour${results.length === 1 ? '' : 's'} sugerido${results.length === 1 ? '' : 's'}` : ''}
-                </div>
               </div>
             )}
           </div>
@@ -318,13 +233,7 @@ export default function Hero() {
             </span>
             <div className="search__field-text">
               <label htmlFor="hero-date">Fecha</label>
-              <input
-                id="hero-date"
-                type="date"
-                min={today}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              <input id="hero-date" type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           </div>
           <div className="search__field search__field--pax" ref={paxRef}>
@@ -345,21 +254,11 @@ export default function Hero() {
             </div>
             {paxOpen && (
               <div className="hero-pax-pop">
-                <button
-                  type="button"
-                  aria-label="Quitar un viajero"
-                  disabled={pax <= 1}
-                  onClick={() => setPax((p) => Math.max(1, p - 1))}
-                >
+                <button type="button" aria-label="Quitar un viajero" disabled={pax <= 1} onClick={() => setPax((p) => Math.max(1, p - 1))}>
                   <Icon name="minus" size={16} />
                 </button>
                 <span aria-live="polite">{pax}</span>
-                <button
-                  type="button"
-                  aria-label="Añadir un viajero"
-                  disabled={pax >= 12}
-                  onClick={() => setPax((p) => Math.min(12, p + 1))}
-                >
+                <button type="button" aria-label="Añadir un viajero" disabled={pax >= 8} onClick={() => setPax((p) => Math.min(8, p + 1))}>
                   <Icon name="plus" size={16} />
                 </button>
               </div>
@@ -370,28 +269,18 @@ export default function Hero() {
             <Icon name="arrow-right" size={18} />
           </button>
         </form>
-      </div>
 
-      <aside className="hero__proof">
-        <div className="avatar-group">
-          {PROOF_AVATARS.map((n) => (
-            <span
-              key={n}
-              className="avatar"
-              style={{ backgroundImage: `url('https://i.pravatar.cc/60?img=${n}')` }}
-            ></span>
-          ))}
-        </div>
-        <div className="hero__proof-body">
-          <span className="hero__proof-score">
-            <Icon name="star-solid" size={14} />
-            <strong>4.9/5</strong> Excelente
-          </span>
-          <span className="hero__proof-text">
-            Confianza de <strong>12.000+</strong> viajeros
-          </span>
-        </div>
-      </aside>
+        {quick.length > 0 && (
+          <div className="hv-quick hv-anim">
+            <span>Explora:</span>
+            {quick.map((c) => (
+              <Link key={c.slug} href={`/tours?cat=${c.slug}`} className="hv-quick__chip">
+                {c.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="hero__foot">
         <div className="container hero__foot-inner">
@@ -399,6 +288,15 @@ export default function Hero() {
             <Icon name="pin" size={14} />
             {slide.destination}
           </span>
+          {rating && rating.count > 0 && (
+            <span className="hv-rating">
+              <Icon name="star-solid" size={15} />
+              <strong>{rating.avg.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</strong>
+              <span>
+                · {rating.count} {rating.count === 1 ? 'opinión' : 'opiniones'} de viajeros
+              </span>
+            </span>
+          )}
           <div className="hero__dots" role="group" aria-label="Destinos destacados">
             {HERO_SLIDES.map((s, i) => (
               <button

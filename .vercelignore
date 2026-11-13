@@ -1,0 +1,14 @@
+.git
+.next
+node_modules
+.env*
+.mcp.json
+.claude
+.zcode
+.commandcode
+.playwright-mcp
+legacy
+docs
+skills-lock.json
+*.tsbuildinfo
+75953e

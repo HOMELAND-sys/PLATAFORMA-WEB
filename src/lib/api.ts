@@ -1,14 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
-  Category,
-  Coupon,
   ItineraryDay,
+  PriceTier,
   Tour,
   TourExtra,
   TourInfo,
   TourType,
 } from '@/lib/types';
-import { getGroupDiscountRate } from '@/lib/pricing';
+import { fromPrice, getGroupDiscountRate, hasTiers, unitPrice } from '@/lib/pricing';
 
 // ---------------------------------------------------------------------------
 // Tipos de fila (forma de la base)
@@ -89,6 +88,8 @@ export interface TourPublicColumns {
   default_start_times: string[] | null;
   default_cutoff_hours: number | null;
   code: string | null;
+  price_tiers: Partial<Record<TourType, PriceTier[]>> | null;
+  departures: string | null;
 }
 
 export interface SpecialOffer {
@@ -158,9 +159,23 @@ export function mapTour(row: TourRow, catSlugById: Map<string, string>): Tour {
   const x = row as TourRow & Partial<TourPublicColumns>;
   const slugs = row.category_ids.map((id) => catSlugById.get(id)).filter(Boolean) as string[];
   const primary = (row.category_id && catSlugById.get(row.category_id)) || slugs[0] || 'uyuni';
-  const prices = [row.price_group, row.price_semi, row.price_private].filter(
-    (p): p is number => p !== null && p >= 0,
-  );
+  const tourTypes = {
+    group: Number(row.price_group ?? 0),
+    semi: Number(row.price_semi ?? 0),
+    private: Number(row.price_private ?? 0),
+  };
+  const priceTiers = normalizeTiers(x.price_tiers);
+  const availableTypes = (
+    [
+      ['group', row.price_group],
+      ['semi', row.price_semi],
+      ['private', row.price_private],
+    ] as [TourType, number | null][]
+  )
+    // Precio 0 significa «a consultar»: esa modalidad no se reserva en línea,
+    // salvo que tenga una escala de precios por tamaño de grupo.
+    .filter(([t, p]) => p !== null && (Number(p) > 0 || (priceTiers[t]?.length ?? 0) > 0))
+    .map(([t]) => t);
   return {
     id: row.id,
     featured: row.featured,
@@ -176,7 +191,7 @@ export function mapTour(row: TourRow, catSlugById: Map<string, string>): Tour {
     difficulty: row.difficulty,
     activityLabel: row.activity_label,
     typeLabel: row.type_label,
-    price: prices.length > 0 ? Math.min(...prices) : 0,
+    price: fromPrice({ tourTypes, availableTypes, priceTiers }),
     destination: row.destination,
     startEnd: row.start_end,
     bestSeason: row.best_season,
@@ -188,13 +203,12 @@ export function mapTour(row: TourRow, catSlugById: Map<string, string>): Tour {
     notIncluded: row.not_included,
     whatToBring: row.what_to_bring,
     info: row.info,
-    tourTypes: {
-      group: row.price_group ?? 0,
-      semi: row.price_semi ?? 0,
-      private: row.price_private ?? 0,
-    },
-    extras: row.extras,
-    rating: x.rating ?? undefined,
+    tourTypes,
+    availableTypes,
+    priceTiers,
+    departures: x.departures ?? undefined,
+    extras: row.extras ?? [],
+    rating: x.rating != null ? Number(x.rating) : undefined,
     reviewCount: x.review_count ?? undefined,
     languages: x.languages ?? undefined,
     freeCancellationHours: x.free_cancellation_hours ?? undefined,
@@ -203,13 +217,29 @@ export function mapTour(row: TourRow, catSlugById: Map<string, string>): Tour {
     meetingPoint: x.meeting_point ?? undefined,
     meetingLat: x.meeting_lat ?? undefined,
     meetingLng: x.meeting_lng ?? undefined,
-    priceChild: x.price_child ?? undefined,
+    priceChild: x.price_child != null ? Number(x.price_child) : undefined,
     childAgeMax: x.child_age_max ?? undefined,
     minPax: x.min_pax ?? undefined,
     defaultStartTimes: x.default_start_times ?? undefined,
     defaultCutoffHours: x.default_cutoff_hours ?? undefined,
     code: x.code ?? undefined,
   };
+}
+
+/** Limpia la escala de precios que llega de la base (orden ascendente por `min`). */
+export function normalizeTiers(raw: unknown): Partial<Record<TourType, PriceTier[]>> {
+  const out: Partial<Record<TourType, PriceTier[]>> = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const type of ['group', 'semi', 'private'] as TourType[]) {
+    const list = (raw as Record<string, unknown>)[type];
+    if (!Array.isArray(list)) continue;
+    const tiers = list
+      .map((t) => ({ min: Number((t as PriceTier)?.min), price: Number((t as PriceTier)?.price) }))
+      .filter((t) => Number.isInteger(t.min) && t.min >= 1 && Number.isFinite(t.price) && t.price >= 0)
+      .sort((a, b) => a.min - b.min);
+    if (tiers.length > 0) out[type] = tiers;
+  }
+  return out;
 }
 
 export function buildCatSlugMap(categories: CategoryRow[]): Map<string, string> {
@@ -475,7 +505,9 @@ export async function createBooking(
 
 // Totales en el cliente para el resumen del checkout. Centavos enteros para
 // reproducir el orden y el round de PostgreSQL (numeric) de create_booking:
-// grupo (round entero) → oferta (round 2 dec.) → cupón (round entero, con tope).
+// precio por persona (escala por grupo si existe) → niños → extras →
+// grupo (round entero; no aplica con escala) → oferta (round 2 dec.) →
+// cupón (round entero, con tope).
 export function clientTotals(
   tour: Tour,
   tourType: TourType,
@@ -483,14 +515,20 @@ export function clientTotals(
   extraIds: string[],
   couponDiscountPct = 0,
   offerDiscountPct = 0,
+  children = 0,
 ) {
-  const perPerson = tour.tourTypes[tourType] ?? 0;
+  const perPerson = unitPrice(tour, tourType, pax);
+  const tiered = hasTiers(tour, tourType);
+  const kids = Math.max(0, Math.min(children, pax - 1));
+  const childPrice =
+    tour.priceChild != null && kids > 0 ? Math.min(Number(tour.priceChild), perPerson) : perPerson;
   const perPersonCents = Math.round(perPerson * 100);
+  const childCents = Math.round(childPrice * 100);
   const extrasCents = tour.extras
     .filter((e) => extraIds.includes(e.id) && e.kind === 'paid')
     .reduce((sum, e) => sum + Math.round(e.price * 100), 0);
-  const subtotalCents = perPersonCents * pax + extrasCents;
-  const groupDiscountRate = getGroupDiscountRate(pax);
+  const subtotalCents = perPersonCents * (pax - kids) + childCents * kids + extrasCents;
+  const groupDiscountRate = tiered ? 0 : getGroupDiscountRate(pax);
   const groupPct = Math.round(groupDiscountRate * 100);
   const groupCents = groupPct > 0 ? Math.round((subtotalCents * groupPct) / 10000) * 100 : 0;
   const afterGroupCents = subtotalCents - groupCents;
@@ -505,6 +543,9 @@ export function clientTotals(
   const totalCents = afterOfferCents - couponCents;
   return {
     perPerson,
+    childPrice,
+    childrenCount: kids,
+    tiered,
     extrasTotal: extrasCents / 100,
     subtotal: subtotalCents / 100,
     base: subtotalCents / 100,
@@ -1065,4 +1106,123 @@ export async function fetchReportClients(
   const { data, error } = await sb.rpc('admin_report_clients', { p_from: from, p_to: to });
   if (error) throw error;
   return data as ReportClients;
+}
+
+// ---------------------------------------------------------------------------
+// Reseñas (migración 0018): reales, moderadas por administración
+// ---------------------------------------------------------------------------
+
+export type ReviewStatus = 'pending' | 'published' | 'hidden';
+export type ReviewSource = 'web' | 'manual' | 'google' | 'tripadvisor';
+
+export interface ReviewRow {
+  id: string;
+  tour_id: string | null;
+  reservation_id: string | null;
+  user_id: string | null;
+  author_name: string;
+  author_country: string;
+  rating: number;
+  title: string;
+  body: string;
+  status: ReviewStatus;
+  source: ReviewSource;
+  travel_date: string | null;
+  admin_reply: string | null;
+  created_at: string;
+  published_at: string | null;
+}
+
+/** Reseñas publicadas de un tour; sin tourId, los testimonios generales. */
+export async function fetchPublishedReviews(
+  sb: SupabaseClient,
+  opts: { tourId?: string | null; limit?: number } = {},
+): Promise<ReviewRow[]> {
+  let q = sb.from('reviews').select('*').eq('status', 'published');
+  q = opts.tourId ? q.eq('tour_id', opts.tourId) : q.is('tour_id', null);
+  const { data, error } = await q.order('created_at', { ascending: false }).limit(opts.limit ?? 30);
+  // Sin la tabla (migración pendiente) el sitio sigue funcionando sin reseñas.
+  if (error) return [];
+  return (data ?? []) as ReviewRow[];
+}
+
+/** Las reseñas más recientes de todo el sitio (para la portada). */
+export async function fetchLatestReviews(sb: SupabaseClient, limit = 9): Promise<ReviewRow[]> {
+  const { data, error } = await sb
+    .from('reviews')
+    .select('*')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) return [];
+  return (data ?? []) as ReviewRow[];
+}
+
+/** Reseñas del propio cliente (cualquier estado), indexables por reserva. */
+export async function fetchMyReviews(sb: SupabaseClient, userId: string): Promise<ReviewRow[]> {
+  const { data, error } = await sb.from('reviews').select('*').eq('user_id', userId);
+  if (error) return [];
+  return (data ?? []) as ReviewRow[];
+}
+
+export async function submitReview(
+  sb: SupabaseClient,
+  args: { reservationId: string; rating: number; title: string; body: string },
+): Promise<ReviewRow> {
+  const { data, error } = await sb.rpc('submit_review', {
+    p_reservation_id: args.reservationId,
+    p_rating: args.rating,
+    p_title: args.title,
+    p_body: args.body,
+  });
+  if (error) throw new Error(error.message || 'unknown');
+  return data as ReviewRow;
+}
+
+/** Resumen de valoración a partir de una lista de reseñas. */
+export function reviewStats(list: Pick<ReviewRow, 'rating'>[]): { avg: number; count: number; dist: number[] } {
+  const dist = [0, 0, 0, 0, 0];
+  for (const r of list) if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1] += 1;
+  const count = list.length;
+  const avg = count > 0 ? list.reduce((s, r) => s + r.rating, 0) / count : 0;
+  return { avg, count, dist };
+}
+
+// ---------------------------------------------------------------------------
+// Fechas abiertas de todo el catálogo (listado y buscador por fecha)
+// ---------------------------------------------------------------------------
+
+export interface OpenDate {
+  date: string;
+  /** Mayor cupo libre entre las salidas de ese día. */
+  free: number;
+}
+
+/** Fechas reservables por tour en los próximos `days` días (cupo > 0). */
+export async function fetchOpenDates(sb: SupabaseClient, days = 120): Promise<Record<string, OpenDate[]>> {
+  const from = laPazToday();
+  const until = new Date(Date.parse(`${from}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+  const out: Record<string, OpenDate[]> = {};
+  const PAGE = 1000;
+  for (let page = 0; page < 5; page += 1) {
+    const { data, error } = await sb
+      .from('v_tour_dates_free')
+      .select('tour_id, date, free')
+      .eq('bookable', true)
+      .gt('free', 0)
+      .gte('date', from)
+      .lte('date', until)
+      .order('date', { ascending: true })
+      .order('id', { ascending: true })
+      .range(page * PAGE, page * PAGE + PAGE - 1);
+    if (error || !data) break;
+    for (const row of data as { tour_id: string; date: string; free: number }[]) {
+      const list = (out[row.tour_id] ??= []);
+      const last = list[list.length - 1];
+      if (last && last.date === row.date) last.free = Math.max(last.free, row.free);
+      else list.push({ date: row.date, free: row.free });
+    }
+    if (data.length < PAGE) break;
+  }
+  return out;
 }

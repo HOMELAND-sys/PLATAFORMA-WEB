@@ -56,7 +56,7 @@ export default function DashboardTab({ range }: { range: DashboardRange }) {
 
   return <>
     <div className="admin-header dash-page-heading">
-      <div><h1>Dashboard</h1><p>Una mirada a tus reservas, ingresos y próximas aventuras.</p></div>
+      <div><h1>Resumen</h1><p>Una mirada a tus reservas, ingresos y próximas aventuras.</p></div>
       <button className="dash-refresh" onClick={() => setRevision((value) => value + 1)} aria-label="Actualizar dashboard" title="Actualizar dashboard" disabled={!data && !error}><AdminIcon name="refresh" size={17} /><span>Actualizar</span></button>
     </div>
 

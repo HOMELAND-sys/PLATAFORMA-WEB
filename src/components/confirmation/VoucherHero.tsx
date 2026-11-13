@@ -301,7 +301,7 @@ export default function VoucherHero({ status, code, firstName }: VoucherHeroProp
   const hi = firstName ? `, ${firstName}` : '';
   const lead =
     status === 'cancelada'
-      ? 'Este voucher ya no es válido. Si fue un error, escribinos por WhatsApp y lo resolvemos.'
+      ? 'Este voucher ya no es válido. Si fue un error, escríbenos y lo resolvemos.'
       : status === 'confirmada'
         ? `Todo listo${hi}. Muestra este voucher en el punto de encuentro y prepárate para el Altiplano.`
         : status === 'completada'

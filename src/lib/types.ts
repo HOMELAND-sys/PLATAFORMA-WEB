@@ -32,6 +32,12 @@ export interface ItineraryDay {
   activities: string[];
 }
 
+/** Escalón de precio: desde `min` viajeros, `price` USD por persona. */
+export interface PriceTier {
+  min: number;
+  price: number;
+}
+
 export interface TourInfo {
   cancellation: string;
   health: string;
@@ -67,6 +73,12 @@ export interface Tour {
   whatToBring: { emoji: string; title: string; detail: string }[];
   info: TourInfo;
   tourTypes: Record<TourType, number>;
+  /** Tipos de servicio que el producto realmente vende (precio definido). */
+  availableTypes: TourType[];
+  /** Precio por persona según tamaño del grupo, por tipo (migración 0018). */
+  priceTiers: Partial<Record<TourType, PriceTier[]>>;
+  /** Texto corto de salidas: "Salidas diarias", "Salidas los sábados"… */
+  departures?: string;
   extras: TourExtra[];
   // Migración 0011 — opcionales: pueden no existir aún en la base.
   rating?: number | null;

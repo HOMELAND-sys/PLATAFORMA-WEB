@@ -3,8 +3,20 @@ import type { MyBooking, PassengerRow } from '@/lib/api';
 import type { TourExtra, TourType } from '@/lib/types';
 import { EXCHANGE_RATE_BOB, usdToBob } from '@/lib/pricing';
 
-export const WHATSAPP_NUMBER = '59176012345';
-export const SUPPORT_PHONE = '+591 760 12345';
+// Contacto de la empresa: llega de Configuraciones → Empresa (settings.company).
+// Sin número cargado, el voucher no inventa uno.
+let voucherContact = { whatsapp: '', phone: '' };
+
+export function setVoucherContact(contact: { whatsapp?: string; phone?: string }) {
+  voucherContact = {
+    whatsapp: (contact.whatsapp ?? '').replace(/\D/g, ''),
+    phone: (contact.phone ?? '').trim(),
+  };
+}
+
+/** Teléfono de atención para mostrar (vacío si la empresa aún no lo cargó). */
+export const supportPhone = () =>
+  voucherContact.phone || (voucherContact.whatsapp ? `+${voucherContact.whatsapp}` : '');
 
 export type BookingStatus = MyBooking['status'];
 export type Tone = 'green' | 'amber' | 'red';
@@ -201,10 +213,12 @@ export const SITE_ORIGIN = 'https://homeland.tours';
 export const voucherUrl = (code: string, origin?: string) =>
   `${origin ?? (typeof window !== 'undefined' ? window.location.origin : SITE_ORIGIN)}/confirmation?code=${encodeURIComponent(code)}`;
 
-export const whatsAppUrl = (b: MyBooking) =>
-  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    `Hola! Tengo la reserva ${b.code} de "${b.tour_title}" para el ${fmtDate(b.tour_date)} con ${b.pax} pasajero(s). Quiero coordinar el pago.`,
-  )}`;
+export const whatsAppUrl = (b: MyBooking): string | null =>
+  voucherContact.whatsapp.length >= 8
+    ? `https://wa.me/${voucherContact.whatsapp}?text=${encodeURIComponent(
+        `Hola, tengo la reserva ${b.code} de "${b.tour_title}" para el ${fmtDate(b.tour_date)} con ${b.pax} ${b.pax === 1 ? 'viajero' : 'viajeros'}. Quiero coordinar el pago.`,
+      )}`
+    : null;
 
 /* ---------------------------------------------------------------- código de barras */
 

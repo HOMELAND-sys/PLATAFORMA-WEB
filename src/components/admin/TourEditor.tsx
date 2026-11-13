@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { resizeImageForUpload, uploadToBucket, type AdminTour, type CategoryRow, type TourFormData } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import { GROUP_DISCOUNT_TIERS } from '@/lib/pricing';
-import { cleanTourLines, DIFFICULTY_LABELS, slugifyTour } from '@/lib/tour-form';
+import { cleanTourLines, DIFFICULTY_LABELS, slugifyTour, tourFromPrice } from '@/lib/tour-form';
 import { adminTourMoney as tourMoney } from '@/lib/admin/money';
 import type { Difficulty, ItineraryDay, TourExtra, TourInfo } from '@/lib/types';
 import AdminIcon from './AdminIcon';
@@ -455,6 +455,7 @@ export default function TourEditor({ tour, initialData, categories, busy, onClos
             /></label>
             <label>Precio base (USD)<input
               aria-label="Precio base (USD)"
+              placeholder="Sin tarifa de grupo"
               type="number"
               min="0"
               step="0.01"
@@ -642,23 +643,13 @@ export default function TourEditor({ tour, initialData, categories, busy, onClos
                       onChange={event => set('featured', event.target.checked)}
                     />
                   </label>
-                  <div className="tour-editor__field-grid">
-                    <label>Valoración<input
-                      type="number"
-                      min={0}
-                      max={5}
-                      step="0.1"
-                      value={data.rating ?? ''}
-                      onChange={event => set('rating', event.target.value === '' ? null : Number(event.target.value))}
-                    /></label>
-                    <label>Número de reseñas<input
-                      type="number"
-                      min={0}
-                      step={1}
-                      value={Number.isNaN(data.review_count) ? '' : data.review_count}
-                      onChange={event => set('review_count', event.target.value === '' ? NaN : Number(event.target.value))}
-                    /></label>
-                  </div>
+                  <p className="tour-editor__rating">
+                    <AdminIcon name="star" size={15} />
+                    {data.review_count > 0 && data.rating !== null
+                      ? <span><strong>{data.rating.toLocaleString('es-BO', { maximumFractionDigits: 1 })}</strong> de 5 · {data.review_count} {data.review_count === 1 ? 'reseña publicada' : 'reseñas publicadas'}</span>
+                      : <span>Todavía sin reseñas publicadas.</span>}
+                    <small>La valoración se calcula sola con las reseñas que publiques en «Reseñas».</small>
+                  </p>
                 </section>
                 <section className="tour-editor__section">
                   <h4>Categorías</h4>
@@ -875,7 +866,7 @@ function TourPreview({ data, onClose }: {
           {data.title || 'Tu próxima aventura'}
         </h2>
         <p className="tour-preview__price">
-          {data.price_group ? `Desde US$ ${tourMoney(data.price_group)} por persona` : 'Precio a consultar'}
+          {tourFromPrice(data) ? `Desde US$ ${tourMoney(tourFromPrice(data))} por persona` : 'Precio a consultar'}
         </p>
         {cleanTourLines(data.summary).map((paragraph, index) => <p key={index}>
           {paragraph}

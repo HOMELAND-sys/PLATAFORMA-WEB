@@ -8,6 +8,7 @@ import { manualBooking } from '@/lib/admin/bookings';
 import { useAdminData } from '@/lib/admin/hooks';
 import { operatorDay, dateLabel, usd, sourceLabels, methodLabels } from '@/lib/admin/format';
 import { calcBookingTotals, EXCHANGE_RATE_BOB } from '@/lib/pricing';
+import { normalizeTiers } from '@/lib/api';
 import type { BookingSource, TourType } from '@/lib/types';
 import { Field, LoadState, Modal, Notice } from './AdminShared';
 const emptyPassenger = () => ({ name: '', doc: '', country: '', meal: 'Normal' });
@@ -50,7 +51,18 @@ export default function ManualBookingForm({ onClose, onSaved }: {
     setSlot('');
   }, [tour, date]);
   const price = product?.[`price_${type}`];
-  const calculated = useMemo(() => calcBookingTotals(Number(price ?? 0) * adults + Number(product?.price_child ?? price ?? 0) * children, pax), [price, product, adults, children, pax]);
+  // Mismo cálculo que la base de datos: el tramo por tamaño de grupo manda
+  // sobre el precio fijo y, cuando existe, no se suma el descuento de grupo.
+  const calculated = useMemo(() => {
+    const tiers = normalizeTiers(product?.price_tiers)[type] ?? [];
+    const unit = tiers.filter(tier => tier.min <= pax).pop()?.price ?? Number(price ?? 0);
+    const child = product?.price_child != null ? Math.min(Number(product.price_child), unit) : unit;
+    const subtotal = unit * adults + child * children;
+    const totals = calcBookingTotals(subtotal, pax);
+    return tiers.length
+      ? { ...totals, groupDiscount: 0, groupDiscountRate: 0, total: subtotal, unit, tiered: true }
+      : { ...totals, unit, tiered: false };
+  }, [price, product, type, adults, children, pax]);
   async function save(e: FormEvent) {
     e.preventDefault();
     if (busy)
@@ -274,7 +286,7 @@ export default function ManualBookingForm({ onClose, onSaved }: {
           </section>
           <section>
             <h3>Precio y pago</h3>
-            <p className="ops-form-note">Tarifas en USD, igual que las reservas web. Subtotal {usd(calculated.base)} · descuento grupo {usd(calculated.groupDiscount)} · total {usd(calculated.total)}. Equivalente Bs. {Math.round(calculated.total * EXCHANGE_RATE_BOB)} (1 USD = {EXCHANGE_RATE_BOB} BOB).</p>
+            <p className="ops-form-note">Tarifas en USD, igual que las reservas web. {usd(calculated.unit)} por persona{calculated.tiered ? ` (precio para ${pax} ${pax === 1 ? 'viajero' : 'viajeros'})` : ''} · subtotal {usd(calculated.base)}{calculated.tiered ? '' : ` · descuento grupo ${usd(calculated.groupDiscount)}`} · total {usd(calculated.total)}. Equivalente Bs. {Math.round(calculated.total * EXCHANGE_RATE_BOB)} (1 USD = {EXCHANGE_RATE_BOB} BOB).</p>
             <label className="ops-check"><input
               type="checkbox"
               checked={override}

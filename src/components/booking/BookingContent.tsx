@@ -18,7 +18,9 @@ import {
   type TourDateFree,
 } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
-import { formatUsd, GROUP_DISCOUNT_MAX_PAX } from '@/lib/pricing';
+import { formatUsd, GROUP_DISCOUNT_MAX_PAX, money, unitPrice } from '@/lib/pricing';
+import { fmtDate, plural, TYPE_HINT, TYPE_LABEL } from '@/lib/tour-display';
+import { cancellationShort } from '@/lib/site';
 import { track } from '@/lib/analytics';
 import type { MealOption, Tour, TourExtra, TourType } from '@/lib/types';
 import Icon from '@/components/ui/Icon';
@@ -40,19 +42,8 @@ type SelectedExtra = TourExtra;
 
 const MEALS: MealOption[] = ['Normal', 'Vegetariano', 'Vegano', 'Sin gluten'];
 
-const TYPE_LABELS: Record<TourType, string> = {
-  group: 'Tour compartido',
-  semi: 'Tour semiprivado',
-  private: 'Tour privado',
-};
-
 const fmtTripDate = (d: string) =>
-  new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
+  fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 export default function BookingContent() {
   const router = useRouter();
@@ -90,6 +81,9 @@ export default function BookingContent() {
   // Envío
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+  const [accepted, setAccepted] = useState(false);
+  const [leadIsBooker, setLeadIsBooker] = useState(true);
+  const errorRef = useRef<HTMLDivElement>(null);
   const [fullDates, setFullDates] = useState<TourDateFree[]>([]);
 
   // Cupo real de la franja elegida (se revalida al entrar y al cambiar viajeros).
@@ -144,7 +138,9 @@ export default function BookingContent() {
     const a = selection.adults ?? Math.max(1, selection.pax - c);
     setAdults(a);
     setChildren(c);
-    setSelectedType(selection.tourType);
+    setSelectedType(
+      tour.availableTypes.includes(selection.tourType) ? selection.tourType : (tour.availableTypes[0] ?? null),
+    );
     setSelectedExtras(tour.extras.filter((e) => selection.extras.includes(e.id)));
     setPassengers(
       Array.from({ length: a + c }, () => ({
@@ -189,7 +185,7 @@ export default function BookingContent() {
   useEffect(() => {
     if (!tour || !selectedType) return;
     const extraIds = selectedExtras.map((e) => e.id);
-    const perPerson = tour.tourTypes[selectedType] ?? 0;
+    const perPerson = unitPrice(tour, selectedType, pax);
     const extrasTotal = selectedExtras.filter((e) => e.kind === 'paid').reduce((s, e) => s + e.price, 0);
     setSelection({
       tourSlug: tour.slug,
@@ -212,16 +208,14 @@ export default function BookingContent() {
 
   const tourTypes = useMemo(() => {
     if (!tour) return [];
-    return (['group', 'semi', 'private'] as TourType[])
-      .filter((t) => tour.tourTypes[t] >= 0)
-      .map((t) => ({ id: t, label: TYPE_LABELS[t], price: tour.tourTypes[t] }));
-  }, [tour]);
+    return tour.availableTypes.map((t) => ({ id: t, label: TYPE_LABEL[t], price: unitPrice(tour, t, pax) }));
+  }, [tour, pax]);
 
-  const selectedTypeData = tourTypes.find((t) => t.id === selectedType);
-  const selectedPrice = selectedTypeData?.price ?? 0;
+  const minPax = Math.max(1, tour?.minPax ?? 1);
+  const belowMin = pax < minPax;
 
   const totals = tour && selectedType
-    ? clientTotals(tour, selectedType, pax, selectedExtras.map((e) => e.id), couponApplied?.discountPct ?? 0, offerPct)
+    ? clientTotals(tour, selectedType, pax, selectedExtras.map((e) => e.id), couponApplied?.discountPct ?? 0, offerPct, children)
     : null;
   const total = totals?.total ?? 0;
 
@@ -259,7 +253,7 @@ export default function BookingContent() {
 
   const noDate = !selection?.date || !selection?.tourDateId;
   const slotShort = slotFree !== null && slotFree < pax;
-  const cannotSubmit = submitting || !selectedType || noDate || slotGone || slotShort;
+  const cannotSubmit = submitting || !selectedType || noDate || slotGone || slotShort || belowMin;
 
   const toggleExtra = (extra: SelectedExtra) => {
     setSelectedExtras((prev) =>
@@ -288,8 +282,24 @@ export default function BookingContent() {
   };
 
   const removePassenger = () => {
+    if (pax <= minPax) return;
     if (children > 0) changeChildren(children - 1);
     else changeAdults(adults - 1);
+  };
+
+  // El primer viajero suele ser quien reserva: se rellena con su nombre.
+  useEffect(() => {
+    if (!leadIsBooker) return;
+    setPassengers((prev) =>
+      prev.length > 0 && prev[0].name !== booker.fullName
+        ? prev.map((p, i) => (i === 0 ? { ...p, name: booker.fullName } : p))
+        : prev,
+    );
+  }, [leadIsBooker, booker.fullName, passengers.length]);
+
+  const fail = (message: string) => {
+    setFormError(message);
+    requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
   };
 
   const updatePassenger = (index: number, field: keyof PassengerData, value: string) => {
@@ -303,20 +313,24 @@ export default function BookingContent() {
 
     if (!tour?.id || !session || !selectedType) return;
     if (!selection?.date || !selection?.tourDateId) {
-      setFormError('Elige una fecha y un horario en la ficha del tour antes de confirmar.');
+      fail('Elige una fecha y un horario en la ficha del tour antes de confirmar.');
       return;
     }
     if (slotGone || slotShort) {
-      setFormError('La franja elegida ya no tiene cupo para tus viajeros. Cambia la fecha u horario, o quita viajeros.');
+      fail('La salida elegida ya no tiene cupo para tus viajeros. Cambia la fecha u horario, o quita viajeros.');
       return;
     }
 
     if (!booker.fullName.trim() || !booker.phone.trim()) {
-      setFormError('Completa tu nombre y teléfono.');
+      fail('Completa tu nombre y un teléfono o WhatsApp de contacto.');
       return;
     }
     if (passengers.some((p) => !p.name.trim() || !p.doc.trim() || !p.country.trim())) {
-      setFormError('Completa nombre, documento y nacionalidad de cada viajero.');
+      fail('Completa nombre, documento y nacionalidad de cada viajero.');
+      return;
+    }
+    if (!accepted) {
+      fail('Para continuar, acepta los términos y la política de cancelación.');
       return;
     }
 
@@ -375,13 +389,13 @@ export default function BookingContent() {
       } else if (code === 'cutoff_passed') {
         setFormError('La hora límite de reserva para esa salida ya pasó. Elige otra fecha u horario disponible.');
       } else if (code === 'slot_blocked') {
-        setFormError('Esa salida fue bloqueada por la operatora. Elige otra fecha u horario disponible.');
+        setFormError('Esa salida ya no está disponible. Elige otra fecha u horario.');
       } else if (code === 'offer_invalid' || code === 'offer_full') {
         if (selection) setSelection({ ...selection, offerId: null, offerPct: 0 });
         setFormError(
           code === 'offer_full'
-            ? 'Se agotaron las plazas con descuento de esta oferta. Quitamos el descuento; revisá el nuevo total antes de confirmar.'
-            : 'La oferta de descuento ya no aplica a esta salida. Quitamos el descuento; revisá el nuevo total antes de confirmar.',
+            ? 'Se agotaron las plazas con descuento de esta oferta. Quitamos el descuento; revisa el nuevo total antes de confirmar.'
+            : 'La oferta de descuento ya no aplica a esta salida. Quitamos el descuento; revisa el nuevo total antes de confirmar.',
         );
       } else if (code === 'invalid_passengers') {
         setFormError(
@@ -396,9 +410,10 @@ export default function BookingContent() {
       } else if (code === 'tour_type_unavailable') {
         setFormError('Ese tipo de tour no está disponible para esta fecha. Elige otro tipo (compartido, semiprivado o privado).');
       } else {
-        setFormError('No pudimos crear la reserva. Vuelve a intentarlo.');
+        setFormError('No pudimos crear la reserva. Revisa tu conexión y vuelve a intentarlo.');
       }
       setSubmitting(false);
+      requestAnimationFrame(() => errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
     }
   };
 
@@ -458,19 +473,25 @@ export default function BookingContent() {
       <div className="form-hero">
         <div className="container">
           <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Tours', href: '/tours' }, { label: 'Reservar' }]} />
-          <h1>Reserva tu aventura</h1>
+          <h1>Completa tu reserva</h1>
           <p>{tour.title} · {tour.duration} · {tour.destination}</p>
         </div>
       </div>
 
       <div className="container booking-layout">
         <div className="booking-stepper">
+          <div className="step is-done">
+            <span className="step-badge">
+              <Icon name="check" size={14} strokeWidth={2.6} />
+            </span>
+            Tu tour
+          </div>
           <div className="step is-active">
-            <span className="step-badge">1</span>
-            Datos y reserva
+            <span className="step-badge">2</span>
+            Tus datos
           </div>
           <div className="step is-pending">
-            <span className="step-badge">2</span>
+            <span className="step-badge">3</span>
             Voucher y pago
           </div>
         </div>
@@ -497,14 +518,14 @@ export default function BookingContent() {
               ) : (
                 <p className="booking-trip__when booking-trip__when--pending">
                   <Icon name="calendar" size={16} />
-                  Fecha pendiente: elegí una fecha y un horario en la ficha del tour.
+                  Fecha pendiente: elige una fecha y un horario en la ficha del tour.
                 </p>
               )}
               <div className="booking-trip__pax">
                 <div className="field">
                   <label>Adultos</label>
                   <div className="pax-control">
-                    <button type="button" disabled={adults <= 1} onClick={() => changeAdults(adults - 1)} aria-label="Restar adulto">−</button>
+                    <button type="button" disabled={adults <= 1 || pax <= minPax} onClick={() => changeAdults(adults - 1)} aria-label="Restar adulto">−</button>
                     <span>{adults}</span>
                     <button type="button" disabled={pax >= GROUP_DISCOUNT_MAX_PAX} onClick={() => changeAdults(adults + 1)} aria-label="Sumar adulto">+</button>
                   </div>
@@ -512,23 +533,24 @@ export default function BookingContent() {
                 <div className="field">
                   <label>Niños{tour.childAgeMax ? ` · hasta ${tour.childAgeMax} años` : ''}</label>
                   <div className="pax-control">
-                    <button type="button" disabled={children <= 0} onClick={() => changeChildren(children - 1)} aria-label="Restar niño">−</button>
+                    <button type="button" disabled={children <= 0 || pax <= minPax} onClick={() => changeChildren(children - 1)} aria-label="Restar niño">−</button>
                     <span>{children}</span>
                     <button type="button" disabled={pax >= GROUP_DISCOUNT_MAX_PAX} onClick={() => changeChildren(children + 1)} aria-label="Sumar niño">+</button>
                   </div>
                 </div>
               </div>
-              {tour.priceChild != null && children > 0 && (
+              {tour.priceChild != null && children > 0 && totals && totals.childPrice !== totals.perPerson && (
                 <p className="form-note">
-                  Tarifa niño de referencia: US$ {tour.priceChild}. La reserva online aplica la tarifa de adulto a todos los viajeros.
+                  Tarifa de niño (hasta {tour.childAgeMax ?? 11} años): US$ {money(totals.childPrice)} por persona.
                 </p>
               )}
+              {belowMin && <div className="error-alert">Este tour se reserva desde {minPax} personas.</div>}
               {slotGone && (
                 <div className="error-alert">Esa salida ya no está disponible. Cambia la fecha u horario.</div>
               )}
               {!slotGone && slotShort && (
                 <div className="error-alert">
-                  La franja elegida tiene {slotFree} cupo{slotFree === 1 ? '' : 's'} y no alcanza para {pax} viajeros. Quita viajeros o cambia de horario.
+                  La salida elegida tiene {plural(slotFree ?? 0, 'lugar libre', 'lugares libres')} y no alcanza para {pax} viajeros. Quita viajeros o cambia de horario.
                 </div>
               )}
             </div>
@@ -536,7 +558,7 @@ export default function BookingContent() {
             <div className="form-card__section">
               <div className="form-card__section-title">
                 <span className="section-num">1</span>
-                Datos del reservante
+                Datos de contacto
               </div>
               <div className="field-row">
                 <div className="field">
@@ -567,7 +589,7 @@ export default function BookingContent() {
                 <label htmlFor="email">Correo electrónico</label>
                 <input id="email" type="email" value={booker.email} readOnly className="input--readonly" />
                 <small style={{ color: 'var(--ink-500)' }}>
-                  Usamos tu cuenta ({booker.email}) para el voucher y la comunicación.
+                  Es el correo de tu cuenta: ahí verás tu voucher y el estado de la reserva.
                 </small>
               </div>
             </div>
@@ -575,10 +597,10 @@ export default function BookingContent() {
             <div className="form-card__section">
               <div className="form-card__section-title">
                 <span className="section-num">2</span>
-                Tipo de tour y extras
+                Servicio y viajeros
               </div>
               <div className="field">
-                <label>Tipo de tour</label>
+                <label>Tipo de servicio</label>
                 <div className="radio-row">
                   {tourTypes.map((t) => (
                     <label key={t.id} className={`radio-pill${selectedType === t.id ? ' is-active' : ''}`}>
@@ -590,14 +612,17 @@ export default function BookingContent() {
                         onChange={() => setSelectedType(t.id)}
                       />
                       <span>{t.label}</span>
-                      <small>{t.price === 0 ? 'Consultar' : formatUsd(t.price)}/pax</small>
+                      <small>{formatUsd(t.price)} por persona</small>
                     </label>
                   ))}
                 </div>
               </div>
 
+              {selectedType && <p className="form-note">{TYPE_HINT[selectedType]}</p>}
+
+              {tour.extras.length > 0 && (
               <div className="field">
-                <label>Extras disponibles</label>
+                <label>Extras opcionales</label>
                 <div className="extras-grid">
                   {tour.extras.map((extra) => (
                     <label
@@ -614,12 +639,13 @@ export default function BookingContent() {
                         <small>{extra.sub}</small>
                       </div>
                       <span className="extra-option__price">
-                        {extra.kind === 'paid' ? `+${formatUsd(extra.price)}` : 'Gratuito'}
+                        {extra.kind === 'paid' ? `+${formatUsd(extra.price)}` : extra.kind === 'pay-on-site' ? 'Pago en destino' : 'Sin costo'}
                       </span>
                     </label>
                   ))}
                 </div>
               </div>
+              )}
 
               <div className="field">
                 <label>
@@ -630,8 +656,11 @@ export default function BookingContent() {
                     {children > 0 ? ` · ${children} niño${children !== 1 ? 's' : ''}` : ''} · {tour.duration}
                   </span>
                 </label>
-                {pax >= 3 && (
-                  <span className="form-note">Descuento por grupo aplicado automáticamente ({totals ? Math.round(totals.groupDiscountRate * 100) : 0}%)</span>
+                {totals && totals.groupDiscount > 0 && (
+                  <span className="form-note">Descuento por grupo aplicado automáticamente ({Math.round(totals.groupDiscountRate * 100)}%).</span>
+                )}
+                {totals?.tiered && (
+                  <span className="form-note">Precio por persona para tu grupo de {pax}: {formatUsd(totals.perPerson)}.</span>
                 )}
               </div>
 
@@ -641,10 +670,17 @@ export default function BookingContent() {
                     <span>
                       Viajero {idx + 1}
                       {idx === 0 && (
-                        <em style={{ marginLeft: 8, fontSize: 12, color: 'var(--accent-600)' }}>(reservante)</em>
+                        <label className="lead-toggle">
+                          <input
+                            type="checkbox"
+                            checked={leadIsBooker}
+                            onChange={(e) => setLeadIsBooker(e.target.checked)}
+                          />
+                          Soy yo
+                        </label>
                       )}
                     </span>
-                    {passengers.length > 1 && (
+                    {passengers.length > minPax && idx > 0 && (
                       <button type="button" onClick={() => removePassenger()}>
                         Quitar
                       </button>
@@ -657,6 +693,8 @@ export default function BookingContent() {
                         type="text"
                         placeholder="Nombre y apellido"
                         value={p.name}
+                        readOnly={idx === 0 && leadIsBooker}
+                        autoComplete={idx === 0 ? 'name' : 'off'}
                         onChange={(e) => updatePassenger(idx, 'name', e.target.value)}
                       />
                     </div>
@@ -698,11 +736,11 @@ export default function BookingContent() {
             <div className="form-card__section">
               <div className="form-card__section-title">
                 <span className="section-num">3</span>
-                Método de pago
+                ¿Cómo prefieres pagar?
               </div>
               <div className="form-note" style={{ marginBottom: 12 }}>
-                Al confirmar vas a recibir un voucher con el enlace de pago o el QR del pago. El pago lo
-                coordinas con la operatora — nada se cobra automáticamente.
+                Hoy no se te cobra nada. Al confirmar recibes tu voucher con las instrucciones de pago;
+                tu lugar queda apartado mientras lo completas.
               </div>
               <div className="radio-row">
                 <label className={`radio-pill${paymentMethod === 'link' ? ' is-active' : ''}`}>
@@ -716,7 +754,7 @@ export default function BookingContent() {
                   <span className="icon-inline">
                     <Icon name="card" size={17} /> Enlace de pago
                   </span>
-                  <small>Botón para pagar desde el voucher</small>
+                  <small>Pagas en línea desde tu voucher</small>
                 </label>
                 <label className={`radio-pill${paymentMethod === 'qr' ? ' is-active' : ''}`}>
                   <input
@@ -729,12 +767,36 @@ export default function BookingContent() {
                   <span className="icon-inline">
                     <Icon name="qr" size={17} /> QR
                   </span>
-                  <small>Escanea el QR del voucher</small>
+                  <small>Escaneas el QR desde tu banco</small>
                 </label>
               </div>
             </div>
 
-            {formError && <div className="error-alert">{formError}</div>}
+            <label className="terms-check">
+              <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
+              <span>
+                He leído y acepto los{' '}
+                <Link href="/terminos" target="_blank">
+                  términos y condiciones
+                </Link>{' '}
+                y la{' '}
+                <Link href="/politica-de-cancelacion" target="_blank">
+                  política de cancelación
+                </Link>
+                {cancellationShort(tour.freeCancellationHours ?? 0)
+                  ? ` (${cancellationShort(tour.freeCancellationHours ?? 0).toLowerCase()})`
+                  : ''}
+                .
+              </span>
+            </label>
+
+            <div ref={errorRef}>
+              {formError && (
+                <div className="error-alert" role="alert">
+                  {formError}
+                </div>
+              )}
+            </div>
 
             {fullDates.length > 0 && (
               <div className="full-dates">
@@ -756,7 +818,7 @@ export default function BookingContent() {
             )}
 
             <button className="form-card__submit" type="submit" disabled={cannotSubmit}>
-              {submitting ? 'Procesando…' : 'Continuar →'}
+              {submitting ? 'Creando tu reserva…' : `Confirmar reserva · ${formatUsd(total)}`}
             </button>
             <button className="form-card__cancel" type="button" onClick={() => router.push(`/tours/${slug}`)}>
               ← Volver al tour
@@ -779,6 +841,7 @@ export default function BookingContent() {
             }}
             baseSubtotal={totals?.subtotal ?? 0}
             onApplyCoupon={(code, discountPct) => setCouponApplied({ code, discountPct })}
+            onRemoveCoupon={() => setCouponApplied(null)}
           />
         </div>
       </div>
@@ -804,7 +867,7 @@ export default function BookingContent() {
                 form?.requestSubmit();
               }}
             >
-              {submitting ? 'Procesando…' : 'Continuar →'}
+              {submitting ? 'Creando…' : 'Confirmar reserva'}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { buildTourPayload, type AdminTour, type CategoryRow, type TourFormData } from '@/lib/api';
+import { buildTourPayload, normalizeTiers, type AdminTour, type CategoryRow, type TourFormData } from '@/lib/api';
+import type { PriceTier, TourType } from '@/lib/types';
 import { copyTourForm, makeTourForm } from '@/lib/tour-form';
 
 export interface TourOperation {
@@ -7,8 +8,18 @@ export interface TourOperation {
   meeting_point: string; meeting_lat: number | null; meeting_lng: number | null;
   price_child: number | null; child_age_max: number; min_pax: number;
   default_start_times: string[]; default_cutoff_hours: number;
+  /** Precio por persona según el tamaño del grupo, por modalidad. */
+  price_tiers: Partial<Record<TourType, PriceTier[]>>;
+  /** Texto corto de salidas: «Salidas diarias», «Sábados»… */
+  departures: string;
 }
 export type AdminTourForm = TourFormData & TourOperation;
+
+export const TIER_TYPES: { type: TourType; label: string; priceKey: 'price_group' | 'price_semi' | 'price_private' }[] = [
+  { type: 'group', label: 'Grupo compartido', priceKey: 'price_group' },
+  { type: 'semi', label: 'Semiprivado', priceKey: 'price_semi' },
+  { type: 'private', label: 'Privado', priceKey: 'price_private' },
+];
 
 export function makeAdminTourForm(tour?: AdminTour | null): AdminTourForm {
   const operation = tour as (AdminTour & Partial<TourOperation>) | null | undefined;
@@ -23,6 +34,8 @@ export function makeAdminTourForm(tour?: AdminTour | null): AdminTourForm {
     child_age_max: operation?.child_age_max ?? 11, min_pax: operation?.min_pax ?? 1,
     default_start_times: [...(operation?.default_start_times ?? [])],
     default_cutoff_hours: operation?.default_cutoff_hours ?? 12,
+    price_tiers: normalizeTiers(operation?.price_tiers),
+    departures: operation?.departures ?? '',
   };
 }
 
@@ -44,14 +57,29 @@ export function validateTourOperation(data: TourOperation): string {
   if ((data.meeting_lat === null) !== (data.meeting_lng === null)) return 'Completa ambas coordenadas o deja las dos vacías.';
   if (data.rating !== null && (!Number.isFinite(data.rating) || data.rating < 0 || data.rating > 5)) return 'La valoración debe estar entre 0 y 5.';
   if (!integer(data.review_count, 0, 2147483647)) return 'El número de reseñas debe ser un entero igual o mayor que cero.';
+  if ((data.departures ?? '').length > 80) return 'El texto de salidas admite hasta 80 caracteres.';
+  for (const { type, label } of TIER_TYPES) {
+    const tiers = data.price_tiers?.[type] ?? [];
+    if (tiers.some(tier => !integer(tier.min, 1, 8))) return `${label}: «desde» debe ser un número de viajeros entre 1 y 8.`;
+    if (tiers.some(tier => !Number.isFinite(tier.price) || tier.price < 0 || tier.price > 99999999.99)) return `${label}: cada tramo necesita un precio válido.`;
+    if (new Set(tiers.map(tier => tier.min)).size !== tiers.length) return `${label}: hay dos tramos que empiezan en el mismo número de viajeros.`;
+  }
   return '';
 }
 
 export function buildAdminTourPayload(data: AdminTourForm, categories: CategoryRow[]) {
-  const { code, rating, review_count, languages, free_cancellation_hours, pay_later, pickup_included,
+  const { code, languages, free_cancellation_hours, pay_later, pickup_included,
     meeting_point, meeting_lat, meeting_lng, price_child, child_age_max, min_pax,
-    default_start_times, default_cutoff_hours } = data;
-  return { ...buildTourPayload(data, categories), code: code?.trim() || null, rating, review_count,
+    default_start_times, default_cutoff_hours, price_tiers, departures } = data;
+  const tiers: Partial<Record<TourType, PriceTier[]>> = {};
+  for (const { type } of TIER_TYPES) {
+    const list = [...(price_tiers?.[type] ?? [])].sort((a, b) => a.min - b.min).map(tier => ({ min: tier.min, price: tier.price }));
+    if (list.length) tiers[type] = list;
+  }
+  // La valoración y el número de reseñas no se envían: los calcula la base
+  // de datos a partir de las reseñas publicadas.
+  return { ...buildTourPayload(data, categories), code: code?.trim() || null,
+    price_tiers: tiers, departures: (departures ?? '').trim(),
     languages: [...new Set(languages.map(language => language.trim()))], free_cancellation_hours,
     pay_later, pickup_included, meeting_point: meeting_point.trim(), meeting_lat, meeting_lng,
     price_child, child_age_max, min_pax, default_start_times: [...new Set(default_start_times)], default_cutoff_hours };

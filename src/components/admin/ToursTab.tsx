@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createCategory, type AdminTour, type CategoryRow } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
-import { DIFFICULTY_LABELS, slugifyTour } from '@/lib/tour-form';
+import { DIFFICULTY_LABELS, slugifyTour, tourFromPrice } from '@/lib/tour-form';
 import { adminTourMoney as tourMoney } from '@/lib/admin/money';
 import { changeTourVisibility, tourMenuFocusIndex, tourMenuPosition } from '@/lib/admin/tour-actions';
 import AdminIcon from './AdminIcon';
@@ -196,7 +196,7 @@ export default function ToursTab() {
         return false;
       if (category && tour.primary_category_slug !== category && !tour.category_slugs.includes(category))
         return false;
-      if (minPrice && Number(tour.price_group ?? 0) < Number(minPrice) || maxPrice && Number(tour.price_group ?? 0) > Number(maxPrice))
+      if (minPrice && Number(tourFromPrice(tour) ?? 0) < Number(minPrice) || maxPrice && Number(tourFromPrice(tour) ?? 0) > Number(maxPrice))
         return false;
       if (bookingFilter === 'with' && !tour.reservation_count || bookingFilter === 'without' && tour.reservation_count > 0)
         return false;
@@ -204,7 +204,7 @@ export default function ToursTab() {
     });
     if (sortEnabled)
       rows.sort((a, b) => {
-        const comparison = sortKey === 'price' ? Number(a.price_group ?? 0) - Number(b.price_group ?? 0) : a[sortKey].localeCompare(b[sortKey], 'es');
+        const comparison = sortKey === 'price' ? Number(tourFromPrice(a) ?? 0) - Number(tourFromPrice(b) ?? 0) : a[sortKey].localeCompare(b[sortKey], 'es');
         return sortDirection === 'asc' ? comparison : -comparison;
       });
     return rows;
@@ -631,7 +631,7 @@ export default function ToursTab() {
                 {tour.duration || '—'}
               </td>
               <td data-label="Precio (USD)" className="tours-cell-price">
-                {tourMoney(tour.price_group)}
+                {tourMoney(tourFromPrice(tour))}
               </td>
               <td data-label="Dificultad">
                 <span className={`tours-difficulty tours-difficulty--${tour.difficulty.toLowerCase()}`}>

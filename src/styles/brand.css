@@ -1,0 +1,348 @@
+/* ============================================================
+   HOMELAND TOURS — capa de marca
+   Se carga al final. Lleva al sitio el lenguaje de los itinerarios
+   de Homeland: tipografía geométrica redondeada, etiquetas en
+   mayúsculas, píldoras de datos, barras verdes de sección,
+   listas de incluye / no incluye y tabla de precios por persona.
+   ============================================================ */
+
+:root {
+  --font-display: var(--ff-display), "Quicksand", "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--ff-sans), "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--ff-mono), "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Verde de marca con texto blanco legible (AA) para acciones principales */
+  --brand: #75953e;
+  --brand-strong: #4f6a26;
+  --brand-deep: #232d13;
+  --brand-soft: #eef3e2;
+  --brand-tint: #f6f9ee;
+  --sun: #f2a33a;
+  --clay: #d9573f;
+
+  --ring: 0 0 0 3px rgba(117, 149, 62, 0.28);
+  --shadow-card: 0 1px 2px rgba(35, 45, 19, 0.05), 0 8px 24px rgba(35, 45, 19, 0.07);
+  --shadow-pop: 0 20px 50px rgba(35, 45, 19, 0.16), 0 4px 12px rgba(35, 45, 19, 0.06);
+}
+
+/* ---------- Tipografía ---------- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+h1 { font-size: clamp(2.1rem, 4.6vw, 3.4rem); line-height: 1.08; }
+h2 { font-size: clamp(1.6rem, 3vw, 2.25rem); line-height: 1.14; }
+h3 { font-size: clamp(1.15rem, 2vw, 1.4rem); }
+h4 { font-size: 1.05rem; }
+
+/* La marca no usa cursivas: los énfasis van en verde y en redonda. */
+h1 em, h2 em, h3 em,
+.hero__title em, .page-header h1 em, .form-hero h1 em, .booking-hero h1 em,
+.detail-hero h1 em, .auth-card > h1 em, .footer-cta__title em, .pay-card h3 em {
+  font-style: normal;
+  font-weight: 700;
+}
+.hero__title { font-weight: 700; letter-spacing: -0.02em; }
+.hero__title em { color: #cfe39a; }
+.page-header h1 em { color: #e6f2c4; }
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  font-size: 0.76rem;
+}
+
+::selection { background: #cfe39a; color: var(--brand-deep); }
+
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+button:focus-visible, a:focus-visible, .btn:focus-visible { outline: 2px solid var(--brand-strong); outline-offset: 3px; }
+
+/* ---------- Botones ---------- */
+.btn {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+}
+.btn--primary, .btn--gold {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #14200a;
+}
+.btn--primary:hover, .btn--gold:hover {
+  background: #86a84a;
+  border-color: #86a84a;
+  color: #14200a;
+  box-shadow: 0 10px 22px rgba(117, 149, 62, 0.32);
+}
+.btn--dark {
+  background: var(--brand-deep);
+  border-color: var(--brand-deep);
+  color: #fff;
+}
+.btn--dark:hover { background: #33421c; border-color: #33421c; color: #fff; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn--whatsapp { background: #1fb857; border-color: #1fb857; color: #fff; }
+.btn--whatsapp:hover { background: #18a34c; border-color: #18a34c; color: #fff; transform: translateY(-1px); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ---------- Cabecera ---------- */
+.site-header { background: rgba(255, 255, 255, 0.94); }
+.nav a { font-family: var(--font-display); font-weight: 600; }
+.icon-btn--fav.has-items { color: var(--clay); }
+.icon-btn--fav.has-items .hi-tone { opacity: 0.35; }
+.icon-btn__badge { font-family: var(--font-sans); background: var(--brand); color: #14200a; }
+.header-cta { white-space: nowrap; }
+@media (max-width: 900px) {
+  .header-cta { display: none; }
+}
+@media (max-width: 768px) {
+  .nav { box-shadow: var(--shadow-lg); max-height: calc(100dvh - 72px); overflow-y: auto; gap: 0; padding: 12px 20px 20px; }
+  .nav .nav-item.has-dropdown { display: flex; flex-direction: column; }
+  .nav .nav-dropdown {
+    position: static; opacity: 1; visibility: visible; transform: none;
+    border: 0; box-shadow: none; padding: 0 0 8px 8px; min-width: 0;
+  }
+  .nav .nav-dropdown a { border-bottom: 0; padding: 9px 8px; font-weight: 500; }
+  .nav__mobile-extra { display: flex; flex-direction: column; margin-top: 8px; }
+}
+.nav__mobile-extra { display: none; }
+
+/* ============================================================
+   Píldoras de datos (como en la portada de los itinerarios)
+   ============================================================ */
+.ht-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.ht-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 13px 7px 10px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: #33421c;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.ht-pill svg { color: var(--brand-strong); flex-shrink: 0; }
+.ht-pill--dark { background: rgba(20, 28, 10, 0.72); color: #fff; backdrop-filter: blur(6px); }
+.ht-pill--dark svg { color: #cfe39a; }
+.ht-pill--outline { background: #fff; border: 1.5px solid var(--border); }
+.ht-pill--private { background: #fbe9e4; color: #9c3320; }
+.ht-pill--private svg { color: var(--clay); }
+.ht-pill--group { background: #fdf0d9; color: #8a5a0c; }
+.ht-pill--group svg { color: #d98b17; }
+
+/* Etiqueta de tipo de servicio sobre la foto (PRIVATE TOUR / GROUP TOUR) */
+.ht-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 0 0 12px 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--brand-strong);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+.ht-tag--private { background: var(--clay); }
+.ht-tag--group { background: var(--sun); color: #3a2503; }
+
+/* ============================================================
+   Barra de sección (ITINERARIO: / INCLUYE: en los itinerarios)
+   ============================================================ */
+.ht-bar {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin: 0 0 20px;
+  padding: 9px 22px 9px 16px;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 6px 22px 22px 6px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.02rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  text-shadow: 0 1px 0 rgba(35, 45, 19, 0.25);
+}
+.ht-bar svg { color: #f1f8dc; }
+.ht-bar--dark { background: var(--brand-deep); }
+
+/* ============================================================
+   Tarjeta de tour
+   ============================================================ */
+.tour-card {
+  border-radius: 20px;
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.tour-card:hover { box-shadow: var(--shadow-pop); border-color: #d5ddbf; }
+.tour-card__media { aspect-ratio: 4 / 3; background: var(--ink-100); }
+.tour-card__media::after {
+  content: '';
+  position: absolute; inset: auto 0 0 0; height: 46%;
+  background: linear-gradient(180deg, transparent, rgba(15, 22, 6, 0.55));
+  pointer-events: none;
+}
+.tour-card__tag { position: absolute; top: 0; left: 14px; z-index: 2; }
+.tour-card__badge {
+  top: auto; bottom: 12px; left: 12px; z-index: 2;
+  background: #fff; color: var(--brand-deep);
+  font-family: var(--font-display);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+}
+.tour-card__badge--popular, .tour-card__badge--adventure, .tour-card__badge--cultural { background: #fff; color: var(--brand-deep); }
+.tour-card__badge--offer { left: auto; right: 12px; bottom: 12px; background: var(--clay); color: #fff; }
+.tour-card__heart {
+  z-index: 3; border: 0; cursor: pointer; color: var(--ink-700);
+  width: 38px; height: 38px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+}
+.tour-card__heart.is-on { color: var(--clay); }
+.tour-card__heart.is-on svg .hi-tone { opacity: 1; }
+.tour-card__heart.is-on svg { animation: ht-pop 0.32s ease; }
+@keyframes ht-pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.tour-card__link { position: absolute; inset: 0; z-index: 1; border-radius: 20px; }
+.tour-card .card__body { position: relative; padding: 16px 18px 18px; }
+.tour-card__dest {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.1em;
+  color: var(--brand-strong);
+}
+.tour-card .card__title { font-size: 1.08rem; font-weight: 700; line-height: 1.28; min-height: 2.56em; letter-spacing: -0.01em; }
+.tour-card .card__meta { color: var(--ink-600); }
+.tour-card__cancel { font-weight: 500; color: var(--ink-600); }
+.tour-card__cancel svg { color: var(--brand-strong); }
+.tour-card .card__price {
+  border-top: 1px dashed var(--border);
+  margin-top: auto; padding-top: 12px;
+  align-items: baseline;
+}
+.tour-card .card__price strong { font-size: 1.32rem; font-weight: 700; }
+.tour-card__rating svg { color: var(--sun); }
+
+/* ============================================================
+   Mosaicos y polaroids
+   ============================================================ */
+.ht-polaroid {
+  background: #fff;
+  padding: 8px 8px 0;
+  border-radius: 6px;
+  box-shadow: 0 10px 26px rgba(35, 45, 19, 0.16), 0 2px 6px rgba(35, 45, 19, 0.08);
+  transition: transform var(--t-base), box-shadow var(--t-base);
+  display: block; border: 0; cursor: pointer; text-align: center; width: 100%;
+}
+.ht-polaroid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 3px; }
+.ht-polaroid figcaption, .ht-polaroid__cap {
+  display: block;
+  padding: 10px 6px 12px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-800);
+}
+.ht-polaroid:nth-child(odd) { transform: rotate(-1.2deg); }
+.ht-polaroid:nth-child(even) { transform: rotate(1deg); }
+.ht-polaroid:hover { transform: rotate(0) translateY(-4px) scale(1.02); box-shadow: var(--shadow-pop); z-index: 2; }
+
+/* ============================================================
+   Estados vacíos y avisos
+   ============================================================ */
+.ht-empty {
+  display: grid; justify-items: center; gap: 10px;
+  padding: 44px 24px; text-align: center;
+  background: #fff; border: 1.5px dashed var(--border-strong); border-radius: 22px;
+}
+.ht-empty__icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--brand-soft); color: var(--brand-strong);
+}
+.ht-empty h2, .ht-empty h3 { margin: 6px 0 0; font-size: 1.3rem; }
+.ht-empty p { margin: 0; color: var(--ink-600); max-width: 46ch; }
+.ht-empty .btn { margin-top: 10px; }
+
+.ht-note {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; border-radius: 14px;
+  background: var(--brand-tint); border: 1px solid #dde6c6;
+  color: var(--ink-700); font-size: 0.92rem; line-height: 1.5;
+}
+.ht-note svg { color: var(--brand-strong); flex-shrink: 0; margin-top: 1px; }
+.ht-note--warn { background: #fff7e8; border-color: #f3ddb0; }
+.ht-note--warn svg { color: #c07a0b; }
+.ht-note strong { color: var(--ink-900); }
+
+/* ============================================================
+   Reseñas
+   ============================================================ */
+.rv-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+.rv-card {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 18px; background: #fff; border: 1px solid var(--border); border-radius: 18px;
+}
+.rv-card__head { display: flex; align-items: center; gap: 12px; }
+.rv-avatar {
+  width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%;
+  display: grid; place-items: center; color: #fff;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.02em;
+}
+.rv-card__who { flex: 1; min-width: 0; display: grid; }
+.rv-card__who strong { font-size: 0.95rem; color: var(--ink-900); }
+.rv-card__who span { font-size: 0.8rem; color: var(--ink-500); }
+.rv-stars { display: inline-flex; gap: 1px; }
+.rv-stars .is-on { color: var(--sun); }
+.rv-stars .is-off { color: var(--ink-200); }
+.rv-card__title { margin: 4px 0 0; font-size: 1rem; }
+.rv-card__body { margin: 0; color: var(--ink-700); font-size: 0.93rem; line-height: 1.6; }
+.rv-card__tag {
+  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; margin-top: auto;
+  font-size: 0.74rem; font-weight: 600; color: var(--brand-strong);
+}
+.rv-card__reply { margin-top: 6px; padding: 12px 14px; border-radius: 12px; background: var(--brand-tint); font-size: 0.88rem; }
+.rv-card__reply strong { display: block; font-size: 0.78rem; color: var(--brand-strong); margin-bottom: 2px; }
+.rv-card__reply p { margin: 0; color: var(--ink-700); }
+@media (max-width: 760px) { .rv-grid { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   Preguntas frecuentes
+   ============================================================ */
+.ht-faq-list { display: grid; gap: 10px; }
+.ht-faq { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 0 20px; transition: border-color var(--t-fast), box-shadow var(--t-fast); }
+.ht-faq[open] { border-color: #d5ddbf; box-shadow: var(--shadow-card); }
+.ht-faq summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 17px 0; cursor: pointer; list-style: none;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; color: var(--brand-deep);
+}
+.ht-faq summary::-webkit-details-marker { display: none; }
+.ht-faq summary svg { flex-shrink: 0; color: var(--brand-strong); transition: transform var(--t-fast); }
+.ht-faq[open] summary svg { transform: rotate(45deg); }
+.ht-faq p { margin: 0; padding: 0 0 18px; color: var(--ink-700); line-height: 1.65; max-width: 68ch; }
+
+/* Esqueletos de carga */
+.ht-skel {
+  background: linear-gradient(100deg, #eef0e4 30%, #f8f9f1 50%, #eef0e4 70%);
+  background-size: 300% 100%;
+  animation: ht-shimmer 1.3s linear infinite;
+  border-radius: 12px;
+}
+@keyframes ht-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+
+/* Próxima salida en la tarjeta */
+.tour-card__next { display: flex; align-items: center; gap: 6px; margin: 0 0 6px; font-size: 0.8rem; color: var(--ink-600); }
+.tour-card__next svg { color: var(--brand-strong); flex-shrink: 0; }
+.tour-card__next b { color: var(--brand-strong); font-weight: 700; }
+.tour-card__next.is-none, .tour-card__next.is-none svg { color: var(--ink-400); }

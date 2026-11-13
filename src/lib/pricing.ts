@@ -1,4 +1,48 @@
-import type { BookingSelection, Tour } from '@/lib/types';
+import type { BookingSelection, PriceTier, Tour, TourType } from '@/lib/types';
+
+type Priced = Pick<Tour, 'tourTypes' | 'priceTiers' | 'availableTypes'>;
+
+/** Escala de precios de un tipo de servicio (vacía si no tiene). */
+export function tiersFor(tour: Pick<Tour, 'priceTiers'>, type: TourType): PriceTier[] {
+  return tour.priceTiers?.[type] ?? [];
+}
+
+export function hasTiers(tour: Pick<Tour, 'priceTiers'>, type: TourType): boolean {
+  return tiersFor(tour, type).length > 0;
+}
+
+/**
+ * Precio por persona para un tipo y una cantidad de viajeros. Igual que
+ * tour_unit_price() en la base: el escalón con mayor `min` que no supere a pax;
+ * sin escala (o por debajo del primer escalón) rige el precio base del tipo.
+ */
+export function unitPrice(
+  tour: Pick<Tour, 'tourTypes' | 'priceTiers'>,
+  type: TourType,
+  pax: number,
+): number {
+  const tier = [...tiersFor(tour, type)].reverse().find((t) => t.min <= pax);
+  return tier ? tier.price : (tour.tourTypes[type] ?? 0);
+}
+
+/** Precio "desde": el menor precio por persona que el producto puede llegar a tener. */
+export function fromPrice(tour: Priced): number {
+  const prices: number[] = [];
+  for (const type of tour.availableTypes) {
+    prices.push(tour.tourTypes[type]);
+    for (const t of tiersFor(tour, type)) prices.push(t.price);
+  }
+  return prices.length > 0 ? Math.min(...prices) : 0;
+}
+
+/** Formato de importes en USD: sin decimales si es entero, con 2 si no. */
+export function money(amount: number): string {
+  const n = Number.isFinite(amount) ? amount : 0;
+  return n.toLocaleString('es-BO', {
+    minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 export const EXCHANGE_RATE_BOB = 6.9;
 
@@ -8,7 +52,7 @@ export function calcAvailabilityTotal(
   pax: number,
   extraIds: string[],
 ): { perPerson: number; extrasTotal: number; subtotal: number } {
-  const perPerson = tour.tourTypes[tourType];
+  const perPerson = unitPrice(tour, tourType, pax);
   const extrasTotal = tour.extras
     .filter((e) => extraIds.includes(e.id) && e.kind === 'paid')
     .reduce((sum, e) => sum + e.price, 0);
@@ -70,7 +114,7 @@ export function usdToBob(usd: number): number {
 }
 
 export function formatUsd(amount: number): string {
-  return `US$ ${amount}`;
+  return `US$ ${money(amount)}`;
 }
 
 export function formatBob(amount: number): string {

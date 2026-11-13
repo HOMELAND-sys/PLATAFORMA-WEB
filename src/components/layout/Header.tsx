@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useBooking } from '@/context/BookingContext';
 import { useAuth } from '@/context/AuthContext';
+import { useFavorites } from '@/context/FavoritesContext';
 import { fetchCategories } from '@/lib/api';
 import { getSupabase } from '@/lib/supabase';
 import type { CategoryRow } from '@/lib/api';
@@ -43,7 +45,24 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
   const accountRef = useRef<HTMLDivElement>(null);
   const { selection } = useBooking();
   const { session, profile, isAdmin, signOut } = useAuth();
+  const { count: favCount } = useFavorites();
+  const pathname = usePathname();
   const cartCount = selection ? Math.max(1, selection.pax ?? 1) : 0;
+  const section: HeaderProps['activeNav'] =
+    activeNav ??
+    (pathname?.startsWith('/tours')
+      ? 'tours'
+      : pathname?.startsWith('/customize')
+        ? 'customize'
+        : pathname?.startsWith('/business')
+          ? 'business'
+          : null);
+
+  // Al navegar se cierran el menú móvil y el de cuenta.
+  useEffect(() => {
+    setMenuOpen(false);
+    setAccountOpen(false);
+  }, [pathname]);
 
   const [categories, setCategories] = useState<CategoryRow[]>([]);
 
@@ -96,7 +115,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
         <nav className={`nav${menuOpen ? ' is-open' : ''}`} id="primaryNav">
           {withDropdown ? (
             <div className="nav-item has-dropdown">
-              <Link href="/tours" className={activeNav === 'tours' ? 'active' : ''}>
+              <Link href="/tours" className={section === 'tours' ? 'active' : ''}>
                 Explorar tours <Icon name="chevron-down" size={14} className="nav-caret" />
               </Link>
               <div className="nav-dropdown">
@@ -113,7 +132,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
           ) : (
             <Link
               href="/tours"
-              className={activeNav === 'tours' ? 'active' : ''}
+              className={section === 'tours' ? 'active' : ''}
               onClick={() => setMenuOpen(false)}
             >
               Explorar tours
@@ -121,40 +140,36 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
           )}
           <Link
             href="/customize"
-            className={activeNav === 'customize' ? 'active' : ''}
+            className={section === 'customize' ? 'active' : ''}
             onClick={() => setMenuOpen(false)}
           >
-            Personalizar viaje
+            Viaje a medida
           </Link>
           <Link
             href="/business"
-            className={activeNav === 'business' ? 'active' : ''}
+            className={section === 'business' ? 'active' : ''}
             onClick={() => setMenuOpen(false)}
           >
             Empresas
           </Link>
+          <Link href="/favoritos" className="nav__extra" onClick={() => setMenuOpen(false)}>
+            <Icon name="heart" size={17} /> Mis favoritos{favCount > 0 ? ` (${favCount})` : ''}
+          </Link>
+          <Link href="/preguntas-frecuentes" className="nav__extra" onClick={() => setMenuOpen(false)}>
+            <Icon name="info" size={17} /> Preguntas frecuentes
+          </Link>
         </nav>
 
         <div className="header-actions">
-          <button
-            type="button"
-            className="lang-pill"
-            disabled
-            title="Próximamente"
-            aria-label="Cambiar idioma (próximamente)"
-          >
-            <Icon name="globe" size={17} />
-            <span>ES</span>
-          </button>
-          <button
-            type="button"
-            className="icon-btn"
-            disabled
-            title="Próximamente"
-            aria-label="Favoritos (próximamente)"
+          <Link
+            className={`icon-btn icon-btn--fav${favCount > 0 ? ' has-items' : ''}`}
+            href="/favoritos"
+            aria-label={favCount > 0 ? `Mis favoritos: ${favCount}` : 'Mis favoritos'}
+            title="Mis favoritos"
           >
             <Icon name="heart" size={21} />
-          </button>
+            {favCount > 0 && <span className="icon-btn__badge">{favCount}</span>}
+          </Link>
 
           {session ? (
             <div className="account" ref={accountRef}>
@@ -216,12 +231,14 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
             <Icon name="bag" size={21} />
             {cartCount > 0 && <span className="icon-btn__badge">{cartCount}</span>}
           </Link>
-          <Link className="btn btn--gold btn--sm" href={session ? '/bookings' : '/login?next=%2Fbookings'}>
+          <Link className="btn btn--gold btn--sm header-cta" href={session ? '/bookings' : '/login?next=%2Fbookings'}>
             Mis reservas
           </Link>
           <button
             className="menu-toggle"
-            aria-label="Abrir menú"
+            aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={menuOpen}
+            aria-controls="primaryNav"
             onClick={() => setMenuOpen((v) => !v)}
           >
             <Icon name={menuOpen ? 'close' : 'menu'} size={22} />

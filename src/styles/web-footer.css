@@ -65,8 +65,8 @@
   text-wrap: balance;
 }
 .footer-cta__title em {
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 700;
   color: var(--green-300);
 }
 .footer-cta__sub {

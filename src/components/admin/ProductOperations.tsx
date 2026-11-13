@@ -2,6 +2,7 @@
 
 import type { AdminTourForm } from '@/lib/admin/tour-editor';
 import { Field } from './AdminShared';
+import PriceTiersEditor from './PriceTiersEditor';
 interface Props {
   data: AdminTourForm;
   onChange: <K extends keyof AdminTourForm>(key: K, value: AdminTourForm[K]) => void;
@@ -26,6 +27,7 @@ export default function ProductOperations({ data, onChange: set }: Props) {
       </div>
       <p className="tour-editor__hint">Precio base 0: consultar. Tarifas vacías: modalidad no disponible.</p>
     </section>
+    <PriceTiersEditor data={data} onChange={set} />
     <section className="tour-editor__section">
       <h4>Participantes</h4>
       <div className="tour-editor__field-grid">
@@ -55,6 +57,14 @@ export default function ProductOperations({ data, onChange: set }: Props) {
     </section>
     <section className="tour-editor__section">
       <h4>Horarios y hora límite</h4>
+      <Field label="Salidas (texto que ve el viajero)">
+        <input
+          maxLength={80}
+          value={data.departures}
+          onChange={e => set('departures', e.target.value)}
+          placeholder="Salidas diarias · Sábados · A pedido"
+        />
+      </Field>
       <div className="tour-editor__field-grid">
         <Field label="Horas por defecto (HH:MM)">
           <input

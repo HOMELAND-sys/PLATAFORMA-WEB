@@ -156,7 +156,7 @@
   text-shadow: 0 2px 26px rgba(10, 14, 6, 0.5);
   perspective: 600px;
 }
-.vh .vh__title em { color: #ecd27a; font-style: italic; font-weight: 400; }
+.vh .vh__title em { color: #ecd27a; font-style: normal; font-weight: 700; }
 .vh__lead {
   color: rgba(244, 246, 236, 0.88);
   max-width: 640px;
@@ -845,7 +845,7 @@
 .vt__stub-motto {
   margin: 10px 0 0;
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 1.05rem;
   color: #d9e4c2;
 }
