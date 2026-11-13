@@ -237,7 +237,7 @@ export default function Hero() {
       </div>
       <div className="container hero__inner">
         <HomelandLogo className="hero__brand" height={30} />
-        <p className="hero__eyebrow">Authentic journeys. Local hearts.</p>
+        <p className="hero__eyebrow">Viajes auténticos. Corazón local.</p>
         <h1 className="hero__title">
           Descubre la magia
           <br />

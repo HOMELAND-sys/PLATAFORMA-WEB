@@ -13,7 +13,14 @@ interface SummaryCardProps {
   paxCount: number;
   couponCode: string | null;
   couponDiscount: number;
-  totals: { groupDiscount: number; groupDiscountRate?: number; coupon: number; total: number };
+  totals: {
+    groupDiscount: number;
+    groupDiscountRate?: number;
+    offerDiscount?: number;
+    offerPct?: number;
+    coupon: number;
+    total: number;
+  };
   baseSubtotal: number;
   onApplyCoupon: (code: string, discount: number) => void;
 }
@@ -32,6 +39,10 @@ export default function SummaryCard({
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   const [checking, setChecking] = useState(false);
+
+  const children = selection?.children ?? 0;
+  const adults = selection?.adults ?? Math.max(0, paxCount - children);
+  const perPerson = selection?.perPerson ?? 0;
 
   const applyCoupon = async () => {
     const code = input.trim().toUpperCase();
@@ -84,6 +95,7 @@ export default function SummaryCard({
                 year: 'numeric',
               })
             : 'Fecha a confirmar'}
+          {selection?.startTime ? ` · ${selection.startTime}` : ''}
           <br />
           <small className="text-muted">{tour?.duration ?? '3 días · 2 noches'}</small>
         </span>
@@ -93,7 +105,8 @@ export default function SummaryCard({
           <Icon name="users" size={16} /> Pasajeros
         </span>
         <span>
-          {paxCount} Adulto{paxCount > 1 ? 's' : ''}
+          {adults} Adulto{adults !== 1 ? 's' : ''}
+          {children > 0 ? ` · ${children} Niño${children !== 1 ? 's' : ''}` : ''}
         </span>
       </div>
 
@@ -134,10 +147,16 @@ export default function SummaryCard({
 
       <div className="summary-row">
         <span>
-          {paxCount} Adulto{paxCount > 1 ? 's' : ''} @ US$ {selection?.perPerson ?? 299}
+          {paxCount} viajero{paxCount > 1 ? 's' : ''} × US$ {perPerson}
         </span>
         <span>{formatUsd(baseSubtotal)}</span>
       </div>
+      {children > 0 && tour?.priceChild != null && (
+        <p className="text-small" style={{ color: 'var(--ink-500)', margin: '2px 0 0' }}>
+          Tarifa niño de referencia: US$ {tour.priceChild}. La reserva online aplica la tarifa de
+          adulto (US$ {perPerson}) a todos los viajeros.
+        </p>
+      )}
       {couponCode && (
         <div className="summary-row summary-row--sub">
           <span>Cupón ({couponCode})</span>
@@ -148,6 +167,12 @@ export default function SummaryCard({
         <div className="summary-row summary-row--sub">
           <span>Descuento grupo ({Math.round((totals.groupDiscountRate ?? 0) * 100)}%)</span>
           <span style={{ color: 'var(--green-700)' }}>-US$ {totals.groupDiscount}</span>
+        </div>
+      )}
+      {(totals.offerDiscount ?? 0) > 0 && (
+        <div className="summary-row summary-row--sub">
+          <span>Oferta especial ({Math.round(totals.offerPct ?? 0)}%)</span>
+          <span style={{ color: 'var(--green-700)' }}>-{formatUsd(totals.offerDiscount ?? 0)}</span>
         </div>
       )}
       <div className="summary-row summary-row--total">

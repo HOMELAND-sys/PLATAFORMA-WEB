@@ -31,7 +31,7 @@ import {
 gsap.registerPlugin(useGSAP, DrawSVGPlugin, MorphSVGPlugin, ScrollTrigger);
 
 export default function ConfirmationContent() {
-  const { result } = useBooking();
+  const { result, hydrated } = useBooking();
   const searchParams = useSearchParams();
   const { session, loading: authLoading } = useAuth();
   const code = (searchParams.get('code') ?? result?.code ?? '').toUpperCase();
@@ -42,6 +42,14 @@ export default function ConfirmationContent() {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    // Espera la hidratación del contexto (result.code) y de la sesión (RLS)
+    // antes de consultar; reinicia los estados en cada cambio de código para
+    // que un notFound previo no persista al recargar /confirmation.
+    if (!hydrated || authLoading) return;
+    setNotFound(false);
+    setBooking(null);
+    setSettings(null);
+    setLoading(true);
     if (!code) {
       setLoading(false);
       setNotFound(true);
@@ -66,7 +74,7 @@ export default function ConfirmationContent() {
     return () => {
       active = false;
     };
-  }, [code]);
+  }, [code, hydrated, authLoading]);
 
   if (loading) return <VoucherLoading />;
 
@@ -337,7 +345,7 @@ function VoucherPage({ booking: b, settings }: { booking: MyBooking; settings: P
           <div className="trust-strip__item">
             <Icon name="star-solid" size={24} className="trust-strip__icon" />
             <div>
-              <h4>Best Price Guarantee</h4>
+              <h4>Mejor precio garantizado</h4>
               <p>Sin cargos ocultos, siempre.</p>
             </div>
           </div>

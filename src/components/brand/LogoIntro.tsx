@@ -10,6 +10,24 @@ import { emitIntroReveal, prefersReducedMotion } from '@/lib/intro';
 
 gsap.registerPlugin(useGSAP, DrawSVGPlugin, CustomEase);
 
+const INTRO_SEEN_KEY = 'homeland-intro-seen';
+
+function introSeen() {
+  try {
+    return window.sessionStorage.getItem(INTRO_SEEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markIntroSeen() {
+  try {
+    window.sessionStorage.setItem(INTRO_SEEN_KEY, '1');
+  } catch {
+    // Sin sessionStorage la intro volverá a salir; no rompe la navegación.
+  }
+}
+
 /* ------------------------------------------------------------------
    Perfiles de cordillera: [x 0..1, altura 0..1].
    El frontal evoca el Illimani (triple cumbre sobre La Paz).
@@ -98,6 +116,14 @@ export default function LogoIntro() {
     () => {
       const el = root.current;
       if (!el) return;
+
+      if (introSeen()) {
+        emitIntroReveal();
+        setDone(true);
+        return;
+      }
+      markIntroSeen();
+
       el.style.animation = 'none'; // desactiva el failsafe CSS: JS toma el control
 
       const q = gsap.utils.selector(el);
@@ -110,9 +136,11 @@ export default function LogoIntro() {
       const backLogo = q('.intro__back-logo')[0] as HTMLDivElement;
 
       let finished = false;
+      let capTimer = 0;
       const finish = () => {
         if (finished) return;
         finished = true;
+        window.clearTimeout(capTimer);
         emitIntroReveal();
         setDone(true);
       };
@@ -174,6 +202,12 @@ export default function LogoIntro() {
       const ease = CustomEase.create('ht-glide', 'M0,0 C0.18,0 0.12,1 1,1');
 
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, onComplete: finish });
+      // La intro completa queda por debajo de 3 s; el tope duro cubre pestañas estranguladas.
+      tl.timeScale(1.3);
+      capTimer = window.setTimeout(() => {
+        tl.kill();
+        finish();
+      }, 3200);
 
       /* ---------- 1. Paisaje: curvas de nivel + cordillera ---------- */
       tl.to(topo, { drawSVG: '100%', duration: 2.4, stagger: 0.07, ease: 'power1.inOut' }, 0)
@@ -245,15 +279,17 @@ export default function LogoIntro() {
         )
         .add(() => el.classList.add('is-revealed'), 'exit+=1.5');
 
-      /* Clic / tecla: acelera la intro. */
-      const hurry = () => {
-        if (tl.time() < tl.labels.exit) tl.timeScale(2.6);
+      /* Clic / tecla: salta la intro de inmediato. */
+      const skip = () => {
+        tl.kill();
+        finish();
       };
-      el.addEventListener('pointerdown', hurry);
-      window.addEventListener('keydown', hurry);
+      el.addEventListener('pointerdown', skip);
+      window.addEventListener('keydown', skip);
       return () => {
-        el.removeEventListener('pointerdown', hurry);
-        window.removeEventListener('keydown', hurry);
+        window.clearTimeout(capTimer);
+        el.removeEventListener('pointerdown', skip);
+        window.removeEventListener('keydown', skip);
       };
     },
     { scope: root },

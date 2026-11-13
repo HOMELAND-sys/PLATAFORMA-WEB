@@ -8,7 +8,7 @@ import type {
   TourInfo,
   TourType,
 } from '@/lib/types';
-import { calcBookingTotals } from '@/lib/pricing';
+import { getGroupDiscountRate } from '@/lib/pricing';
 
 // ---------------------------------------------------------------------------
 // Tipos de fila (forma de la base)
@@ -67,6 +67,8 @@ export interface TourDateFree {
   start_time?: string | null;
   blocked?: boolean | null;
   bookable?: boolean | null;
+  cutoff_hours?: number | null;
+  booked?: boolean | null;
 }
 
 // Columnas públicas añadidas por la migración 0011: todas opcionales,
@@ -96,7 +98,12 @@ export interface SpecialOffer {
   discount_pct: number | null;
   activity_from: string | null;
   activity_to: string | null;
-  active?: boolean | null;
+  weekdays?: number[] | null;
+  start_times?: string[] | null;
+  booking_notice_days?: number | null;
+  seats_limit?: number | null;
+  seats_sold?: number | null;
+  status?: string | null;
 }
 
 export interface ReservationRow {
@@ -107,6 +114,8 @@ export interface ReservationRow {
   tour_date_id: string;
   tour_type: TourType;
   pax: number;
+  adults?: number | null;
+  children?: number;
   extras: TourExtra[];
   subtotal: number;
   group_discount: number;
@@ -228,8 +237,8 @@ export async function fetchActiveTours(sb: SupabaseClient): Promise<Tour[]> {
   const catMap = buildCatSlugMap((catsRes.data ?? []) as CategoryRow[]);
   return ((toursRes.data ?? []) as TourRow[]).map((row) => {
     const tour = mapTour(row, catMap);
-    const pct = offerPctForTour(offers, row.id);
-    return pct > 0 ? { ...tour, offerPct: pct } : tour;
+    const offer = bestOfferForTour(offers, row.id);
+    return offer ? { ...tour, offerPct: offer.discount_pct ?? 0, offerId: offer.id, offer } : tour;
   });
 }
 
@@ -244,19 +253,29 @@ export async function fetchActiveTourBySlug(sb: SupabaseClient, slug: string): P
   const row = toursRes.data as TourRow | null;
   if (!row) return null;
   const tour = mapTour(row, buildCatSlugMap((catsRes.data ?? []) as CategoryRow[]));
-  const pct = offerPctForTour(offers, row.id);
-  return pct > 0 ? { ...tour, offerPct: pct } : tour;
+  const offer = bestOfferForTour(offers, row.id);
+  return offer ? { ...tour, offerPct: offer.discount_pct ?? 0, offerId: offer.id, offer } : tour;
+}
+
+// Fecha de hoy en America/La_Paz: la RPC create_booking usa esa zona, no UTC.
+function laPazToday(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/La_Paz',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
 }
 
 // Ofertas especiales vigentes (migración 0011). Si la tabla no existe aún
 // o falla la lectura, el catálogo sigue funcionando sin descuentos.
 export async function fetchActiveOffers(sb: SupabaseClient): Promise<SpecialOffer[]> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = laPazToday();
   const { data, error } = await sb.from('special_offers').select('*');
   if (error) return [];
   return ((data ?? []) as SpecialOffer[]).filter(
     (o) =>
-      o.active !== false &&
+      (o.status ?? 'active') === 'active' &&
       Array.isArray(o.tour_ids) &&
       typeof o.discount_pct === 'number' &&
       o.discount_pct > 0 &&
@@ -269,6 +288,53 @@ export function offerPctForTour(offers: SpecialOffer[], tourId: string): number 
   return offers
     .filter((o) => o.tour_ids?.includes(tourId))
     .reduce((max, o) => Math.max(max, o.discount_pct ?? 0), 0);
+}
+
+/** La oferta vigente de mayor descuento para un tour (para enviar su id a la RPC). */
+export function bestOfferForTour(offers: SpecialOffer[], tourId: string): SpecialOffer | null {
+  return offers
+    .filter((o) => o.tour_ids?.includes(tourId))
+    .reduce<SpecialOffer | null>(
+      (best, o) => (!best || (o.discount_pct ?? 0) > (best.discount_pct ?? 0) ? o : best),
+      null,
+    );
+}
+
+/**
+ * Reproduce las condiciones de create_booking (migración 0011) para saber si
+ * una oferta aplica a la selección actual antes de enviar p_offer_id:
+ * vigencia (hoy y fecha del tour), días de la semana, horarios de salida,
+ * anticipación (early_bird / last_minute) y cupos promocionales.
+ */
+export function offerAppliesToSelection(
+  offer: SpecialOffer,
+  sel: { tourId?: string; date: string; startTime?: string | null; pax: number; today?: string },
+): boolean {
+  const today = sel.today ?? laPazToday();
+  if ((offer.status ?? 'active') !== 'active') return false;
+  if (sel.tourId && offer.tour_ids && !offer.tour_ids.includes(sel.tourId)) return false;
+  if (!offer.activity_from || !offer.activity_to) return false;
+  if (today < offer.activity_from || today > offer.activity_to) return false;
+  if (sel.date < offer.activity_from || sel.date > offer.activity_to) return false;
+  if (offer.weekdays && offer.weekdays.length > 0) {
+    const dow = new Date(`${sel.date}T00:00:00Z`).getUTCDay(); // 0 = domingo
+    if (!offer.weekdays.includes(dow)) return false;
+  }
+  if (offer.start_times && offer.start_times.length > 0) {
+    const hhmm = sel.startTime ? sel.startTime.slice(0, 5) : null;
+    if (!hhmm || !offer.start_times.includes(hhmm)) return false;
+  }
+  const kind = offer.kind ?? 'limited';
+  if (kind !== 'limited') {
+    const notice = offer.booking_notice_days ?? 0;
+    const daysAhead = Math.round(
+      (Date.parse(`${sel.date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000,
+    );
+    if (kind === 'early_bird' && daysAhead < notice) return false;
+    if (kind === 'last_minute' && (daysAhead < 0 || daysAhead > notice)) return false;
+  }
+  if (offer.seats_limit != null && (offer.seats_sold ?? 0) + sel.pax > offer.seats_limit) return false;
+  return true;
 }
 
 // Miniatura optimizada: /assets/tours/<destino>/NN.webp → NN-sm.webp.
@@ -325,6 +391,9 @@ export interface CreateBookingArgs {
   passengers: { name: string; doc: string; country: string; meal: string; isLead?: boolean }[];
   couponCode?: string | null;
   paymentMethod?: 'link' | 'qr';
+  tourDateId?: string | null;
+  offerId?: string | null;
+  children?: number;
 }
 
 export interface CreatedBooking {
@@ -336,6 +405,10 @@ export type BookingErrorCode =
   | 'date_full'
   | 'date_not_open'
   | 'date_past'
+  | 'cutoff_passed'
+  | 'slot_blocked'
+  | 'offer_invalid'
+  | 'offer_full'
   | 'coupon_invalid'
   | 'tour_not_found'
   | 'tour_inactive'
@@ -350,6 +423,10 @@ export function bookingErrorInfo(message: string): { code: BookingErrorCode; det
     'date_full',
     'date_not_open',
     'date_past',
+    'cutoff_passed',
+    'slot_blocked',
+    'offer_invalid',
+    'offer_full',
     'coupon_invalid',
     'tour_not_found',
     'tour_inactive',
@@ -376,25 +453,61 @@ export async function createBooking(
     p_passengers: args.passengers,
     p_coupon_code: args.couponCode ?? null,
     p_payment_method: args.paymentMethod ?? 'link',
+    p_tour_date_id: args.tourDateId ?? null,
+    p_offer_id: args.offerId ?? null,
+    p_children: args.children ?? 0,
   });
-  if (error) throw error;
+  if (error) {
+    // PostgREST devuelve un objeto plano (no Error): sin normalizar, el
+    // instanceof Error del checkout es falso y se pierden message/code.
+    const err = new Error(error.message || 'unknown');
+    (err as Error & { code?: string }).code = error.code ?? undefined;
+    throw err;
+  }
   return data as CreatedBooking;
 }
 
-// Totales en el cliente (misma lógica que la RPC) para el resumen del checkout.
+// Totales en el cliente para el resumen del checkout. Centavos enteros para
+// reproducir el orden y el round de PostgreSQL (numeric) de create_booking:
+// grupo (round entero) → oferta (round 2 dec.) → cupón (round entero, con tope).
 export function clientTotals(
   tour: Tour,
   tourType: TourType,
   pax: number,
   extraIds: string[],
   couponDiscountPct = 0,
+  offerDiscountPct = 0,
 ) {
   const perPerson = tour.tourTypes[tourType] ?? 0;
-  const extrasTotal = tour.extras
+  const perPersonCents = Math.round(perPerson * 100);
+  const extrasCents = tour.extras
     .filter((e) => extraIds.includes(e.id) && e.kind === 'paid')
-    .reduce((sum, e) => sum + e.price, 0);
-  const subtotal = perPerson * pax + extrasTotal;
-  return { perPerson, extrasTotal, subtotal, ...calcBookingTotals(subtotal, pax, couponDiscountPct) };
+    .reduce((sum, e) => sum + Math.round(e.price * 100), 0);
+  const subtotalCents = perPersonCents * pax + extrasCents;
+  const groupDiscountRate = getGroupDiscountRate(pax);
+  const groupPct = Math.round(groupDiscountRate * 100);
+  const groupCents = groupPct > 0 ? Math.round((subtotalCents * groupPct) / 10000) * 100 : 0;
+  const afterGroupCents = subtotalCents - groupCents;
+  const offerPct = Math.round(offerDiscountPct);
+  const offerCents = offerPct > 0 ? Math.round((afterGroupCents * offerPct) / 100) : 0;
+  const afterOfferCents = afterGroupCents - offerCents;
+  const couponPct = Math.round(couponDiscountPct);
+  const couponCents =
+    couponPct > 0
+      ? Math.min(afterOfferCents, Math.round((afterOfferCents * couponPct) / 10000) * 100)
+      : 0;
+  const totalCents = afterOfferCents - couponCents;
+  return {
+    perPerson,
+    extrasTotal: extrasCents / 100,
+    subtotal: subtotalCents / 100,
+    base: subtotalCents / 100,
+    groupDiscount: groupCents / 100,
+    groupDiscountRate,
+    offerDiscount: offerCents / 100,
+    couponDiscount: couponCents / 100,
+    total: totalCents / 100,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -421,6 +534,7 @@ export interface MyBooking extends ReservationRow {
   tour_title: string;
   tour_image: string;
   tour_date: string;
+  tour_start_time?: string | null;
   tour_duration: string;
   tour_start_end: string;
   passengers: PassengerRow[];
@@ -432,17 +546,19 @@ export interface MyBooking extends ReservationRow {
   tour_included?: string[];
 }
 
-export async function fetchMyBookings(sb: SupabaseClient): Promise<MyBooking[]> {
+export async function fetchMyBookings(sb: SupabaseClient, userId: string): Promise<MyBooking[]> {
   const { data, error } = await sb
     .from('reservations')
     .select(
-      '*, tour:reservations_tour_id_fkey (slug, title, image, duration, start_end), date_row:reservations_tour_date_id_fkey (date), passengers:booking_passengers_reservations_id_fkey (*)',
+      '*, tour:reservations_tour_id_fkey (slug, title, image, duration, start_end), date_row:reservations_tour_date_id_fkey (date, start_time), passengers:booking_passengers_reservations_id_fkey (*)',
     )
+    // Filtro explícito: una cuenta admin no debe ver reservas de oficina sin user_id.
+    .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   const rows = (data ?? []) as unknown as (ReservationRow & {
     tour: { slug: string; title: string; image: string; duration: string; start_end: string } | null;
-    date_row: { date: string } | null;
+    date_row: { date: string; start_time: string | null } | null;
     passengers: PassengerRow[];
   })[];
   return rows
@@ -453,6 +569,7 @@ export async function fetchMyBookings(sb: SupabaseClient): Promise<MyBooking[]> 
       tour_title: r.tour!.title,
       tour_image: r.tour!.image,
       tour_date: r.date_row?.date ?? '',
+      tour_start_time: r.date_row?.start_time ?? null,
       tour_duration: r.tour!.duration,
       tour_start_end: r.tour!.start_end,
       passengers: r.passengers,
@@ -502,13 +619,13 @@ export async function fetchBookingByCode(sb: SupabaseClient, code: string): Prom
   };
 }
 
-export async function cancelBooking(sb: SupabaseClient, reservationId: string): Promise<void> {
-  // El trigger solo permite: propio + pendiente_pago → cancelada (libera el cupo al instante).
-  const { error } = await sb
-    .from('reservations')
-    .update({ status: 'cancelada', cancellation_reason: 'Cancelada por el cliente' })
-    .eq('id', reservationId);
-  if (error) throw error;
+export async function cancelBooking(
+  sb: SupabaseClient,
+  reservationId: string,
+  reason = 'Cancelada por el cliente',
+): Promise<void> {
+  // La RPC valida que sea propia y cancelable (pendiente_pago o confirmada) y libera el cupo.
+  await updateReservationStatus(sb, reservationId, 'cancelada', reason);
 }
 
 // ---------------------------------------------------------------------------

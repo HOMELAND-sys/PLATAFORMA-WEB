@@ -8,12 +8,26 @@ interface AvailabilityModalProps {
   open: boolean;
   tour: Tour;
   tourType: TourType;
-  pax: number;
+  adults: number;
+  children: number;
+  date: string;
+  startTime: string;
   extraIds: string[];
-  total: { perPerson: number; extrasTotal: number; subtotal: number };
+  totals: {
+    perPerson: number;
+    extrasTotal: number;
+    subtotal: number;
+    groupDiscount: number;
+    groupDiscountRate: number;
+    offerDiscount: number;
+    total: number;
+  };
+  offerPct: number;
+  canAdd: boolean;
   onClose: () => void;
   onTourTypeChange: (t: TourType) => void;
-  onPaxChange: (p: number) => void;
+  onAdultsChange: (n: number) => void;
+  onChildrenChange: (n: number) => void;
   onToggleExtra: (id: string) => void;
   onAddToCart: () => void;
 }
@@ -24,20 +38,36 @@ const TOUR_TYPE_LABELS: Record<TourType, string> = {
   private: 'Privado',
 };
 
+const fmtTripDate = (d: string) =>
+  new Date(`${d}T12:00:00`).toLocaleDateString('es-ES', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
 export default function AvailabilityModal({
   open,
   tour,
   tourType,
-  pax,
+  adults,
+  children,
+  date,
+  startTime,
   extraIds,
-  total,
+  totals,
+  offerPct,
+  canAdd,
   onClose,
   onTourTypeChange,
-  onPaxChange,
+  onAdultsChange,
+  onChildrenChange,
   onToggleExtra,
   onAddToCart,
 }: AvailabilityModalProps) {
   if (!open) return null;
+
+  const pax = adults + children;
 
   return (
     <div className="am-modal is-open" aria-hidden={false}>
@@ -57,6 +87,26 @@ export default function AvailabilityModal({
           </h2>
         </header>
 
+        {date && (
+          <div className="am-trip">
+            <div className="am-trip__info">
+              <span>
+                <Icon name="calendar" size={15} />
+                {fmtTripDate(date)}
+                {startTime ? ` · ${startTime} hs` : ''}
+              </span>
+              <span>
+                <Icon name="users" size={15} />
+                {adults} adulto{adults !== 1 ? 's' : ''}
+                {children > 0 ? ` · ${children} niño${children !== 1 ? 's' : ''}` : ''}
+              </span>
+            </div>
+            <button type="button" className="am-trip__change" onClick={onClose}>
+              Cambiar
+            </button>
+          </div>
+        )}
+
         <div className="am-body">
           <div className="am-group">
             <span className="am-group__label">Tipo de tour</span>
@@ -73,6 +123,10 @@ export default function AvailabilityModal({
                   />
                   <label htmlFor={`tour-${type}`} className="am-tour">
                     <span className="am-tour__name">{TOUR_TYPE_LABELS[type]}</span>
+                    <span className="am-tour__price">
+                      {tour.tourTypes[type] === 0 ? 'Consultar' : `US$ ${tour.tourTypes[type]}`}
+                      <small>/pax</small>
+                    </span>
                   </label>
                 </div>
               ))}
@@ -122,30 +176,81 @@ export default function AvailabilityModal({
           <div className="am-pax">
             <div className="am-pax__label">
               <strong>Adultos</strong>
-              <small>
-                {pax} {pax === 1 ? 'pasajero' : 'pasajeros'}
-              </small>
+              <small>13 años o más</small>
             </div>
             <div className="am-pax__ctrl">
-              <button type="button" onClick={() => onPaxChange(Math.max(1, pax - 1))} aria-label="Restar pasajero">
+              <button
+                type="button"
+                disabled={adults <= 1}
+                onClick={() => onAdultsChange(Math.max(1, adults - 1))}
+                aria-label="Restar adulto"
+              >
                 −
               </button>
-              <span>{pax}</span>
-              <button type="button" onClick={() => onPaxChange(Math.min(GROUP_DISCOUNT_MAX_PAX, pax + 1))} aria-label="Sumar pasajero">
+              <span>{adults}</span>
+              <button
+                type="button"
+                disabled={pax >= GROUP_DISCOUNT_MAX_PAX}
+                onClick={() => onAdultsChange(Math.min(GROUP_DISCOUNT_MAX_PAX - children, adults + 1))}
+                aria-label="Sumar adulto"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="am-pax">
+            <div className="am-pax__label">
+              <strong>Niños</strong>
+              <small>{tour.childAgeMax ? `Hasta ${tour.childAgeMax} años` : 'Tarifa de adulto online'}</small>
+            </div>
+            <div className="am-pax__ctrl">
+              <button
+                type="button"
+                disabled={children <= 0}
+                onClick={() => onChildrenChange(Math.max(0, children - 1))}
+                aria-label="Restar niño"
+              >
+                −
+              </button>
+              <span>{children}</span>
+              <button
+                type="button"
+                disabled={pax >= GROUP_DISCOUNT_MAX_PAX}
+                onClick={() => onChildrenChange(Math.min(GROUP_DISCOUNT_MAX_PAX - adults, children + 1))}
+                aria-label="Sumar niño"
+              >
                 +
               </button>
             </div>
           </div>
 
           <div className="am-total">
-            <div>
-              <span className="am-total__label">Total</span>
-              <small>
-                {pax} × US$ {total.perPerson}
-                {total.extrasTotal > 0 ? ` + US$ ${total.extrasTotal}` : ''}
-              </small>
+            <div className="am-total__rows">
+              <div className="am-total__row">
+                <span>
+                  Subtotal · {pax} × US$ {totals.perPerson}
+                  {totals.extrasTotal > 0 ? ` + US$ ${totals.extrasTotal} extras` : ''}
+                </span>
+                <span>US$ {totals.subtotal}</span>
+              </div>
+              {totals.groupDiscount > 0 && (
+                <div className="am-total__row am-total__row--discount">
+                  <span>Descuento por grupo ({Math.round(totals.groupDiscountRate * 100)}%)</span>
+                  <span>−US$ {totals.groupDiscount}</span>
+                </div>
+              )}
+              {totals.offerDiscount > 0 && (
+                <div className="am-total__row am-total__row--discount">
+                  <span>Oferta especial ({offerPct}%)</span>
+                  <span>−US$ {totals.offerDiscount}</span>
+                </div>
+              )}
             </div>
-            <strong>US$ {total.subtotal}</strong>
+            <div className="am-total__final">
+              <span className="am-total__label">Total</span>
+              <strong>US$ {totals.total}</strong>
+            </div>
           </div>
 
           {getGroupDiscountRate(pax) > 0 && (
@@ -153,15 +258,20 @@ export default function AvailabilityModal({
               <Icon name="tag" size={15} />
               <span>
                 {pax >= GROUP_DISCOUNT_MAX_PAX
-                  ? `¡Descuento máximo! ${getGroupDiscountLabel(pax)} por reservar ${pax} pasajeros.`
+                  ? `¡Descuento máximo! ${getGroupDiscountLabel(pax)} por reservar ${pax} viajeros.`
                   : getGroupDiscountRate(pax) === getGroupDiscountRate(pax + 1)
-                    ? `¡${getGroupDiscountLabel(pax)} por grupo ya aplicado! Sumá más pasajeros para mantener el descuento.`
+                    ? `¡${getGroupDiscountLabel(pax)} por grupo ya aplicado! Sumá más viajeros para mantener el descuento.`
                     : `¡${getGroupDiscountLabel(pax)} por grupo! Subí a ${pax + 1} para llegar a ${getGroupDiscountLabel(pax + 1)}.`}
               </span>
             </div>
           )}
 
-          <button className="am-cta" onClick={onAddToCart}>
+          {!canAdd && (
+            <p className="am-warning" role="alert">
+              Cupo insuficiente para {pax} viajeros en esta salida. Quitá viajeros o cambiá de horario.
+            </p>
+          )}
+          <button className="am-cta" onClick={onAddToCart} disabled={!canAdd}>
             Añadir al carrito
             <Icon name="arrow-right" size={17} />
           </button>

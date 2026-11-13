@@ -9,7 +9,7 @@ export default function FeaturedSection({ tours }: { tours: Tour[] }) {
       <div className="container">
         <div className="flex-between" style={{ marginBottom: 32 }}>
           <div>
-            <p className="eyebrow">Handpicked adventures</p>
+            <p className="eyebrow">Aventuras seleccionadas</p>
             <h2>Tours destacados</h2>
           </div>
           <Link className="btn btn--ghost btn--sm" href="/tours">

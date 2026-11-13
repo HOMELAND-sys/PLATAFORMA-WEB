@@ -29,7 +29,7 @@ export default function BusinessContent() {
 
       <section className="form-hero">
         <div className="container">
-          <Breadcrumbs light items={[{ label: 'Home', href: '/' }, { label: 'Empresas' }]} />
+          <Breadcrumbs light items={[{ label: 'Inicio', href: '/' }, { label: 'Empresas' }]} />
           <h1>
             Formulario de <em>aliado comercial</em>
           </h1>
@@ -141,15 +141,7 @@ export default function BusinessContent() {
             <label className="checkbox" style={{ marginBottom: 20 }}>
               <input type="checkbox" required />
               <span style={{ fontSize: '0.88rem' }}>
-                Acepto los{' '}
-                <a href="#" style={{ color: 'var(--green-700)', textDecoration: 'underline' }}>
-                  términos y condiciones
-                </a>{' '}
-                y la{' '}
-                <a href="#" style={{ color: 'var(--green-700)', textDecoration: 'underline' }}>
-                  política de privacidad
-                </a>
-                .
+                Acepto los términos y condiciones y la política de privacidad.
               </span>
             </label>
 

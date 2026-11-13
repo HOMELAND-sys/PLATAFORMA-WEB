@@ -172,6 +172,14 @@ export const initials = (name: string) =>
     .map((w) => w[0]!.toUpperCase())
     .join('') || '·';
 
+/** "2 adultos · 1 niño" desde las columnas adults/children (fallback si adults es null). */
+export function paxSplit(b: { adults?: number | null; children?: number; pax: number }): string {
+  const children = b.children ?? 0;
+  const adults = b.adults ?? Math.max(0, b.pax - children);
+  const label = `${adults} adulto${adults === 1 ? '' : 's'}`;
+  return children > 0 ? `${label} · ${children} niño${children === 1 ? '' : 's'}` : label;
+}
+
 /* ---------------------------------------------------------------- enlaces */
 
 /** Origen usado en SSR (el cliente usa window.location.origin). */

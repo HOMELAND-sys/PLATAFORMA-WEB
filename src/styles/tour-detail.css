@@ -1127,6 +1127,8 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .am-group { display: flex; flex-direction: column; gap: 8px; }
@@ -1424,6 +1426,31 @@
   transform: translateY(0);
 }
 .am-cta svg { flex-shrink: 0; }
+.am-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+.am-cta:disabled:hover {
+  background: var(--accent-500);
+  transform: none;
+  box-shadow: none;
+}
+.am-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(168, 58, 46, 0.1);
+  border: 1px solid rgba(168, 58, 46, 0.3);
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
 
 .am-promo {
   display: flex;
@@ -1439,6 +1466,91 @@
   border: 1px solid rgba(127, 160, 70, 0.35);
 }
 .am-promo svg { flex-shrink: 0; color: var(--accent-300); }
+
+/* Resumen de la salida en el modal (fecha, horario, viajeros) */
+.am-trip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 28px 6px;
+  padding: 12px 14px;
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  border-radius: 12px;
+}
+.am-trip__info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.am-trip__info span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--green-800);
+}
+.am-trip__info svg { color: var(--green-700); flex-shrink: 0; }
+.am-trip__change {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--green-700);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+.am-trip__change:hover { color: var(--green-900); }
+
+/* Desglose de totales: subtotal, descuento de grupo, oferta y total */
+.am-total { flex-direction: column; align-items: stretch; gap: 10px; }
+.am-total .am-total__rows { display: flex; flex-direction: column; gap: 4px; }
+.am-total__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+.am-total__row--discount { font-weight: 600; }
+.am-total .am-total__final {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(20, 26, 14, 0.25);
+}
+.am-pax__ctrl button:disabled { opacity: 0.4; cursor: not-allowed; }
+.am-pax__ctrl button:disabled:hover { background: var(--white); }
+.am-pax + .am-pax { margin-top: -4px; }
+
+/* Chips de horario: una fecha por día y una franja por chip */
+.slot-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.slot-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 86px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--white);
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+.slot-chip strong { font-size: 0.95rem; color: var(--ink-800); font-variant-numeric: tabular-nums; }
+.slot-chip small { font-size: 0.72rem; color: var(--ink-500); }
+.slot-chip:hover { border-color: var(--green-300); }
+.slot-chip.is-active { border-color: var(--green-500); background: var(--green-50); }
+.slot-chip.is-active strong { color: var(--green-800); }
+.slot-chip.is-active small { color: var(--green-700); font-weight: 600; }
+
+@media (max-width: 560px) {
+  .am-trip { margin: 0 18px 6px; }
+}
 
 @media (max-width: 560px) {
   .am-head { padding: 22px 18px 14px; }

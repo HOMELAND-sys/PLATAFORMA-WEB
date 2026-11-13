@@ -1,15 +1,16 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import { safeNext, authErrorMessage } from '@/context/AuthContext';
 import { getSupabase } from '@/lib/supabase';
 import Icon from '@/components/ui/Icon';
 
 function RegisterForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/bookings';
+  const next = safeNext(searchParams.get('next'));
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,6 +21,15 @@ function RegisterForm() {
   const [existingAccount, setExistingAccount] = useState(false);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // El error debe quedar a la vista: foco + scroll aunque el formulario sea largo.
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorRef.current?.focus();
+    }
+  }, [error]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +63,7 @@ function RegisterForm() {
           setError('Ya existe una cuenta con este email.');
         } else {
           setExistingAccount(false);
-          setError(signUpError.message);
+          setError(authErrorMessage(signUpError.message, 'No se pudo crear la cuenta. Intentá de nuevo.'));
         }
         return;
       }
@@ -101,7 +111,7 @@ function RegisterForm() {
     <>
       <section className="page-header page-header--tight">
         <div className="container">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Crear cuenta' }]} />
+          <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Crear cuenta' }]} />
           <h1>
             Crear <em>cuenta</em>
           </h1>
@@ -117,7 +127,7 @@ function RegisterForm() {
             <p>Con tu cuenta reservás de forma segura, guardás tus datos y seguís el estado de cada reserva.</p>
 
             {error && (
-              <div className="auth-alert auth-alert--error" role="alert">
+              <div className="auth-alert auth-alert--error" role="alert" ref={errorRef} tabIndex={-1}>
                 <Icon name="alert" size={20} />
                 <span>
                   {error}
@@ -196,8 +206,9 @@ function RegisterForm() {
                 />
               </div>
 
-              <label className="checkbox" style={{ marginBottom: 20 }}>
+              <label className="checkbox" htmlFor="regConsent" style={{ marginBottom: 20 }}>
                 <input
+                  id="regConsent"
                   type="checkbox"
                   required
                   checked={consent}

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import ToursContent from '@/components/tours/ToursContent';
 
 export const metadata: Metadata = {
-  title: 'Tours & Packages',
+  title: 'Tours y paquetes',
 };
 
 export default function ToursPage() {

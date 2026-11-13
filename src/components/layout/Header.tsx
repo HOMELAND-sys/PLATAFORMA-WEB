@@ -30,7 +30,7 @@ interface HeaderProps {
 const ALL_CATEGORY: CategoryRow & { id: 'all' } = {
   id: 'all',
   slug: 'all',
-  label: 'All tours',
+  label: 'Todos los tours',
   emoji: '🌎',
   image: null,
   position: 0,
@@ -136,13 +136,25 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
         </nav>
 
         <div className="header-actions">
-          <a className="lang-pill" href="#" aria-label="Cambiar idioma">
+          <button
+            type="button"
+            className="lang-pill"
+            disabled
+            title="Próximamente"
+            aria-label="Cambiar idioma (próximamente)"
+          >
             <Icon name="globe" size={17} />
             <span>ES</span>
-          </a>
-          <a className="icon-btn" href="#" aria-label="Favoritos">
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            disabled
+            title="Próximamente"
+            aria-label="Favoritos (próximamente)"
+          >
             <Icon name="heart" size={21} />
-          </a>
+          </button>
 
           {session ? (
             <div className="account" ref={accountRef}>
@@ -197,7 +209,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
 
           <Link
             className={`icon-btn icon-btn--cart${cartCount > 0 ? ' has-items' : ''}`}
-            href="/booking"
+            href={selection?.tourSlug ? `/booking?slug=${encodeURIComponent(selection.tourSlug)}` : '/booking'}
             aria-label={cartCount > 0 ? `Carrito: ${cartCount} ${cartCount === 1 ? 'persona' : 'personas'}` : 'Carrito de compras'}
             title="Carrito de compras"
           >
@@ -205,7 +217,7 @@ export default function Header({ activeNav = null, withDropdown = false }: Heade
             {cartCount > 0 && <span className="icon-btn__badge">{cartCount}</span>}
           </Link>
           <Link className="btn btn--gold btn--sm" href={session ? '/bookings' : '/login?next=%2Fbookings'}>
-            My Bookings
+            Mis reservas
           </Link>
           <button
             className="menu-toggle"

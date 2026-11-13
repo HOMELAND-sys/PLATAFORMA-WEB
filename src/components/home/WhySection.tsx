@@ -3,7 +3,7 @@ import DrawIcon from '@/components/ui/DrawIcon';
 
 export default function WhySection() {
   return (
-    <section className="section why">
+    <section className="section why" id="nosotros" style={{ scrollMarginTop: 96 }}>
       <div className="container">
         <div className="section-head">
           <p className="eyebrow">¿Por qué reservar con Homeland Tours?</p>

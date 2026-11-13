@@ -1,0 +1,368 @@
+/* ============================================
+   Footer — rediseño editorial (marca Homeland)
+   Verde profundo, fotografía real, Fraunces + Inter
+   ============================================ */
+
+.site-footer {
+  background: var(--green-900);
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0;
+  margin-top: 0;
+  border-top: none;
+  font-size: 0.9rem;
+}
+
+/* ---------- Banda CTA con fotografía real ---------- */
+.footer-cta {
+  position: relative;
+  overflow: hidden;
+  padding: 104px 0 112px;
+  isolation: isolate;
+}
+.footer-cta__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  z-index: -2;
+}
+.footer-cta__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(35, 45, 19, 0.55) 0%, rgba(35, 45, 19, 0.72) 55%, var(--green-900) 100%),
+    linear-gradient(100deg, rgba(20, 26, 14, 0.88) 0%, rgba(20, 26, 14, 0.62) 48%, rgba(20, 26, 14, 0.28) 100%);
+}
+.footer-cta__inner { position: relative; }
+.footer-cta__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--green-300);
+  margin-bottom: 14px;
+}
+.footer-cta__eyebrow::before {
+  content: '';
+  width: 30px;
+  height: 1.5px;
+  background: var(--green-300);
+}
+.footer-cta__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 4.6vw, 3.4rem);
+  font-weight: 550;
+  line-height: 1.08;
+  color: var(--white);
+  max-width: 640px;
+  margin-bottom: 16px;
+  text-wrap: balance;
+}
+.footer-cta__title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--green-300);
+}
+.footer-cta__sub {
+  max-width: 520px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.02rem;
+  line-height: 1.65;
+  margin-bottom: 30px;
+}
+.footer-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.footer-cta__actions .btn { box-shadow: 0 10px 28px rgba(10, 14, 5, 0.35); }
+
+/* ---------- Cuerpo ---------- */
+.footer-body {
+  position: relative;
+  padding: 64px 0 44px;
+  background:
+    radial-gradient(90% 120% at 8% 0%, rgba(117, 149, 62, 0.16) 0%, rgba(117, 149, 62, 0) 55%),
+    radial-gradient(70% 90% at 96% 100%, rgba(117, 149, 62, 0.1) 0%, rgba(117, 149, 62, 0) 60%),
+    var(--green-900);
+}
+/* Grano sutil (ruido SVG, sin patrones textiles) */
+.footer-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+.footer-body > .container { position: relative; }
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.25fr;
+  gap: 48px;
+  padding-bottom: 0;
+  justify-content: initial;
+}
+
+/* Columna de marca */
+.site-footer .footer-brand-col .footer-logo {
+  color: var(--white);
+  height: 92px;
+  display: block;
+  margin-bottom: 22px;
+}
+.footer-brand__text {
+  margin: 0 0 20px;
+  max-width: 320px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  text-align: left;
+}
+.footer-brand__text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.footer-social {
+  display: flex;
+  gap: 10px;
+}
+.footer-social__btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.85);
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), transform var(--t-fast);
+}
+.footer-social__btn:hover {
+  background: var(--green-400);
+  border-color: var(--green-400);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+/* Columnas de enlaces */
+.footer-col h4 {
+  color: var(--green-300);
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-bottom: 18px;
+  padding-bottom: 0;
+  text-align: left;
+}
+.footer-col h4::after { content: none; }
+.footer-col ul { list-style: none; padding: 0; margin: 0; }
+.footer-col li { margin-bottom: 11px; font-size: 0.9rem; line-height: 1.55; }
+.footer-col a { color: rgba(255, 255, 255, 0.78); }
+
+.footer-links li { padding-left: 0; margin-bottom: 11px; }
+.footer-links li::before { content: none; }
+.footer-links a {
+  display: inline-block;
+  text-decoration: none;
+  transition: color var(--t-fast), transform var(--t-fast);
+}
+.footer-links a:hover {
+  color: var(--white);
+  transform: translateX(4px);
+}
+
+/* Contacto */
+.footer-contact li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.footer-contact li .ic {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  margin-top: 3px;
+  color: var(--green-300);
+}
+.footer-contact a {
+  color: var(--white);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+.footer-contact a:hover { color: var(--green-300); }
+.footer-contact li small {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+.footer-contact li .schedule { font-size: 0.8rem; }
+
+/* Sellos de confianza */
+.footer-trust {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 52px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.footer-trust__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.footer-trust__item > .hi { color: var(--green-300); flex-shrink: 0; }
+.footer-trust__item strong {
+  display: block;
+  color: var(--white);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.footer-trust__item small {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+  margin-top: 1px;
+}
+
+/* ---------- Barra inferior ---------- */
+.footer-bottom {
+  background: rgba(0, 0, 0, 0.28);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px 0;
+  margin: 0;
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.62);
+}
+.footer-bottom__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.footer-copyright { color: rgba(255, 255, 255, 0.62); }
+.footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+.footer-legal a {
+  color: rgba(255, 255, 255, 0.62);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+.footer-legal a:hover { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+.footer-bottom__right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+.footer-locale {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-pill);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.footer-payments {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pay-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-900);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: 4px;
+  min-width: 44px;
+  height: 28px;
+  font-family: var(--font-sans);
+}
+.pay-badge--paypal { background: #003087; color: #fff; }
+.pay-badge--visa { background: #1a1f71; color: #f7b600; font-style: italic; }
+.pay-badge--mastercard { background: #ffffff; color: var(--ink-900); border: 1px solid var(--border); }
+.pay-badge--zwap { background: #00897b; color: #fff; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px 48px; }
+  .footer-brand-col { grid-column: 1 / -1; }
+  .footer-brand__text { max-width: 480px; }
+  .footer-cta { padding: 84px 0 92px; }
+}
+
+@media (max-width: 640px) {
+  .footer-cta { padding: 68px 0 76px; }
+  .footer-cta__actions .btn { width: 100%; justify-content: center; }
+  .footer-body { padding: 44px 0 32px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 0; }
+  .footer-brand-col { margin-bottom: 28px; }
+  .site-footer .footer-brand-col .footer-logo { height: 72px; margin-bottom: 16px; }
+
+  /* Acordeones nativos <details> */
+  .footer-col--acc { border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+  .footer-col--acc summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 2px;
+    cursor: pointer;
+    list-style: none;
+    color: var(--green-300);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+  .footer-col--acc summary::-webkit-details-marker { display: none; }
+  .footer-col--acc summary::marker { content: none; }
+  .footer-col__chev { transition: transform var(--t-fast); color: rgba(255, 255, 255, 0.6); }
+  .footer-col--acc[open] .footer-col__chev { transform: rotate(180deg); }
+  .footer-col--acc .footer-col__body { padding: 2px 2px 18px; }
+
+  .footer-trust { grid-template-columns: 1fr; gap: 18px; margin-top: 36px; padding-top: 26px; }
+  .footer-bottom__inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .footer-bottom__right { width: 100%; justify-content: space-between; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-links a,
+  .footer-social__btn,
+  .footer-col__chev,
+  .footer-contact a,
+  .footer-legal a { transition: none; }
+  .footer-links a:hover,
+  .footer-social__btn:hover { transform: none; }
+}

@@ -4,28 +4,37 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/Breadcrumbs';
+import { safeNext, authErrorMessage } from '@/context/AuthContext';
 import { getSupabase } from '@/lib/supabase';
 import Icon from '@/components/ui/Icon';
 
 function ForgotForm() {
   const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/bookings';
+  const next = safeNext(searchParams.get('next'));
 
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
     setBusy(true);
+    setError(null);
     // La respuesta en pantalla es idéntica exista o no la cuenta (RF-03).
     try {
-      await getSupabase().auth.resetPasswordForEmail(email.trim(), {
+      const { error: resetError } = await getSupabase().auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/reset?next=${encodeURIComponent(next)}`,
       });
-    } finally {
+      if (resetError) {
+        setError(authErrorMessage(resetError.message, 'No se pudo enviar el enlace. Intentá de nuevo en unos minutos.'));
+        return;
+      }
       setSent(true);
+    } catch {
+      setError('No hay conexión con el servidor. Revisá tu internet e intentá de nuevo.');
+    } finally {
       setBusy(false);
     }
   };
@@ -34,7 +43,7 @@ function ForgotForm() {
     <>
       <section className="page-header page-header--tight">
         <div className="container">
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Recuperar contraseña' }]} />
+          <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Recuperar contraseña' }]} />
           <h1>
             Recuperar <em>contraseña</em>
           </h1>
@@ -64,6 +73,12 @@ function ForgotForm() {
                   ¿Olvidaste tu <em>contraseña?</em>
                 </h1>
                 <p>Te enviamos un enlace por email para elegir una contraseña nueva.</p>
+                {error && (
+                  <div className="auth-alert auth-alert--error" role="alert">
+                    <Icon name="alert" size={20} />
+                    <span>{error}</span>
+                  </div>
+                )}
                 <form onSubmit={submit}>
                   <div className="field">
                     <label className="field__label" htmlFor="forgotEmail">

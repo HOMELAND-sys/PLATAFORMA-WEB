@@ -340,14 +340,14 @@ export default function VoucherHero({ status, code, firstName }: VoucherHeroProp
       <svg className="vh__range" viewBox={`0 0 ${W} ${BOTTOM}`} preserveAspectRatio="xMidYMax slice" aria-hidden="true">
         <defs>
           <radialGradient id="vh-sun" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stopColor="#fff8dc" />
-            <stop offset="0.55" stopColor="#f3d27a" />
-            <stop offset="1" stopColor="#e3b23c" />
+            <stop offset="0" stopColor="#f4f6ec" />
+            <stop offset="0.55" stopColor="#eaeee2" />
+            <stop offset="1" stopColor="#9ab26e" />
           </radialGradient>
           <radialGradient id="vh-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stopColor="#f7dc8c" stopOpacity="0.75" />
-            <stop offset="0.45" stopColor="#e3b23c" stopOpacity="0.22" />
-            <stop offset="1" stopColor="#e3b23c" stopOpacity="0" />
+            <stop offset="0" stopColor="#eaeee2" stopOpacity="0.75" />
+            <stop offset="0.45" stopColor="#9ab26e" stopOpacity="0.22" />
+            <stop offset="1" stopColor="#9ab26e" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="vh-reflect" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#fff" stopOpacity="1" />
@@ -365,7 +365,7 @@ export default function VoucherHero({ status, code, firstName }: VoucherHeroProp
               <path
                 key={i}
                 d={`M${SUN.x} ${SUN.y}L${SUN.x - 5} ${SUN.y - 420}L${SUN.x + 5} ${SUN.y - 420}Z`}
-                fill="#fff6d0"
+                fill="#f4f6ec"
                 transform={`rotate(${i * 15} ${SUN.x} ${SUN.y})`}
               />
             ))}
@@ -442,7 +442,7 @@ export default function VoucherHero({ status, code, firstName }: VoucherHeroProp
   );
 }
 
-/* ---------------- Confeti con Physics2D (colores del aguayo) ---------------- */
+/* ---------------- Confeti con Physics2D (colores de la marca) ---------------- */
 const SHAPES = ['rect', 'tri', 'diamond', 'dot', 'strip'] as const;
 
 function burst(container: HTMLElement | undefined) {
